@@ -101,14 +101,14 @@ export class TileView extends React.Component {
             </Animatable.View>
           </View>
           <View style={styles.horizontal}>
-            <View style={[styles.tile,styles.small, {paddingTop: 20}]}>
+             <Animatable.View animation="slideInUp" duration={500}  style={[styles.tile,styles.small, {paddingTop: 20}]}>
                 <Icon name="comments-o" size={65} color="#2E84F1" style={{marginLeft: 10, flex: 1}}/>
               <Text>Feedback</Text>
-            </View>
-            <View style={[styles.tile,styles.small, {paddingTop: 20}]}>
+          </Animatable.View>
+             <Animatable.View animation="slideInUp" duration={500}   style={[styles.tile,styles.small, {paddingTop: 20}]}>
                 <Icon name="check-square-o" size={65} color="#01A11B" style={{marginLeft: 10, flex: 1}}/>
               <Text>Survey</Text>
-            </View>
+            </Animatable.View>
           </View>
         </View>
         <View>
