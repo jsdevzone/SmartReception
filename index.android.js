@@ -26,6 +26,7 @@ import {Dashboard} from './components/dashboard/Dashboard';
 import {WelcomeScreen} from './components/welcome/WelcomeScreen';
 import {Gallery} from './components/gallery/Gallery';
 import {Login} from './components/auth/Login';
+import {Schedule} from './components/schedule/schedule';
 
 let _navigator  =  null;
 
@@ -56,59 +57,59 @@ var SmartReception = React.createClass({
   },
 
   renderScene: function (route, navigator) {
-     _navigator  =  navigator;
-    switch(route.id){
-      case 'dashboard':
-          return (
-            <View style={styles.container}>
-              <Titlebar  />
-            <Infobar roomNo={this.state.roomNo} navigator={_navigator}/>
-              <View style={styles.appContainer}>
-                  <Dashboard />
-              </View>
-            </View>
-          );
-        break;
-        case 'meeting':
-        return (
-          <View style={styles.container}>
-            <Titlebar  />
-          <Infobar roomNo={this.state.roomNo} navigator={_navigator}/>
-          <View style={styles.appContainer}>
-              <Sidebar />
-              <View style={styles.contentWrapper}>
-                <ContentSidebar />
-                <View style={{flex:1}}>
-                  <Meeting />
-                </View>
-              </View>
-          </View>
-          </View>
-        );
-          break;
+      let scene = null;
+      _navigator = navigator;
+      switch(route.id) {
           case 'welcome':
             return (<WelcomeScreen navigator={navigator} />)
-          break;
-         case 'gallery':
-            return (<Gallery />);
-          break;
+            break;
+          case 'meeting':
+            scene = (
+                <View style={{flex: 1}}>
+                    <Sidebar />
+                    <View style={styles.contentWrapper}>
+                        <ContentSidebar />
+                        <View style={{flex:1}}>
+                            <Meeting />
+                        </View>
+                    </View>
+                </View>
+            );
+            break;
+          case 'schedule':
+            scene = (<Schedule navigator={_navigator} />);
+            break;
           case 'login':
-            return(<Login navigator={navigator}/>);
-    }
-
+            scene = (<Login navigator={_navigator} />);
+            break;
+          case 'dashboard':
+            scene = (<Dashboard />);
+            break;
+      }
+      let appScene = (
+          <View style={styles.container}>
+             <Titlebar  />
+             <Infobar roomNo={this.state.roomNo} navigator={_navigator}/>
+             <View style={styles.appContainer}>
+                {scene}
+            </View>
+          </View>
+      );
+      return appScene;
   },
 
   render: function () {
     return (
       <Navigator
         debugOverlay={false}
-        initialRoute={{title: 'Dashboard', id: 'login', sceneConfig: Navigator.SceneConfigs.FloatFromRight,}}
+        initialRoute={{title: 'Dashboard', id: 'schedule', sceneConfig: Navigator.SceneConfigs.FloatFromRight,}}
         configureScene={this.configureScene}
         renderScene={this.renderScene}
       />
     );
   }
 });
+
 
 var styles = StyleSheet.create({
   container: {

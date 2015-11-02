@@ -33,41 +33,35 @@ export class Login extends React.Component {
     }
     render() {
         return (
-            <View style={appStyle.container}>
-                <Titlebar  />
-                <Infobar roomNo={this.state.roomNo} navigator={this.props.navigator}/>
-                <View style={appStyle.appContainer}>
-                    <View style={styles.container}>
-                        <View style={styles.loginContainer}>
-                            <Image source={require('image!logo')} style={{width: 400, height: 160,  marginBottom: 20}} />
+            <View style={styles.container}>
+                <View style={styles.loginContainer}>
+                    <Image source={require('image!logo')} style={{width: 400, height: 160,  marginBottom: 20}} />
 
-                            {(() => {
-                                if(this.state.isAuthenticating) {
-                                    return (
-                                        <View style= {{ flexDirection: 'column', alignItems: 'center', flex: 1}}>
-                                            <Image
-                                                source={{uri: 'https://d13yacurqjgara.cloudfront.net/users/12755/screenshots/1037374/hex-loader2.gif'}}
-                                                style={{width:200,height: 200, marginLeft: 100}}/>
-                                            <Text style={{marginLeft: 100}}>Authenticating, Please wait...</Text>
+                    {(() => {
+                        if(this.state.isAuthenticating) {
+                            return (
+                                <View style= {{ flexDirection: 'column', alignItems: 'center', flex: 1}}>
+                                    <Image
+                                        source={{uri: 'https://d13yacurqjgara.cloudfront.net/users/12755/screenshots/1037374/hex-loader2.gif'}}
+                                        style={{width:200,height: 200, marginLeft: 100}}/>
+                                    <Text style={{marginLeft: 100}}>Authenticating, Please wait...</Text>
+                                </View>
+                            );
+                        }
+                        else{
+                            return (
+                                <View>
+                                    <TextInput style={styles.input} placeholder="Username" />
+                                    <TextInput style={styles.input} placeholder="Password" secureTextEntry={true} />
+                                    <TouchableWithoutFeedback onPress={this._onLogin.bind(this)}>
+                                        <View style={styles.button}>
+                                            <Text style={styles.buttonText}>Login</Text>
                                         </View>
-                                    );
-                                }
-                                else{
-                                    return (
-                                        <View>
-                                            <TextInput style={styles.input} placeholder="Username" />
-                                            <TextInput style={styles.input} placeholder="Password" secureTextEntry={true} />
-                                            <TouchableWithoutFeedback onPress={this._onLogin.bind(this)}>
-                                                <View style={styles.button}>
-                                                    <Text style={styles.buttonText}>Login</Text>
-                                                </View>
-                                            </TouchableWithoutFeedback>
-                                        </View>
-                                    );
-                                }
-                            })()}
-                        </View>
-                    </View>
+                                    </TouchableWithoutFeedback>
+                                </View>
+                            );
+                        }
+                    })()}
                 </View>
             </View>
         );

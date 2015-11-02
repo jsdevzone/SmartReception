@@ -5,6 +5,9 @@
 'use strict';
 
 var React = require('react-native');
+var DateService = require('../../services/date');
+var Icon = require('react-native-vector-icons/FontAwesome');
+
 var {
   AppRegistry,
   StyleSheet,
@@ -14,7 +17,9 @@ var {
   TouchableHighlight,
 } = React;
 
-var Icon = require('react-native-vector-icons/FontAwesome');
+var {
+    getCurrentDateFormatted
+} = DateService;
 
 var styles = StyleSheet.create({
   infobar: {
@@ -73,15 +78,8 @@ export class Infobar extends React.Component{
         <Text style={{color: '#FFF', marginLeft: 2, marginTop: 3, fontSize: 15}}>Room No - {this.props.roomNo}</Text>
       <Text style={{color: '#FFF', marginLeft: 5, marginRight:0 , marginTop: 3, fontSize: 15}}>|</Text>
         <View style={{flexDirection:'row'}}>
-          <Icon style={[styles.infoText, {fontSize: 15}]} name="clock-o"   />
-            <Text style={{color: '#FFF', marginLeft: 2, marginTop: 3, fontSize: 15}}>{(()=>{
-                    let days = [ 'Sunday', 'Monday', 'Tuesday', 'Thursday', 'Friday', 'Saturday'];
-                    let months = ['January', 'February', 'March','April','May','June','July', 'August', 'Spetember', 'October', 'November','December'];
-                    let date = new Date();
-                    let dateString  = days[date.getDay()] + ',' +  date.getDate() + ' ' + months[date.getMonth()] + ',' + date.getFullYear();
-                    return dateString;
-            })()}
-          </Text>
+            <Icon style={[styles.infoText, {fontSize: 15}]} name="clock-o"   />
+            <Text style={{color: '#FFF', marginLeft: 2, marginTop: 3, fontSize: 15}}>{getCurrentDateFormatted()}</Text>
         </View>
       </View>
     );

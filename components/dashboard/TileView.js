@@ -6,6 +6,10 @@
 'use strict';
 
 var React = require('react-native');
+
+var Animatable = require('react-native-animatable');
+var Icon = require('react-native-vector-icons/FontAwesome');
+
 var {
   AppRegistry,
   StyleSheet,
@@ -13,9 +17,6 @@ var {
   View,
   Image,
 } = React;
-
-var Animatable = require('react-native-animatable');
-var Icon = require('react-native-vector-icons/FontAwesome');
 
 const TILE_HEIGHT = 120;
 const TILE_WIDTH = 120;
