@@ -31,7 +31,7 @@ export class Dashboard extends React.Component{
   render() {
     return (
       <View style={styles.dashboardContainer}>
-        <TileView />
+        <TileView navigator={this.props.navigator} />
       </View>
     );
   }

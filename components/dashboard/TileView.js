@@ -10,12 +10,16 @@ var React = require('react-native');
 var Animatable = require('react-native-animatable');
 var Icon = require('react-native-vector-icons/FontAwesome');
 
+import {Routes} from '../../services/routes';
+
 var {
   AppRegistry,
   StyleSheet,
   Text,
   View,
   Image,
+  TouchableWithoutFeedback,
+  ToastAndroid,
 } = React;
 
 const TILE_HEIGHT = 120;
@@ -68,20 +72,29 @@ var styles = StyleSheet.create({
 
 
 export class TileView extends React.Component {
-  render() {
+    onTilePress(route) {
+        this.props.navigator.push(route);
+    }
+    render() {
     return (
       <View style={[{margin:15, alignItems:'center'}]}>
       <View style={[styles.horizontal, {marginTop: 25}]}>
         <View>
           <View style={styles.horizontal}>
-             <Animatable.View animation="slideInDown" duration={500} style={[styles.tile,styles.small, {paddingTop: 20}]}>
-              <Icon name="home" size={65} color="#00869C" style={{marginLeft: 10, flex: 1}}/>
-              <Text>Home</Text>
-            </Animatable.View>
-            <Animatable.View animation="slideInDown" duration={500} style={[styles.tile,styles.small, {paddingTop: 20}]}>
-                <Icon name="calendar-check-o" size={65} color="#DA522C" style={{marginLeft: 10, flex: 1}}/>
-                <Text>Schedule</Text>
-            </Animatable.View>
+
+            <TouchableWithoutFeedback onPress={()=>{this.onTilePress(Routes.meeting)}}>
+                <Animatable.View animation="slideInDown" duration={500} style={[styles.tile,styles.small, {paddingTop: 20}]}>
+                    <Icon name="home" size={65} color="#00869C" style={{marginLeft: 10, flex: 1}}/>
+                    <Text>Home</Text>
+                </Animatable.View>
+            </TouchableWithoutFeedback>
+
+            <TouchableWithoutFeedback onPress={()=>{this.onTilePress(Routes.schedule)}}>
+                <Animatable.View  animation="slideInDown" duration={500} style={[styles.tile,styles.small, {paddingTop: 20}]}>
+                    <Icon name="calendar-check-o" size={65} color="#DA522C" style={{marginLeft: 10, flex: 1}}/>
+                    <Text>Schedule</Text>
+                </Animatable.View>
+            </TouchableWithoutFeedback>
 
           </View>
           <Animatable.View animation="slideInLeft" duration={500} ref="tile" style={[styles.tile,styles.large,{paddingTop: 10}]}>

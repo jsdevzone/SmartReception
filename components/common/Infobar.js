@@ -66,7 +66,7 @@ export class Infobar extends React.Component{
             <Text style={{color: '#FFF', marginLeft: 2, marginTop: 3, fontSize: 15}}>
               {obj.title}
               {(()=> {
-                if(i<this.state.stack.length-1)
+                if(i<this.state.stack.length - 1)
                 return ' > '
               })()}
             </Text>

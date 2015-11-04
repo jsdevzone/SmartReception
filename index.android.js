@@ -65,7 +65,7 @@ var SmartReception = React.createClass({
             break;
           case 'meeting':
             scene = (
-                <View style={{flex: 1}}>
+                <View style={{flex: 1, flexDirection: 'row'}}>
                     <Sidebar />
                     <View style={styles.contentWrapper}>
                         <ContentSidebar />
@@ -83,7 +83,7 @@ var SmartReception = React.createClass({
             scene = (<Login navigator={_navigator} />);
             break;
           case 'dashboard':
-            scene = (<Dashboard />);
+            scene = (<Dashboard navigator={_navigator} />);
             break;
       }
       let appScene = (
@@ -102,7 +102,7 @@ var SmartReception = React.createClass({
     return (
       <Navigator
         debugOverlay={false}
-        initialRoute={{title: 'Dashboard', id: 'schedule', sceneConfig: Navigator.SceneConfigs.FloatFromRight,}}
+        initialRoute={{title: 'Dashboard', id: 'login', sceneConfig: Navigator.SceneConfigs.FloatFromRight,}}
         configureScene={this.configureScene}
         renderScene={this.renderScene}
       />
