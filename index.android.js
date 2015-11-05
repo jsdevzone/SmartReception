@@ -102,14 +102,13 @@ var SmartReception = React.createClass({
     return (
       <Navigator
         debugOverlay={false}
-        initialRoute={{title: 'Dashboard', id: 'login', sceneConfig: Navigator.SceneConfigs.FloatFromRight,}}
+        initialRoute={{title: 'Dashboard', id: 'welcome', sceneConfig: Navigator.SceneConfigs.FloatFromRight,}}
         configureScene={this.configureScene}
         renderScene={this.renderScene}
       />
     );
   }
 });
-
 
 var styles = StyleSheet.create({
   container: {
