@@ -134,7 +134,7 @@ export class ContentSidebar extends Component{
 }
 
 export class SidebarButton extends Component {
-  render() {
+  render() { 
     return (
       <View style={[styles.button, this.props.style]}>
         <Icon name={this.props.icon} style={{fontSize: 25, height: 25, width: 25, margin: 5, marginBottom: 0}} size={25}/>

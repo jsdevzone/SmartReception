@@ -11,6 +11,7 @@ var Animatable = require('react-native-animatable');
 var Icon = require('react-native-vector-icons/FontAwesome');
 
 import {Routes} from '../../services/routes';
+import {getCurrentDateFormatted, getDayName} from '../../services/date';
 
 var {
   AppRegistry,
@@ -20,6 +21,8 @@ var {
   Image,
   TouchableWithoutFeedback,
   ToastAndroid,
+  ListView,
+  TouchableHighlight,
 } = React;
 
 const TILE_HEIGHT = 120;
@@ -66,7 +69,53 @@ var styles = StyleSheet.create({
       flex: 1,
       width: ((TILE_WIDTH + 50) * 2) + TILE_MARGIN,
       height: (TILE_WIDTH * 4) + (TILE_MARGIN*3),
-    }
+  },
+  notificationTile: {
+      flexDirection:'column',
+      alignItems:'stretch'
+  },
+  statusContainer: {
+      flexDirection:'row',
+      padding: 10,
+  },
+  visibility: {
+      backgroundColor: '#4CAF50',
+      color: '#FFF',
+      padding: 2,
+      fontSize: 10,
+      borderRadius: 3,
+      borderWidth: 1,
+      borderColor: '#4CAF50',
+      marginLeft: 10
+  },
+  counterContainer: {
+      padding: 15,
+      flexDirection: 'row',
+      paddingLeft: 25,
+      paddingRight: 25,
+  },
+  counter: {
+      flexDirection: 'column',
+      alignItems: 'center',
+      flex: 1
+  },
+  tabStripWrapper: {
+      flexDirection: 'row',
+      backgroundColor: '#5C6BC0',
+      borderTopColor: '#7481CE',
+      borderTopWidth: 1
+  },
+  tab: {
+      padding: 13,
+      alignItems: 'center',
+      flex: 1
+  },
+  tabText: {
+      color: '#FFF'
+  },
+  tabSelected: {
+      backgroundColor: '#5361AD'
+  }
 
 });
 
@@ -154,19 +203,140 @@ export class TileView extends React.Component {
 
         </View>
         <View style={{flex:1, flexDirection: 'column', height: null}}>
-            <View style={[styles.tile,styles.fullColumn, {flexDirection:'column', alignItems:'stretch'}]}>
-              <View style={{ width: null, height: 180, alignItems: 'stretch'}}>
-                <Image source={require('image!day_view')} style={{flex: 1, width: null, height: 180}}>
-                </Image>
-              </View>
-              <View style={{flex:1, alignItems:'flex-start'}}>
-              <Image source={require('image!user_list')} style={{flex: 1, width: 240, height: 180, marginTop: 5, marginLeft:10}}>
-              </Image>
-              </View>
-            </View>
+            <NotificationTile />
         </View>
         </View>
         </View>
     );
   }
 }
+
+class NotificationTile extends React.Component {
+    constructor(args) {
+        super(args);
+        this.state = {
+            selectedTabIndex: 0
+        };
+    }
+    onTabPress(idx) {
+        this.setState({ selectedTabIndex: idx });
+    }
+    render() {
+        return (
+            <View style={[styles.tile,styles.fullColumn, styles.notificationTile ]}>
+                <View style={styles.statusContainer}>
+                    <View style={{ flex:1 }}></View>
+                    <View style={{ flexDirection: 'row'}}>
+                        <Icon name="clock-o" size={12}  style={{ color: '#FF6335', marginRight: 4}} />
+                        <Text style={{ color: '#515151', fontSize: 11 }}>{getCurrentDateFormatted()}</Text>
+                    </View>
+                    <View style={styles.visibility}>
+                        <Text style={{fontSize: 11, color: '#FFF' }}>Online</Text>
+                    </View>
+                </View>
+                <View style={styles.counterContainer}>
+                    <View style={styles.counter}>
+                        <View style={{flexDirection:'row'}}>
+                            <Icon name="calendar" size={15} />
+                            <Text style={{ marginLeft: 5, fontStyle: 'bold', color: '#423E39' }}>5,256</Text>
+                        </View>
+                        <View>
+                            <Text style={{color:'#AEA3B0', size: 6}}>messages</Text>
+                        </View>
+                    </View>
+                    <View style={styles.counter}>
+                        <View style={{flexDirection:'row'}}>
+                            <Icon name="calendar" size={15} />
+                            <Text style={{ marginLeft: 5, fontStyle: 'bold', color: '#423E39' }}>5,256</Text>
+                        </View>
+                        <View>
+                            <Text style={{color:'#AEA3B0', size: 6}}>messages</Text>
+                        </View>
+                    </View>
+                    <View style={styles.counter}>
+                        <View style={{flexDirection:'row'}}>
+                            <Icon name="calendar" size={15} />
+                            <Text style={{ marginLeft: 5, fontStyle: 'bold', color: '#423E39' }}>5,256</Text>
+                        </View>
+                        <View>
+                            <Text style={{color:'#AEA3B0', size: 6}}>messages</Text>
+                        </View>
+                    </View>
+                </View>
+                <Image source={require('image!fancy_separator')} style={{width: null, height: 30}} />
+                <View style={styles.tabStripWrapper}>
+                    {(()=>{
+                        var array = [];
+                        var d = new Date();
+                        var dates=[];
+                        if(d.getDay() > 4) {
+                            dates.push({ name: "Sunday", date: new Date() });
+                            dates.push({ name: "Monday", date: new Date() }),
+                            dates.push({ name: "Tuesday", date: new Date() });
+                        }
+                        else {
+                            if(d.getDay() + 1 > 4) {
+                                dates.push({ name: "Today", date: new Date() });
+                                dates.push({ name: "Tomorrow", date: new Date() }),
+                                dates.push({ name: "Sunday", date: new Date() });
+                            }
+                            else {
+                                var day = getDayName(d.getDay() + 2)
+                                dates.push({ name: "Today", date: new Date() });
+                                dates.push({ name: "Tomorrow", date: new Date() }),
+                                dates.push({ name: ""+day+"", date: new Date() });
+                            }
+                        }
+
+
+                        for(var i = 0; i < dates.length; i++) {
+                            array.push(
+                                <TouchableWithoutFeedback onPress={this.onTabPress.bind(this, i)}>
+                                    <View style={[styles.tab, this.state.selectedTabIndex == i ? styles.tabSelected : null]}>
+                                        <Text style={styles.tabText}>{dates[i].name}</Text>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                            );
+                        }
+                        return array;
+                    })()}
+                </View>
+                <UserList />
+            </View>
+        );
+    }
+}
+
+class UserList extends React.Component {
+    constructor(args) {
+        super(args);
+        var dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+        this.state = {
+            dataSource: dataSource.cloneWithRows(data)
+        }
+    }
+    render() {
+        return (<ListView dataSource={this.state.dataSource} renderRow={this.renderRow} style={{flex: 1}} />)
+    }
+    renderRow(rowData, sectionID: number, rowID: number) {
+        return (
+            <TouchableHighlight underlayColor="#C6C7EA">
+                <View style={{flexDirection: 'row', padding: 10, paddingLeft: 25}}>
+                    <Image source={{uri: 'http://avenger.kaijuthemes.com/assets/demo/avatar/avatar_02.png'}}
+                        style={{width: 50, height: 50, borderRadius: 25}} />
+                    <View style={{flexDirection: 'column', marginLeft: 14, paddingTop: 10}}>
+                        <Text style={{color:'#000', fontSize: 15}}>{rowData.name}</Text>
+                        <Text style={{color:"#A1A1A1"}}>{rowData.position}</Text>
+                    </View>
+                </View>
+           </TouchableHighlight>
+       );
+    }
+}
+
+var data = [
+    { name: 'Mogen Polish', position: 'Writer, Mag Editor', },
+    { name: 'Joge Lucky', position: 'Art Director, Movie Cut', },
+    { name: 'Folisise Chosielie', position: 'Musician, Player', },
+    { name: 'Peter', position: 'Musician, Player', },
+];

@@ -138,7 +138,7 @@ class ScheduleConfirmation extends React.Component {
                 </View>
                 <View style={[styles.phoneConfirmationWrapper, { marginBottom: 20 }]}>
                     <Text>Please confirm your mobile number & email id: </Text>
-                    <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 5 }} >
+                    <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 15 }} >
                         <TextInput textAlign="center" underlineColorAndroid="#FFF" keyboardType="numeric" placeholder="052-867-0788" style={{ flex: 1 }} />
                     </View>
                     <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 10 }} >

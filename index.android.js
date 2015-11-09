@@ -16,6 +16,7 @@ var {
   BackAndroid,
 } = React;
 
+import {Config} from './Config';
 
 import {Titlebar} from './components/common/Titlebar';
 import {Infobar} from './components/common/Infobar';
@@ -102,7 +103,7 @@ var SmartReception = React.createClass({
     return (
       <Navigator
         debugOverlay={false}
-        initialRoute={{title: 'Dashboard', id: 'welcome', sceneConfig: Navigator.SceneConfigs.FloatFromRight,}}
+        initialRoute={{title: 'Dashboard', id: 'dashboard', sceneConfig: Navigator.SceneConfigs.FloatFromRight,}}
         configureScene={this.configureScene}
         renderScene={this.renderScene}
       />
