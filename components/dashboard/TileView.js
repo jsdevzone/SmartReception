@@ -154,10 +154,12 @@ export class TileView extends React.Component {
             <Text>Waiting in Waiting Area </Text>
           </Animatable.View>
           <View style={styles.horizontal}>
+        <TouchableWithoutFeedback onPress={()=>{this.onTilePress(Routes.settings)}}>
           <Animatable.View animation="slideInLeft" duration={500} style={[styles.tile,styles.small, {paddingTop: 20}]}>
               <Icon name="cog" size={65} color="#A300AB" style={{marginLeft: 10, flex: 1}}/>
             <Text>Settings</Text>
         </Animatable.View>
+        </TouchableWithoutFeedback>
           <Animatable.View animation="slideInRight" duration={500}  style={[styles.tile,styles.small, {paddingTop: 20}]}>
               <Icon name="calendar" size={65} color="#603BBC" style={{marginLeft: 10, flex: 1}}/>
             <Text>Calendar</Text>
@@ -193,6 +195,7 @@ export class TileView extends React.Component {
                 </View>
             </View>
           </View>
+              <TouchableWithoutFeedback onPress={()=>{this.onTilePress(Routes.search)}}>
           <View style={[styles.tile,styles.large, {flexDirection: 'row'}]}>
             <Icon name="search" size={65} color="#F03552" style={{marginLeft: 10}}/>
           <View style={{flexDirection: 'column'}}>
@@ -200,7 +203,7 @@ export class TileView extends React.Component {
             <Text>Search people or meeting here...</Text>
           </View>
         </View>
-
+    </TouchableWithoutFeedback>
         </View>
         <View style={{flex:1, flexDirection: 'column', height: null}}>
             <NotificationTile />
@@ -307,7 +310,7 @@ class NotificationTile extends React.Component {
     }
 }
 
-class UserList extends React.Component {
+export class UserList extends React.Component {
     constructor(args) {
         super(args);
         var dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
@@ -316,13 +319,13 @@ class UserList extends React.Component {
         }
     }
     render() {
-        return (<ListView dataSource={this.state.dataSource} renderRow={this.renderRow} style={{flex: 1}} />)
+        return (<ListView dataSource={this.state.dataSource} renderRow={this.renderRow.bind(this)} style={{flex: 1}} />)
     }
     renderRow(rowData, sectionID: number, rowID: number) {
         return (
             <TouchableHighlight underlayColor="#C6C7EA">
-                <View style={{flexDirection: 'row', padding: 10, paddingLeft: 25}}>
-                    <Image source={{uri: 'http://avenger.kaijuthemes.com/assets/demo/avatar/avatar_02.png'}}
+                <View style={[{flexDirection: 'row', padding: 10, paddingLeft: 25},this.props.showSeparator ? {borderBottomColor: '#F9F9F9', borderBottomWidth: 1}: {}]}>
+                    <Image source={{uri: rowData.image }}
                         style={{width: 50, height: 50, borderRadius: 25}} />
                     <View style={{flexDirection: 'column', marginLeft: 14, paddingTop: 10}}>
                         <Text style={{color:'#000', fontSize: 15}}>{rowData.name}</Text>
@@ -335,8 +338,13 @@ class UserList extends React.Component {
 }
 
 var data = [
-    { name: 'Mogen Polish', position: 'Writer, Mag Editor', },
-    { name: 'Joge Lucky', position: 'Art Director, Movie Cut', },
-    { name: 'Folisise Chosielie', position: 'Musician, Player', },
-    { name: 'Peter', position: 'Musician, Player', },
+    { name: 'Mogen Polish', position: 'Writer, Mag Editor', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg' },
+    { name: 'Joge Lucky', position: 'Art Director, Movie Cut', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/sauro/128.jpg' },
+    { name: 'Folisise Chosielie', position: 'Musician, Player',image: 'https://s3.amazonaws.com/uifaces/faces/twitter/mlane/128.jpg' },
+    { name: 'Peter', position: 'Musician, Player', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/rem/128.jpg' },
+    { name: 'John Doe', position: 'Art Director, Moview Cut', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/chadengle/128.jpg' },
+    { name: 'Billy Duke', position: 'Director, Operations', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/tutvid/128.jpg' },
+    { name: 'Folisise Chosielie', position: 'Musician, Player',image: 'https://s3.amazonaws.com/uifaces/faces/twitter/philcoffman/128.jpg' },
+    { name: 'Joge Lucky', position: 'Art Director, Movie Cut', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/msurguy/128.jpg' },
+    { name: 'Mogen Polish', position: 'Writer, Mag Editor', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/danbenoni/128.jpg' },
 ];

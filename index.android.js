@@ -28,6 +28,9 @@ import {WelcomeScreen} from './components/welcome/WelcomeScreen';
 import {Gallery} from './components/gallery/Gallery';
 import {Login} from './components/auth/Login';
 import {Schedule} from './components/schedule/schedule';
+import {Settings} from './components/settings/Settings';
+import {Search} from './components/search/Search';
+
 
 let _navigator  =  null;
 
@@ -85,6 +88,12 @@ var SmartReception = React.createClass({
             break;
           case 'dashboard':
             scene = (<Dashboard navigator={_navigator} />);
+            break;
+          case 'settings':
+            scene = (<Settings navigator={_navigator} />);
+            break;
+          case 'search':
+            scene = (<Search navigator={_navigator} />);
             break;
       }
       let appScene = (
