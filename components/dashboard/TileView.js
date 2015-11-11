@@ -178,7 +178,7 @@ export class TileView extends React.Component {
         </View>
         <View>
           <View style={[styles.tile,styles.extraLarge, {flexDirection: 'column', alignItems:'stretch', padding: 10}]}>
-            <Image source={require('image!chart')} style={{flex: 1, width: null, height: 100}}>
+            <Image source={{uri: './assets/images/chart'}} style={{flex: 1, width: null, height: 100}}>
             </Image>
           </View>
           <View style={styles.horizontal}>
@@ -262,11 +262,11 @@ class NotificationTile extends React.Component {
                             <Text style={{ marginLeft: 5, fontStyle: 'bold', color: '#423E39' }}>5,256</Text>
                         </View>
                         <View>
-                            <Text style={{color:'#AEA3B0', size: 6}}>messages</Text>
+                            <Text style={{color:'#AEA3B0', size: 6}}>pendings</Text>
                         </View>
                     </View>
                 </View>
-                <Image source={require('image!fancy_separator')} style={{width: null, height: 30}} />
+                <Image source={{ uri: './assets/images/fancy_separator'}} style={{width: null, height: 30}} />
                 <View style={styles.tabStripWrapper}>
                     {(()=>{
                         var array = [];

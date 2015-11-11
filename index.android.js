@@ -23,16 +23,15 @@ import {Infobar} from './components/common/Infobar';
 import {Sidebar} from './components/meeting/Sidebar';
 import {ContentSidebar} from './components/meeting/ContentSidebar';
 import {Meeting} from './components/meeting/Meeting';
-import {Dashboard} from './components/dashboard/Dashboard';
-import {WelcomeScreen} from './components/welcome/WelcomeScreen';
-import {Gallery} from './components/gallery/Gallery';
-import {Login} from './components/auth/Login';
-import {Schedule} from './components/schedule/schedule';
-import {Settings} from './components/settings/Settings';
-import {Search} from './components/search/Search';
 
+var NavigatorActions = require('./src/actions/navigator');
+var ApplicationRoutes = require('./src/constants/appRoutes');
+var Dashboard = require('./src/components/home/dashboard');
+var UserLogin = require('./src/components/auth/userLogin');
+var Settings = require('./src/components/settings/settingsCategory');
 
 let _navigator  =  null;
+let _initialRoute =  ApplicationRoutes.getRoute('dashboard', { component: Settings });
 
 BackAndroid.addEventListener('hardwareBackPress', () => {
   if (_navigator.getCurrentRoutes().length === 1  ) {
@@ -62,46 +61,29 @@ var SmartReception = React.createClass({
 
   renderScene: function (route, navigator) {
       let scene = null;
+      let Component = route.component;
       _navigator = navigator;
-      switch(route.id) {
-          case 'welcome':
-            return (<WelcomeScreen navigator={navigator} />)
-            break;
-          case 'meeting':
-            scene = (
-                <View style={{flex: 1, flexDirection: 'row'}}>
-                    <Sidebar />
-                    <View style={styles.contentWrapper}>
-                        <ContentSidebar />
-                        <View style={{flex:1}}>
-                            <Meeting />
-                        </View>
-                    </View>
-                </View>
-            );
-            break;
-          case 'schedule':
-            scene = (<Schedule navigator={_navigator} />);
-            break;
-          case 'login':
-            scene = (<Login navigator={_navigator} />);
-            break;
-          case 'dashboard':
-            scene = (<Dashboard navigator={_navigator} />);
-            break;
-          case 'settings':
-            scene = (<Settings navigator={_navigator} />);
-            break;
-          case 'search':
-            scene = (<Search navigator={_navigator} />);
-            break;
-      }
+
+      NavigatorActions.registerNavigator(_navigator);
+
+      let meetinScene = (
+          <View style={{flex: 1, flexDirection: 'row'}}>
+              <Sidebar />
+              <View style={styles.contentWrapper}>
+                  <ContentSidebar />
+                  <View style={{flex:1}}>
+                      <Meeting />
+                  </View>
+              </View>
+          </View>
+      );
+
       let appScene = (
           <View style={styles.container}>
              <Titlebar  />
              <Infobar roomNo={this.state.roomNo} navigator={_navigator}/>
              <View style={styles.appContainer}>
-                {scene}
+                <Component navigator={_navigator}  />
             </View>
           </View>
       );
@@ -112,7 +94,7 @@ var SmartReception = React.createClass({
     return (
       <Navigator
         debugOverlay={false}
-        initialRoute={{title: 'Dashboard', id: 'dashboard', sceneConfig: Navigator.SceneConfigs.FloatFromRight,}}
+        initialRoute={_initialRoute}
         configureScene={this.configureScene}
         renderScene={this.renderScene}
       />
