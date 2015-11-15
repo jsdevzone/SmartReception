@@ -54,8 +54,10 @@ class SettingsCategory extends React.Component{
                 <Tile icon="user" text="user" scale="small" style={{backgroundColor: getRandomColor()}} iconColor="#FFF" textColor="#FFF" />
             </View>
         </View>
-        <View style={{flex:1, backgroundColor:'#CCC'}}>
-        
+        <View style={{flex:1, backgroundColor:'#CCC',padding: 10}}>
+            <View style={styles.button}>
+                <Text style={styles.button}>sdf</Text>
+            </View>
         </View>
       </View>
     );
@@ -70,6 +72,15 @@ var styles = StyleSheet.create({
     },
     titleText: {
         fontSize: 30
-    }
+    },
+    button:{
+        backgroundColor:'#FFF',
+        shadowOffset:{
+           width: 10,
+           height: 10,
+       },
+       shadowColor: 'black',
+       shadowOpacity: 1.0,
+   }
 });
 module.exports = SettingsCategory;

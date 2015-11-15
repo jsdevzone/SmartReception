@@ -52,7 +52,7 @@ class Dashboard extends React.Component{
                         </View>
                         <View>
                             <Tile scale="extraLarge">
-                                <Image source={require('image!chart')} style={{flex: 1, width: 240, height: 100}}>
+                                <Image source={require('../../../resources/images/chart.png')} style={{flex: 1, width: 240, height: 100}}>
                                 </Image>
                             </Tile>
                             <View style={styles.horizontal}>

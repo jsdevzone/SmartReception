@@ -26,14 +26,6 @@ const TILE_HEIGHT = 120;
 const TILE_WIDTH = 120;
 const TILE_MARGIN = 10
 
-class Test extends React.Component {
-    render() {
-        return (
-            <View />
-        );
-    }
-}
-
 class Tile extends React.Component{
     onTilePress() {
         NavigatorActions.navigateToRoute(this.props.route);

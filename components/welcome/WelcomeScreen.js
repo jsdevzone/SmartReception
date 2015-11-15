@@ -89,7 +89,7 @@ export class WelcomeScreen extends React.Component{
         <View style={styles.container}>
             <View style={{flex: 1, backgroundColor: '#', alignItems: 'center'}}>
                 <View style={{ padding: 5, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#FFF', marginTop: 40, alignItems: 'center' }}>
-                    <Image source={require('image!logo')} style={{width: 400, height: 160, marginBottom: 20}} />
+                    <Image source={require('./resources/images/logo.png')} style={{width: 400, height: 160, marginBottom: 20}} />
                     { this.renderPhases() }
                 </View>
             </View>

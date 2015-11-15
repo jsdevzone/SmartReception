@@ -27,7 +27,7 @@ var data = [
     { name: '', icon: 'power-off'},
 ];
 
-class Sidebar extends React.Component{
+class MeetingSidebar extends React.Component{
     constructor(args) {
         super(args);
         this.state = {
@@ -63,7 +63,9 @@ var styles = StyleSheet.create({
     sidebar: {
         width: 50,
         flexDirection: 'column',
-        backgroundColor:'#393B4A'
+        backgroundColor:'#F0F1F3',
+        borderLeftColor: '#D8E0F1',
+        borderLeftWidth: 1
     },
     iconWrapper: {
         padding: 15,
@@ -78,4 +80,4 @@ var styles = StyleSheet.create({
     }
 });
 
-module.exports = Sidebar;
+module.exports = MeetingSidebar;

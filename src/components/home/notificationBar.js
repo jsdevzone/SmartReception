@@ -73,7 +73,7 @@ export class NotificationBar extends React.Component {
                         </View>
                     </View>
                 </View>
-                <Image source={require('image!fancy_separator')} style={{width: 350, height: 30}} />
+                <Image source={require('../../../resources/images/fancy_separator.png')} style={{width: 350, height: 30}} />
                 <View style={styles.tabStripWrapper}>
                     {(()=>{
                         var array = [];
