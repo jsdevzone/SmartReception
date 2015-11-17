@@ -36,7 +36,7 @@ import {Schedule} from './components/schedule/schedule';
 import {Search} from './components/search/Search';
 import {Settings} from './components/settings/Settings';
 
-let _navigator  =  null;
+var _navigator  =  null;
 let _initialRoute =  ApplicationRoutes.getRoute('dashboard', { component: Meeting });
 
 BackAndroid.addEventListener('hardwareBackPress', () => {

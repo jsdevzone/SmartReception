@@ -5,7 +5,6 @@ var React = require('react-native');
 var Icon = require('react-native-vector-icons/FontAwesome');
 
 import {Sidebar} from '../meeting/Sidebar';
-import {CalendarView} from '../ux/CalendarView';
 import {getCurrentDateFormatted} from '../../services/date';
 
  var {

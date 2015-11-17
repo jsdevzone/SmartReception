@@ -19,6 +19,8 @@ var {
   ListView,
 } = React;
 
+import Calendar from '../ux/calendar';
+import MeetingIntro from './meetingIntro';
 
 class MeetingArea extends React.Component{
     constructor(args){
@@ -65,20 +67,31 @@ class MeetingArea extends React.Component{
                         <View style={styles.tabWrapper}>
                             <View style={styles.tab}>
                                 <Icon name="user" size={18} color="#A4C1E8" />
-                                <Text style={styles.tabText}>MINUTES Of MEETING</Text>
+                                <Text style={styles.tabText}>NOTES</Text>
                             </View>
                             <View style={styles.tab}>
                                 <Icon name="clock-o" size={18} color="#A4C1E8" />
-                                <Text style={styles.tabText}>NOTES</Text>
+                                <Text style={styles.tabText}>SUMMARY</Text>
                             </View>
                             <View style={[styles.tab]}>
                                 <Icon name="image" size={18} color="#A4C1E8" />
-                                <Text style={styles.tabText}>COMMENTS</Text>
+                                <Text style={styles.tabText}>MINUTES OF MEETING</Text>
                             </View>
                             <View style={[styles.tab, { borderRightWidth: 0 }]}>
                                 <Icon name="image" size={18} color="#A4C1E8" />
-                                <Text style={styles.tabText}>OTHER</Text>
+                                <Text style={styles.tabText}>ATTACHMENTS</Text>
                             </View>
+                        </View>
+                        <View style={{ flex: 1, flexDirection: 'column', alignItems: 'stretch'}}>
+                            <MeetingIntro />
+                        </View>
+                        <View style={styles.footer}>
+                            <Button icon="envelope" text="Email Minutes Of Meeting" />
+                            <Button icon="comments-o" text="Feedback" />
+                            <Button icon="list-alt" text="Questionaire" />
+                            <Button icon="check-square-o" text="Survey" />
+                            <Button icon="exchange" text="Transfer" />
+                            <Button icon="check" text="Finish Meeting" style={{flex:1, borderRightWidth:0}} />
                         </View>
                     </View>
                 </View>
@@ -111,8 +124,35 @@ class MeetingTitle extends React.Component {
     }
 }
 
+class Button extends React.Component {
+    render() {
+        return (
+            <View style={[styles.button, this.props.style]}>
+                <Icon name={this.props.icon} size={30} />
+                <Text>{this.props.text}</Text>
+            </View>
+        );
+    }
+}
 
 var styles = StyleSheet.create({
+    button: {
+        padding: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        borderRightColor: '#D8E0F1',
+        borderRightWidth: 1,
+        margin: 5
+    },
+    footer: {
+        backgroundColor:'#F0F1F3',
+        borderTopColor: '#D8E0F1',
+        borderTopWidth: 1,
+        height: 75,
+        flexDirection: 'row',
+        alignItems: 'stretch'
+    },
     container: {
         flex: 1,
         flexDirection: 'column',
