@@ -5,9 +5,10 @@
  */
 'use strict';
 
-var React = require('react-native');
-var Icon = require('react-native-vector-icons/FontAwesome');
-var TimeLine = require('./timeline');
+import React from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import TimeLine from './timeline';
+import MeetingProgress from './meetingProgress';
 
 var {
   AppRegistry,
@@ -63,6 +64,7 @@ class UserProfile extends React.Component{
                     </View>
                 </View>
                 <TimeLine />
+                <MeetingProgress />
             </View>
         );
     }

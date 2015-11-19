@@ -18,7 +18,7 @@ var {
   Text,
   View,
   Image,
-  TouchableWithoutFeedback,
+  TouchableHighlight,
 } = React;
 
 
@@ -37,15 +37,15 @@ class Tile extends React.Component{
 
         if(this.props.scale == 'fullColumn') {
             return (
-                <Animatable.View animation="slideInDown" duration={500} style={[styles.tile, styles[scale], this.props.style]}>
+                <View animation="slideInDown" duration={500} style={[styles.tile, styles[scale], this.props.style]}>
                     {this.props.children}
-                </Animatable.View>
+                </View>
             );
         }
         else {
             return (
-                <TouchableWithoutFeedback onPress={this.onTilePress.bind(this)}>
-                    <Animatable.View animation="slideInDown" duration={500} style={[styles.tile, styles[scale], this.props.style]}>
+                <TouchableHighlight onPress={this.onTilePress.bind(this)} underlayColor="#F4F4F4">
+                    <View animation="slideInDown" duration={500} style={[styles.tile, styles[scale], this.props.style]}>
                         {(() => {
                             if(!this.props.children) {
                                 return (
@@ -59,8 +59,8 @@ class Tile extends React.Component{
                                 return this.props.children;
                             }
                         })()}
-                    </Animatable.View>
-                </TouchableWithoutFeedback>
+                    </View>
+                </TouchableHighlight>
             );
         }
     }

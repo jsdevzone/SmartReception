@@ -3,11 +3,11 @@
  * @author Jasim
  */
 'use strict';
- var React = require('react-native');
- var NavigatorActions = require('../../actions/navigator');
- var ApplicationRoutes = require('../../constants/appRoutes');
- var Dashboard = require('../home/dashboard');
- var SettingsCategory = require('../settings/settingsCategory');
+ import React from 'react-native';
+ import NavigatorActions  from '../../actions/navigator';
+ import ApplicationRoutes from '../../constants/appRoutes';
+ import Dashboard from '../home/dashboard';
+ import CredentialStore from '../../stores/credentialStore';
 
  var {
      StyleSheet,
@@ -21,23 +21,46 @@
 class UserLogin extends React.Component {
     constructor(args) {
         super(args);
+
+        let errorMessage = 'Something Happened In Authentication, Please Try Again :(';
+
         this.state = {
+            username: '',
+            password: '',
+            errorMsg: errorMessage,
             isAuthenticating: false,
-            text: ""
+            hasAuthenticationError:  false
         };
     }
-    _onLogin() {
-        this.setState({ isAuthenticating: true });
-        setTimeout(() => {
-            var route = ApplicationRoutes.getRoute('settings', {component: SettingsCategory});
-            NavigatorActions.navigateToRoute(route);
-        }, 1000);
+    componentDidMount () {
+        CredentialStore.addEventListener('authenticated', this.onAuthenticated.bind(this));
+    }
+    onAuthenticated () {
+        this.setState({ isAuthenticating: false, hasAuthenticationError: false });
+        this.props.navigator.replaceAtIndex({ component: Dashboard, id: 'dashboard', title: 'Dashboard' }, 0);
+        this.props.navigator.popToTop();
+    }
+    onLogin() {
+        if(this.state.username != '' && this.state.password != '') {
+            this.setState({ isAuthenticating: true, hasAuthenticationError: false });
+            CredentialStore.authenticate({ username: this.state.username, password: this.state.password});
+        }
+        else {
+            this.setState({ isAuthenticating: false, hasAuthenticationError: true, errorMsg:  'Username & Password can not be empty!' });
+        }
     }
     render() {
         return (
             <View style={styles.container}>
                 <View style={styles.loginContainer}>
-                    <Image source={require('image!logo')} style={{width: 400, height: 160,  marginBottom: 20}} />
+                    <Image source={require('../../../resources/images/logo.png')} style={{width: 400, height: 160,  marginBottom: 20}} />
+
+                    {(() => {
+                        if(this.state.hasAuthenticationError) {
+                            return (<View style={styles.errorContainer}><Text>{this.state.errorMsg}</Text></View>);
+                        }
+                    })()}
+
                     {(() => {
                         if(this.state.isAuthenticating) {
                             return (
@@ -52,9 +75,9 @@ class UserLogin extends React.Component {
                         else{
                             return (
                                 <View>
-                                    <TextInput style={styles.input} placeholder="Username" value={this.state.text} />
-                                    <TextInput style={styles.input} placeholder="Password" secureTextEntry={true} />
-                                    <TouchableWithoutFeedback onPress={this._onLogin.bind(this)}>
+                                    <TextInput style={styles.input} placeholder="Username" value={this.state.username} onChangeText={(text)=>this.setState({ username: text })} />
+                                    <TextInput style={styles.input} placeholder="Password" secureTextEntry={true} value={this.state.password} onChangeText={(text)=>this.setState({ password: text })}  />
+                                    <TouchableWithoutFeedback onPress={this.onLogin.bind(this)}>
                                         <View style={styles.button}>
                                             <Text style={styles.buttonText}>Login</Text>
                                         </View>
@@ -103,6 +126,14 @@ var styles = StyleSheet.create({
         color: '#FFF',
         fontSize: 18,
         textAlign: 'center',
+    },
+    errorContainer: {
+        borderLeftColor: '#d9534f',
+        borderLeftWidth: 5,
+        backgroundColor: '#F7BAB8',
+        padding: 10,
+        width: 400,
+        marginBottom: 20
     }
 });
 

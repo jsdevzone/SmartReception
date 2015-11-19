@@ -62,4 +62,4 @@ var styles = StyleSheet.create({
   }
 });
 
-module.export = ProgressBar;
+module.exports = ProgressBar;

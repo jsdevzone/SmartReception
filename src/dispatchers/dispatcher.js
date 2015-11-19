@@ -52,5 +52,4 @@ Dispatcher.prototype = Object.assign(Dispatcher.prototype, {
   }
 
 });
-
 module.exports = Dispatcher;

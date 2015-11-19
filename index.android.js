@@ -14,12 +14,13 @@ var {
   Image,
   Navigator,
   BackAndroid,
+  AsyncStorage,
 } = React;
 
 import {Config} from './Config';
 
-import {Titlebar} from './components/common/Titlebar';
-import {Infobar} from './components/common/Infobar';
+
+
 import {Sidebar} from './components/meeting/Sidebar';
 import {ContentSidebar} from './components/meeting/ContentSidebar';
 
@@ -36,15 +37,24 @@ import {Schedule} from './components/schedule/schedule';
 import {Search} from './components/search/Search';
 import {Settings} from './components/settings/Settings';
 
+/**
+ * Need to optimize the import section
+ */
+import Titlebar from './src/components/app/titleBar';
+import Infobar from './src/components/app/infoBar';
+import SplashScreen from './src/components/app/splashScreen';
+import CredentialStore from './src/stores/credentialStore';
+
 var _navigator  =  null;
-let _initialRoute =  ApplicationRoutes.getRoute('dashboard', { component: Meeting });
+var _initialRoute =  ApplicationRoutes.getRoute('dashboard', { component: SplashScreen });
+var _isLoggedIn = CredentialStore.isAuthnticated();
 
 BackAndroid.addEventListener('hardwareBackPress', () => {
-  if (_navigator.getCurrentRoutes().length === 1  ) {
-     return false;
-  }
-  _navigator.pop();
-  return true;
+    if (_navigator.getCurrentRoutes().length === 1  ) {
+        return false;
+    }
+    _navigator.pop();
+    return true;
 });
 
 var SmartReception = React.createClass({
@@ -52,13 +62,34 @@ var SmartReception = React.createClass({
   getInitialState: function(){
     return {
       currentState: 1,
-      roomNo: 1
+      roomNo: 1,
+      isAuthnticated: true
     };
   },
 
-  titleClick:function () {
-    var id = this.state.currentState == 1 ? 0 : 1;
-    this.setState({ currentState: id});
+  componentDidMount: function() {
+      CredentialStore.isAuthnticated().then((value) => this.onGetAuthCredentials(value));
+      CredentialStore.addEventListener('logout', this.onApplicationLogout.bind(this));
+  },
+
+  onGetAuthCredentials: function(value) {
+      let route = null;
+      let isAuthnticated = (value != '' && value != null);
+      this.setState({ isAuthnticated: isAuthnticated });
+      if(!isAuthnticated) {
+          route = { component: UserLogin, id: 'login', title: 'Login' };
+      }
+      else {
+          route = { component: Dashboard, id: 'dashboard', title: 'Dashboard' };
+      }
+      _navigator.replaceAtIndex(route, 0);
+      _navigator.popToTop();
+  },
+
+  onApplicationLogout: function() {
+      this.setState({ isAuthnticated: false, });
+      _navigator.replaceAtIndex({ component: UserLogin, id: 'login', title: 'Login' }, 0);
+      _navigator.popToTop();
   },
 
   configureScene: function (route) {
@@ -72,7 +103,7 @@ var SmartReception = React.createClass({
 
       NavigatorActions.registerNavigator(_navigator);
 
-      let meetinScene = (
+      let meetingScene = (
           <View style={{flex: 1, flexDirection: 'row'}}>
               <Sidebar />
               <View style={styles.contentWrapper}>
@@ -93,6 +124,8 @@ var SmartReception = React.createClass({
             </View>
           </View>
       );
+
+
       return appScene;
   },
 
