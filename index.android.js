@@ -101,7 +101,7 @@ var SmartReception = React.createClass({
       let Component = route.component;
       _navigator = navigator;
 
-      NavigatorActions.registerNavigator(_navigator);
+     // NavigatorActions.registerNavigator(_navigator);
 
       let meetingScene = (
           <View style={{flex: 1, flexDirection: 'row'}}>

@@ -19,6 +19,7 @@ var {
   View,
   Image,
   TouchableHighlight,
+  TouchableWithoutFeedback,
 } = React;
 
 
@@ -27,12 +28,10 @@ const TILE_WIDTH = 120;
 const TILE_MARGIN = 10
 
 class Tile extends React.Component{
-    onTilePress() {
-        NavigatorActions.navigateToRoute(this.props.route);
-    }
     render() {
+        var colors = ['#8F78D4', '#58AB6A', '#BD79C1', '#B7A047', '#DE7A99', '#55A09A'];
         var scale = this.props.scale ? this.props.scale : 'small';
-        var iconColor = this.props.iconColor ? this.props.iconColor : getRandomColor();
+        var iconColor = this.props.iconColor ? this.props.iconColor : colors[Math.floor(Math.random() * 6)];
         var textColor = this.props.textColor ? this.props.textColor: '#313131'
 
         if(this.props.scale == 'fullColumn') {
@@ -44,14 +43,14 @@ class Tile extends React.Component{
         }
         else {
             return (
-                <TouchableHighlight onPress={this.onTilePress.bind(this)} underlayColor="#F4F4F4">
+                <TouchableWithoutFeedback onPress={this.props.onPress}>
                     <View animation="slideInDown" duration={500} style={[styles.tile, styles[scale], this.props.style]}>
                         {(() => {
                             if(!this.props.children) {
                                 return (
                                     <View style={styles.tileInner}>
                                         <Icon name={this.props.icon} size={65} color={iconColor} style={{marginLeft: 10, flex: 1}}/>
-                                        <Text style={{color: textColor}}>{this.props.text}</Text>
+                                        <Text>{this.props.text}</Text>
                                     </View>
                                 );
                             }
@@ -60,7 +59,7 @@ class Tile extends React.Component{
                             }
                         })()}
                     </View>
-                </TouchableHighlight>
+                </TouchableWithoutFeedback>
             );
         }
     }
@@ -77,7 +76,8 @@ var styles = StyleSheet.create({
         paddingTop: 20,
         flex: 1,
         flexDirection: 'column',
-        alignItems: 'center'
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     small:{
         backgroundColor: '#FFF',

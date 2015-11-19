@@ -5,9 +5,17 @@
  */
 'use strict';
 
-var React = require('react-native');
-var Icon = require('react-native-vector-icons/FontAwesome');
-var Tile = require('./tileBlock');
+import React from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Tile from './tileBlock';
+import Meeting from '../meeting/meeting';
+import {Schedule} from '../../../components/schedule/schedule';
+import SplashScreen from '../app/splashScreen';
+
+import { NotificationBar, } from './notificationBar';
+import { getRandomColor, } from '../../utils/util';
+
+
 var {
   AppRegistry,
   StyleSheet,
@@ -18,13 +26,19 @@ var {
   TextInput,
 } = React;
 
+var routes = {
+    meeting: { title: 'Meeting', id: 'meeting', component: Meeting },
+    calendar: { title: 'Meeting', id: 'schedule', component: Schedule },
+    splashScreen: { title: 'Meeting', id: 'schedule', component: SplashScreen }
+};
 
-import { NotificationBar } from './notificationBar';
-import { getRandomColor, } from '../../utils/util';
 
 class Dashboard extends React.Component{
     constructor(args){
         super(args);
+    }
+    onTilePress(route) {
+        this.props.navigator.push(route);
     }
     render() {
         return (
@@ -33,17 +47,44 @@ class Dashboard extends React.Component{
                     <View style={[styles.horizontal, { marginTop: 25 }]}>
                         <View>
                             <View style={styles.horizontal}>
-                                <Tile icon="home" text="Home" scale="small"  />
-                                <Tile icon="calendar-check-o" text="Schedule" />
+                                <Tile onPress={() => this.onTilePress(routes.meeting)} icon="calendar-check-o" text="Meeting" scale="small"  />
+                                <Tile onPress={() => this.onTilePress(routes.calendar)} icon="calendar" text="Calendar" />
                             </View>
-                            <Tile scale="large">
-                                <Text style={{fontSize: 55, color: '#BC1C48'}}>1</Text>
-                                <Text style={{fontSize: 18}}>Client</Text>
-                                <Text>Waiting in Waiting Area </Text>
+                            <Tile scale="large" style={{ alignItems: 'stretch' }} onPress={() => this.onTilePress(routes.meeting)}>
+                                <View style={{flexDirection: 'column', alignItems: 'stretch', flex: 1}}>
+                                    <View style={{flexDirection:'row'}}>
+                                        <View style={styles.userProfileWrapperLeft}>
+                                            <Text style={{color:'#2A5488'}}>Next </Text>
+                                        </View>
+                                        <View style={[styles.userProfileWrapperLeft, {flex: 1, backgroundColor:'#DBE7F5', alignItems: 'flex-end'}]}>
+                                            <Text style={{color:'#2A5488'}}>10:00 AM</Text>
+                                        </View>
+                                    </View>
+                                    <View style={[styles.userProfileWrapper, {flex: 1}]}>
+                                        <View style={{backgroundColor:'#FFF', width: 80, justifyContent: 'center', alignItems: 'center'}}>
+                                            <Image source={{uri:'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg'}} style={styles.profileImage} />
+                                        </View>
+                                        <View style={styles.profileInfoWrapper}>
+                                            <Text style={styles.name}>Jack Nicholson</Text>
+                                            <View style={styles.profileItemWrapper}>
+                                                <Icon name="envelope" size={18} color="#B5C8E2" />
+                                                <Text style={styles.profileItem}>johny@test.com</Text>
+                                            </View>
+                                            <View style={styles.profileItemWrapper}>
+                                                <Icon name="phone" size={18} color="#B5C8E2" />
+                                                <Text style={styles.profileItem}>+27 78 669 2347</Text>
+                                            </View>
+                                            <View style={styles.profileItemWrapper}>
+                                                <Icon name="map-marker" size={18} color="#B5C8E2" />
+                                                <Text style={styles.profileItem}>Hollywood, California</Text>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </View>
                             </Tile>
                             <View style={styles.horizontal}>
-                                <Tile icon="cog" text="Settings" />
-                                <Tile icon="calendar" text="Calendar" />
+                                <Tile  onPress={() => this.onTilePress(routes.splashScreen)} icon="cog" text="Settings" />
+                                <Tile icon="user" text="Clients" />
                             </View>
                             <View style={styles.horizontal}>
                                 <Tile icon="comments-o" text="Feedback" />
@@ -108,6 +149,44 @@ var styles = StyleSheet.create({
         alignItems:'flex-end',
         flex :1,
         padding: 25
+    },
+    userProfileWrapper: {
+        backgroundColor: '#EAEEF5',
+        borderBottomColor: '#D8E0F1',
+        flexDirection: 'row',
+        alignItems: 'stretch'
+    },
+    profileImage: {
+        width: 60,
+        height: 60,
+        borderColor: '#EAEEF5',
+        borderWidth: 5,
+        borderRadius: 5
+    },
+    profileInfoWrapper: {
+        flex: 1,
+        flexDirection: 'column',
+        marginLeft: 10,
+        alignItems: 'stretch'
+    },
+    name: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#5B7EB8'
+    },
+    profileItemWrapper: {
+        flexDirection: 'row',
+        paddingTop: 2,
+    },
+    profileItem: {
+        color: '#5B7EB8'
+    },
+    userProfileWrapperLeft: {
+        flexDirection: 'column',
+        alignItems: 'stretch',
+        width: 80,
+        padding: 5,
+        backgroundColor: '#EAEEF5'
     },
 });
 

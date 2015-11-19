@@ -26,14 +26,14 @@ class MeetingProgress extends React.Component {
         super(args);
         this.state = {
             duration: 2,
-            percentage: 0,
+            percentage: 45,
             percentageColor: '#FFF',
             currentSecond: 0,
             currentMinutes: 0,
         };
     }
     componentDidMount() {
-        let _tick = (this.state.duration * 60 * 1000) / 100;
+        /*let _tick = (this.state.duration * 60 * 1000) / 100;
         let _step = 1 / (_tick/1000);
         let _second = null;
 
@@ -51,7 +51,7 @@ class MeetingProgress extends React.Component {
                     currentSecond: _second
                 });
             }
-        }, 1000);
+        }, 1000);*/
 
     }
     render() {
