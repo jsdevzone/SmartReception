@@ -9,6 +9,7 @@ import React from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import TimeLine from './timeline';
 import MeetingProgress from './meetingProgress';
+import ProfileDetails from '../users/profileDetails';
 
 var {
   AppRegistry,
@@ -18,11 +19,22 @@ var {
   Image,
   TouchableHighlight,
   TextInput,
+  TouchableWithoutFeedback,
 } = React;
 
 class UserProfile extends React.Component{
     constructor(args){
         super(args);
+
+        this.state = {
+            selectedTabIndex: 1,
+            userId: 0,
+            user: this.props.user || {},
+            meeting: this.props.meeting || {}
+        };
+    }
+    onTabPress(index) {
+        this.setState({ selectedTabIndex: index})
     }
     render() {
         return (
@@ -34,37 +46,44 @@ class UserProfile extends React.Component{
                 <View style={styles.userProfileWrapper}>
                     <Image source={{uri:'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg'}} style={styles.profileImage} />
                     <View style={styles.profileInfoWrapper}>
-                        <Text style={styles.name}>Jack Nicholson</Text>
+                        <Text style={styles.name}>{this.state.user.FirstName + " " + this.state.user.LastName}</Text>
                         <View style={styles.profileItemWrapper}>
                             <Icon name="envelope" size={18} color="#B5C8E2" />
-                            <Text style={styles.profileItem}>johny@companyname.com</Text>
+                            <Text style={styles.profileItem}>{this.state.user.Email}</Text>
                         </View>
                         <View style={styles.profileItemWrapper}>
                             <Icon name="phone" size={18} color="#B5C8E2" />
-                            <Text style={styles.profileItem}>+27 78 669 2347</Text>
+                            <Text style={styles.profileItem}>{this.state.user.Mobile}</Text>
                         </View>
                         <View style={styles.profileItemWrapper}>
                             <Icon name="map-marker" size={18} color="#B5C8E2" />
-                            <Text style={styles.profileItem}>Hollywood Hills, California</Text>
+                            <Text style={styles.profileItem}>{this.state.user.Location}</Text>
                         </View>
                     </View>
                 </View>
                 <View style={styles.tabWrapper}>
-                    <View style={styles.tab}>
-                        <Icon name="user" size={18} color="#A4C1E8" />
-                        <Text style={styles.tabText}>PROFILE</Text>
-                    </View>
-                    <View style={styles.tab}>
-                        <Icon name="clock-o" size={18} color="#A4C1E8" />
-                        <Text style={styles.tabText}>HISTORY</Text>
-                    </View>
-                    <View style={[styles.tab, { borderRightWidth: 0 }]}>
-                        <Icon name="image" size={18} color="#A4C1E8" />
-                        <Text style={styles.tabText}>MEDIA</Text>
-                    </View>
+                    <TouchableWithoutFeedback onPress={() => this.onTabPress(1) }>
+                        <View style={styles.tab}>
+                            <Icon name="user" size={18} style={{ color: this.state.selectedTabIndex == 1 ? '#193F71': '#A4C1E8'   }}/>
+                            <Text style={[styles.tabText, this.state.selectedTabIndex == 1 ? styles.tabSelected : {}]}> PROFILE</Text>
+                        </View>
+                    </TouchableWithoutFeedback>
+                    <TouchableWithoutFeedback onPress={() => this.onTabPress(2) }>
+                        <View style={[styles.tab, { borderRightWidth: 0 }]}>
+                            <Icon name="clock-o" size={18} style={{ color: this.state.selectedTabIndex == 2 ? '#193F71': '#A4C1E8' }}/>
+                            <Text style={[styles.tabText, this.state.selectedTabIndex == 2 ? styles.tabSelected : {}]}> HISTORY</Text>
+                        </View>
+                    </TouchableWithoutFeedback>
                 </View>
-                <TimeLine />
-                <MeetingProgress />
+                {(() => {
+                    switch(this.state.selectedTabIndex) {
+                        case 1:
+                            return (<ProfileDetails user={this.state.user} />);
+                        case 2:
+                            return (<TimeLine user={this.state.user} />);
+                    }
+                })()}
+                <MeetingProgress meeting={this.state.meeting} />
             </View>
         );
     }
@@ -138,6 +157,10 @@ var styles = StyleSheet.create({
     },
     tabText: {
         color: '#A4C1E8',
+        fontWeight: 'bold'
+    },
+    tabSelected: {
+        color: '#193F71',
         fontWeight: 'bold'
     }
 });

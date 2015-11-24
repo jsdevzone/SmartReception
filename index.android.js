@@ -15,6 +15,8 @@ var {
   Navigator,
   BackAndroid,
   AsyncStorage,
+  DeviceEventEmitter,
+  NativeModules,
 } = React;
 
 import {Config} from './Config';
@@ -32,8 +34,7 @@ var Dashboard = require('./src/components/home/dashboard');
 var UserLogin = require('./src/components/auth/userLogin');
 //var Settings = require('./src/components/settings/settingsCategory');
 var Meeting = require('./src/components/meeting/meeting');
-
-import {Schedule} from './components/schedule/schedule';
+import Schedule from './src/components/schedule/schedule';
 import {Search} from './components/search/Search';
 import {Settings} from './components/settings/Settings';
 
@@ -44,6 +45,7 @@ import Titlebar from './src/components/app/titleBar';
 import Infobar from './src/components/app/infoBar';
 import SplashScreen from './src/components/app/splashScreen';
 import CredentialStore from './src/stores/credentialStore';
+import ConnectionError from './src/components/app/connectionError';
 
 var _navigator  =  null;
 var _initialRoute =  ApplicationRoutes.getRoute('dashboard', { component: SplashScreen });
@@ -56,20 +58,30 @@ BackAndroid.addEventListener('hardwareBackPress', () => {
     _navigator.pop();
     return true;
 });
-
+var _index = 0;
 var SmartReception = React.createClass({
-
   getInitialState: function(){
     return {
       currentState: 1,
       roomNo: 1,
-      isAuthnticated: true
+      isAuthnticated: true,
+      isConnectedToNetwork: false
     };
   },
 
   componentDidMount: function() {
+      NativeModules.SmartReception.startNetworkMonitoring();
+
       CredentialStore.isAuthnticated().then((value) => this.onGetAuthCredentials(value));
       CredentialStore.addEventListener('logout', this.onApplicationLogout.bind(this));
+
+      DeviceEventEmitter.addListener('connectionchanged', (e)=>{
+          this.setState({ isConnectedToNetwork: e.isConnected });
+      });
+  },
+
+  componentWillUnmount: function() {
+      NativeModules.SmartReception.stopNetworkMonitoring();
   },
 
   onGetAuthCredentials: function(value) {
@@ -119,8 +131,14 @@ var SmartReception = React.createClass({
           <View style={styles.container}>
              <Titlebar  />
              <Infobar roomNo={this.state.roomNo} navigator={_navigator}/>
+
+             {(()=>{
+                 if(!this.state.isConnectedToNetwork)
+                    return (<ConnectionError />);
+             })()}
+
              <View style={styles.appContainer}>
-                <Component navigator={_navigator}  />
+                <Component navigator={_navigator} {...route.props} />
             </View>
           </View>
       );

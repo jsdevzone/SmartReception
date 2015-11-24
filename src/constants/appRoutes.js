@@ -8,7 +8,8 @@ var ApplicationRoutes = (function(){
     ApplicationRoutes.prototype.routes = {
         userLogin: { name: 'userlogin', title: 'User Login' },
         dashboard: { name: 'dashboard', title: 'Dashboard' },
-        settings: { name: 'settings', title: 'Settings' }
+        settings: { name: 'settings', title: 'Settings' },
+        
     };
     ApplicationRoutes.prototype.getRoute = function(name, obj) {
         if(this.routes[name]) {

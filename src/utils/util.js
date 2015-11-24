@@ -10,6 +10,8 @@ export function getRandomColor() {
 
 let days = [ 'Sunday', 'Monday', 'Tuesday', "Wednesday", 'Thursday', 'Friday', 'Saturday'];
 let months = ['January', 'February', 'March','April','May','June','July', 'August', 'Spetember', 'October', 'November','December'];
+let icons = [];
+
 
 export function getCurrentDateFormatted() {
     let date = new Date();
@@ -19,4 +21,18 @@ export function getCurrentDateFormatted() {
 
 export function getDayName(number) {
     return days[number];
+}
+
+export function getMonthName(number) {
+    return months[number];
+}
+
+export function getDateFromISOFormat(dateStr) {
+    var date = new Date(dateStr.split("T")[0]);
+    var timeParts = dateStr.split("T")[1].split(":");
+    date.setHours(timeParts[0]);
+    date.setMinutes(timeParts[1]);
+    date.setSeconds(timeParts[2]);
+    return date;
+
 }

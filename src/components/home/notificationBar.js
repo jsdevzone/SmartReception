@@ -4,7 +4,12 @@ var React = require('react-native');
 
 var Animatable = require('react-native-animatable');
 var Icon = require('react-native-vector-icons/FontAwesome');
+import moment from 'moment';
 
+import Meeting from '../meeting/meeting';
+
+import ScheduleList from '../schedule/scheduleList';
+import ScheduleStore from '../../stores/scheduleStore';
 import { UserList } from '../users/userList';
 import { getCurrentDateFormatted, getDayName, } from '../../utils/util';
 
@@ -24,12 +29,41 @@ var {
 export class NotificationBar extends React.Component {
     constructor(args) {
         super(args);
+
+        // Should rewrite this part in good arechetecture
+        var dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+        var data = [];
+
+        this.store = new ScheduleStore();
+        this.store.on('gettodayschedules', (json)=>{
+            this.setState({dataSource: dataSource.cloneWithRows(json)})
+        });
+
+        this.store.on('scheduleloaded', (json)=>{
+            this.setState({dataSource: dataSource.cloneWithRows(json)})
+        });
+        this.store.getTodaySchedules();
+
+        // End of part
+
         this.state = {
-            selectedTabIndex: 0
+            selectedTabIndex: 0,
+            dataSource: dataSource.cloneWithRows(data),
+            text:''
         };
     }
+
+    onSchedulePress(meeting) {
+        this.props.navigator.push({ title: 'Meeting', id: 'meeting', component: Meeting, props: {
+            meeting: meeting
+        }});
+    }
+
     onTabPress(idx) {
-        this.setState({ selectedTabIndex: idx });
+            this.setState({ selectedTabIndex: idx });
+            var date = moment().add(idx, 'days').format('YYYY-MM-D');
+            this.setState({text:date})
+            this.store.getSchedule(date);
     }
     render() {
         return (
@@ -38,7 +72,7 @@ export class NotificationBar extends React.Component {
                     <View style={{ flex:1 }}></View>
                     <View style={{ flexDirection: 'row'}}>
                         <Icon name="clock-o" size={12}  style={{ color: '#FF6335', marginRight: 4}} />
-                        <Text style={{ color: '#515151', fontSize: 11 }}>{getCurrentDateFormatted()}</Text>
+                        <Text style={{ color: '#515151', fontSize: 11 }}>{moment().format('MMMM Do YYYY')}</Text>
                     </View>
                     <View style={styles.visibility}>
                         <Text style={{fontSize: 11, color: '#FFF' }}>Online</Text>
@@ -75,43 +109,23 @@ export class NotificationBar extends React.Component {
                 </View>
                 <Image source={require('../../../resources/images/fancy_separator.png')} style={{width: 350, height: 30}} />
                 <View style={styles.tabStripWrapper}>
-                    {(()=>{
-                        var array = [];
-                        var d = new Date();
-                        var dates=[];
-                        if(d.getDay() > 4) {
-                            dates.push({ name: "Sunday", date: new Date() });
-                            dates.push({ name: "Monday", date: new Date() }),
-                            dates.push({ name: "Tuesday", date: new Date() });
-                        }
-                        else {
-                            if(d.getDay() + 1 > 4) {
-                                dates.push({ name: "Today", date: new Date() });
-                                dates.push({ name: "Tomorrow", date: new Date() }),
-                                dates.push({ name: "Sunday", date: new Date() });
-                            }
-                            else {
-                                var day = getDayName(d.getDay() + 2)
-                                dates.push({ name: "Today", date: new Date() });
-                                dates.push({ name: "Tomorrow", date: new Date() }),
-                                dates.push({ name: ""+day+"", date: new Date() });
-                            }
-                        }
-
-
-                        for(var i = 0; i < dates.length; i++) {
-                            array.push(
-                                <TouchableWithoutFeedback onPress={this.onTabPress.bind(this, i)}>
-                                    <View style={[styles.tab, this.state.selectedTabIndex == i ? styles.tabSelected : null]}>
-                                        <Text style={styles.tabText}>{dates[i].name}</Text>
-                                    </View>
-                                </TouchableWithoutFeedback>
-                            );
-                        }
-                        return array;
-                    })()}
+                    <TouchableWithoutFeedback onPress={this.onTabPress.bind(this, 0)}>
+                        <View style={[styles.tab, this.state.selectedTabIndex == 0 ? styles.tabSelected : null]}>
+                            <Text style={styles.tabText}>Today</Text>
+                        </View>
+                    </TouchableWithoutFeedback>
+                    <TouchableWithoutFeedback onPress={this.onTabPress.bind(this, 1)}>
+                        <View style={[styles.tab, this.state.selectedTabIndex == 1 ? styles.tabSelected : null]}>
+                            <Text style={styles.tabText}>{moment().add(1, 'days').format('dddd')}</Text>
+                        </View>
+                    </TouchableWithoutFeedback>
+                    <TouchableWithoutFeedback onPress={this.onTabPress.bind(this, 2)}>
+                        <View style={[styles.tab, this.state.selectedTabIndex == 2 ? styles.tabSelected : null]}>
+                            <Text style={styles.tabText}>{moment().add(2, 'days').format('dddd')}</Text>
+                        </View>
+                    </TouchableWithoutFeedback>
                 </View>
-                <UserList />
+                <ScheduleList dataSource = {this.state.dataSource} {...this.props} onSchedulePress={this.onSchedulePress.bind(this)}/>
             </View>
         );
     }

@@ -1,13 +1,22 @@
 package com.smartreception;
 
+import android.content.Context;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 
 import com.facebook.react.LifecycleState;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactRootView;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
 
@@ -18,6 +27,9 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 
     private ReactInstanceManager mReactInstanceManager;
     private ReactRootView mReactRootView;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +79,6 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
     @Override
     protected void onPause() {
         super.onPause();
-
         if (mReactInstanceManager != null) {
             mReactInstanceManager.onPause();
         }
@@ -76,7 +87,6 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
     @Override
     protected void onResume() {
         super.onResume();
-
         if (mReactInstanceManager != null) {
             mReactInstanceManager.onResume(this);
         }

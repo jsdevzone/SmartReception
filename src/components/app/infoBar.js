@@ -46,7 +46,7 @@ class Infobar extends React.Component{
                         );
                     })}
                 </View>
-                <View style={{flex:1}}></View>
+                <View style={{flex:1}}><Text>{this.props.roomNo}</Text></View>
                 <View style={{flexDirection:'row'}}>
                     <Icon style={[styles.infoText, {fontSize: 15}]} name="clock-o"   />
                     <Text style={{color: '#FFF', marginLeft: 2, marginTop: 3, fontSize: 15}}>{getCurrentDateFormatted()}</Text>

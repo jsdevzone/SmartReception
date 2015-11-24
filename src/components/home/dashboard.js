@@ -9,8 +9,11 @@ import React from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Tile from './tileBlock';
 import Meeting from '../meeting/meeting';
-import {Schedule} from '../../../components/schedule/schedule';
+import Schedule from '../schedule/schedule';
 import SplashScreen from '../app/splashScreen';
+
+import UserStore from '../../stores/userStore';
+import NextMeeting from './nextMeeting';
 
 import { NotificationBar, } from './notificationBar';
 import { getRandomColor, } from '../../utils/util';
@@ -36,6 +39,10 @@ var routes = {
 class Dashboard extends React.Component{
     constructor(args){
         super(args);
+        this.state = {
+            meeting: {
+            }
+        };
     }
     onTilePress(route) {
         this.props.navigator.push(route);
@@ -50,38 +57,7 @@ class Dashboard extends React.Component{
                                 <Tile onPress={() => this.onTilePress(routes.meeting)} icon="calendar-check-o" text="Meeting" scale="small"  />
                                 <Tile onPress={() => this.onTilePress(routes.calendar)} icon="calendar" text="Calendar" />
                             </View>
-                            <Tile scale="large" style={{ alignItems: 'stretch' }} onPress={() => this.onTilePress(routes.meeting)}>
-                                <View style={{flexDirection: 'column', alignItems: 'stretch', flex: 1}}>
-                                    <View style={{flexDirection:'row'}}>
-                                        <View style={styles.userProfileWrapperLeft}>
-                                            <Text style={{color:'#2A5488'}}>Next </Text>
-                                        </View>
-                                        <View style={[styles.userProfileWrapperLeft, {flex: 1, backgroundColor:'#DBE7F5', alignItems: 'flex-end'}]}>
-                                            <Text style={{color:'#2A5488'}}>10:00 AM</Text>
-                                        </View>
-                                    </View>
-                                    <View style={[styles.userProfileWrapper, {flex: 1}]}>
-                                        <View style={{backgroundColor:'#FFF', width: 80, justifyContent: 'center', alignItems: 'center'}}>
-                                            <Image source={{uri:'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg'}} style={styles.profileImage} />
-                                        </View>
-                                        <View style={styles.profileInfoWrapper}>
-                                            <Text style={styles.name}>Jack Nicholson</Text>
-                                            <View style={styles.profileItemWrapper}>
-                                                <Icon name="envelope" size={18} color="#B5C8E2" />
-                                                <Text style={styles.profileItem}>johny@test.com</Text>
-                                            </View>
-                                            <View style={styles.profileItemWrapper}>
-                                                <Icon name="phone" size={18} color="#B5C8E2" />
-                                                <Text style={styles.profileItem}>+27 78 669 2347</Text>
-                                            </View>
-                                            <View style={styles.profileItemWrapper}>
-                                                <Icon name="map-marker" size={18} color="#B5C8E2" />
-                                                <Text style={styles.profileItem}>Hollywood, California</Text>
-                                            </View>
-                                        </View>
-                                    </View>
-                                </View>
-                            </Tile>
+                            <NextMeeting />
                             <View style={styles.horizontal}>
                                 <Tile  onPress={() => this.onTilePress(routes.splashScreen)} icon="cog" text="Settings" />
                                 <Tile icon="user" text="Clients" />
@@ -118,7 +94,7 @@ class Dashboard extends React.Component{
                             </View>
                         </View>
                         <Tile scale="fullColumn" style={{alignItems:'stretch'}}>
-                            <NotificationBar />
+                            <NotificationBar {...this.props} navigator={this.props.navigator}/>
                         </Tile>
                     </View>
                 </View>

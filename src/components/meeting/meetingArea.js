@@ -5,9 +5,14 @@
  */
 'use strict';
 
-var React = require('react-native');
-var Icon = require('react-native-vector-icons/FontAwesome');
-var MeetingSidebar = require('./meetingSidebar');
+import React from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import MeetingSidebar from './meetingSidebar';
+import Calendar from '../ux/calendar';
+import MeetingIntro from './meetingIntro';
+import Notes from './notes';
+import MeetingTitle from './meetingTitle';
+
 var {
   AppRegistry,
   StyleSheet,
@@ -15,16 +20,22 @@ var {
   View,
   Image,
   TouchableHighlight,
+  TouchableWithoutFeedback,
   TextInput,
   ListView,
 } = React;
 
-import Calendar from '../ux/calendar';
-import MeetingIntro from './meetingIntro';
+
 
 class MeetingArea extends React.Component{
     constructor(args){
         super(args);
+        this.state = {
+            selectedTabIndex: 1
+        };
+    }
+    onTabPress(index) {
+        this.setState({ selectedTabIndex: index });
     }
     renderRow(rowData) {
         return(
@@ -61,29 +72,44 @@ class MeetingArea extends React.Component{
     render() {
         return (
             <View style={styles.container}>
-                <MeetingTitle />
+                <MeetingTitle meeting={this.props.meeting} />
                 <View style={{flex: 1, flexDirection: 'row'}}>
                     <View style={{flex:1,flexDirection:'column'}}>
                         <View style={styles.tabWrapper}>
-                            <View style={styles.tab}>
-                                <Icon name="user" size={18} color="#A4C1E8" />
-                                <Text style={styles.tabText}>NOTES</Text>
-                            </View>
-                            <View style={styles.tab}>
-                                <Icon name="clock-o" size={18} color="#A4C1E8" />
-                                <Text style={styles.tabText}>SUMMARY</Text>
-                            </View>
-                            <View style={[styles.tab]}>
-                                <Icon name="image" size={18} color="#A4C1E8" />
-                                <Text style={styles.tabText}>MINUTES OF MEETING</Text>
-                            </View>
-                            <View style={[styles.tab, { borderRightWidth: 0 }]}>
-                                <Icon name="image" size={18} color="#A4C1E8" />
-                                <Text style={styles.tabText}>ATTACHMENTS</Text>
-                            </View>
+                            <TouchableWithoutFeedback onPress={()=>this.onTabPress(1)}>
+                                <View style={styles.tab}>
+                                    <Icon name="user" size={18} style={{ color: this.state.selectedTabIndex == 1 ? '#6477C1': '#A4C1E8'   }} />
+                                    <Text style={[styles.tabText, this.state.selectedTabIndex == 1 ? styles.tabSelected : {}]}>NOTES</Text>
+                                </View>
+                            </TouchableWithoutFeedback>
+                            <TouchableWithoutFeedback onPress={()=>this.onTabPress(2)}>
+                                <View style={styles.tab}>
+                                    <Icon name="clock-o" size={18} style={{ color: this.state.selectedTabIndex == 2 ? '#6477C1': '#A4C1E8'   }} />
+                                    <Text style={[styles.tabText, this.state.selectedTabIndex == 2 ? styles.tabSelected : {}]}>SUMMARY</Text>
+                                </View>
+                            </TouchableWithoutFeedback>
+                            <TouchableWithoutFeedback onPress={()=>this.onTabPress(3)}>
+                                <View style={[styles.tab]}>
+                                    <Icon name="image" size={18} style={{ color: this.state.selectedTabIndex == 3 ? '#6477C1': '#A4C1E8'   }}/>
+                                    <Text style={[styles.tabText, this.state.selectedTabIndex == 3 ? styles.tabSelected : {}]}>MINUTES OF MEETING</Text>
+                                </View>
+                            </TouchableWithoutFeedback>
+                            <TouchableWithoutFeedback onPress={()=>this.onTabPress(4)}>
+                                <View style={[styles.tab, { borderRightWidth: 0 }]}>
+                                    <Icon name="image" size={18} style={{ color: this.state.selectedTabIndex == 4 ? '#6477C1': '#A4C1E8'   }} />
+                                    <Text style={[styles.tabText, this.state.selectedTabIndex == 4 ? styles.tabSelected : {}]}>ATTACHMENTS</Text>
+                                </View>
+                            </TouchableWithoutFeedback>
                         </View>
                         <View style={{ flex: 1, flexDirection: 'column', alignItems: 'stretch'}}>
-                            <MeetingIntro />
+                            {(() => {
+                                switch(this.state.selectedTabIndex) {
+                                    case 1:
+                                        return (<Notes />);
+                                    default:
+                                        return (<View><Text>{this.state.selectedTabIndex}</Text></View>);
+                                }
+                            })()}
                         </View>
                         <View style={styles.footer}>
                             <Button icon="envelope" text="Email Minutes Of Meeting" />
@@ -100,29 +126,6 @@ class MeetingArea extends React.Component{
     }
 }
 
-class MeetingTitle extends React.Component {
-    render() {
-        return (
-            <View style={styles.meetingTitle}>
-                <View style={styles.meetingTitleInner}>
-                    <View style={styles.meetingTitleTextWrapper}>
-                        <Text style={styles.meetingTitleText} >Project 1 - Company 1</Text>
-                        <View style={{flexDirection: 'row'}}>
-                            <Icon name="calendar" style={{marginTop: 3}} />
-                            <Text> Tuesday, October 27, 2015 </Text>
-                            <Icon name="clock-o" style={{marginTop: 3, marginLeft: 30}} />
-                            <Text>07: 00- 09: 00 </Text>
-                        </View>
-                    </View>
-                    <View style={styles.currentDateWrapper}>
-                        <Text style={styles.currentWeekText}>Tuesday</Text>
-                        <Text style={styles.currentDateText}>27</Text>
-                    </View>
-                </View>
-            </View>
-        );
-    }
-}
 
 class Button extends React.Component {
     render() {
@@ -158,40 +161,8 @@ var styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'stretch'
     },
-    meetingTitle: {
-        backgroundColor: '#EAEEF5',
-        borderBottomColor: '#D8E0F1',
-        borderBottomWidth: 1,
-    },
-    meetingTitleInner: {
-        flexDirection: 'row',
-        paddingBottom: 10
-    },
-    currentDateWrapper: {
-        flexDirection: 'column',
-        padding: 5,
-        textAlign: 'center',
-        borderColor: "#D8E0F1",
-        borderLeftWidth: 1,
-        paddingRight: 25,
-        paddingLeft: 25,
-        marginTop: 10
-    },
-    currentDateText: {
-        fontSize: 35,
-    },
-    currentWeekText: {
-        fontSize: 18,
-        color: "#000"
-    },
-    meetingTitleTextWrapper: {
-        padding: 10,
-        flex: 1
-    },
-    meetingTitleText: {
-        fontSize: 28,
-        marginBottom: 10
-    },
+
+
     tabWrapper: {
         backgroundColor: '#F0F1F3',
         padding: 10,
@@ -211,6 +182,9 @@ var styles = StyleSheet.create({
         color: '#A4C1E8',
         fontWeight: 'bold'
     },
+    tabSelected: {
+        color: '#6477C1'
+    }
 });
 
 module.exports = MeetingArea;

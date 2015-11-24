@@ -5,8 +5,12 @@
  */
 'use strict';
 
-var React = require('react-native');
-var Icon = require('react-native-vector-icons/FontAwesome');
+import moment from 'moment';
+import React from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
+import UserStore from '../../stores/userStore';
+import { getDayName, getMonthName, } from '../../utils/util';
 
 var {
   AppRegistry,
@@ -19,28 +23,38 @@ var {
   ListView,
 } = React;
 
-var data = [
-    { time: '08:00', icon: 'envelope', date: '01', month: 'October 2015', day: 'Thursday', title: 'Project Planning', },
-    { time: '10:00', icon: 'calendar', date: '03', month: 'October 2015', day: 'Sunday', title: 'Sprint Scheduling',  },
-    { time: '13:30', icon: 'user', date: '05', month: 'October 2015', day: 'Tuesday', title: 'Workshop' },
-    { time: '12:00', icon: 'twitter', date: '13', month: 'October 2015', day: 'Wednesday', title: 'Social Marketing' },
-    { time: '14:00', icon: 'table', date: '20', month: 'October 2015', day: 'Monday', title: 'Delivery Planning' }
-];
 
 class TimeLine extends React.Component{
+
     constructor(args){
         super(args);
         var dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
         this.state = {
-            dataSource: dataSource.cloneWithRows(data)
+            dataSource: dataSource.cloneWithRows([]),
+            isLoading: false,
+            text: 'One'
+        }
+        this.store = new UserStore();
+        this.store.on('historyloaded', (data) => {
+            this.setState({ dataSource: dataSource.cloneWithRows(data), isLoading: false, text: 'Done' });
+        });
+        if(this.props.user) {
+            this.store.getPreviousSchedule(this.props.user.ClientId);
         }
     }
+
+    componentDidMount() {
+
+    }
+
     renderRow(rowData) {
+        var date = moment.utc(rowData.DateOfMeeting);
+
         return(
             <View style={styles.timeline}>
                 <View style={styles.tmLeft}>
-                    <Icon name={rowData.icon} color="#5FB9CD" size={24} />
-                    <Text style={styles.tmTimeText}>{rowData.time}</Text>
+                    <Icon name="calendar" color="#5FB9CD" size={24} />
+                    <Text style={styles.tmTimeText}>{date.format("hh:mm")}</Text>
                 </View>
                 <View style={styles.tmLine}>
                     <View style={styles.tmLineTop}>
@@ -53,14 +67,14 @@ class TimeLine extends React.Component{
                 <View style={styles.tmInfoWrapper}>
                     <View style={styles.tmInfo}>
                         <View style={styles.row}>
-                            <Text style={styles.tmDate}>{rowData.date}</Text>
+                            <Text style={styles.tmDate}>{date.format("DD")}</Text>
                             <View style={styles.tmDayMonthWrapper}>
-                                <Text style={styles.tmDay}>{rowData.day}</Text>
-                                <Text style={styles.tmMonth}>{rowData.month}</Text>
+                                <Text style={styles.tmDay}>{date.format("dddd")}</Text>
+                                <Text style={styles.tmMonth}>{date.format("MMMM")}</Text>
                             </View>
                         </View>
                         <View style={styles.tmTitle}>
-                            <Text style={styles.tmTitleText}>{rowData.title}</Text>
+                            <Text style={styles.tmTitleText}>{rowData.Subject}</Text>
                         </View>
                     </View>
                 </View>
@@ -68,9 +82,17 @@ class TimeLine extends React.Component{
         );
     }
     render() {
+        var content = this.state.isLoading ? (
+            <View>
+                <Text>Loading.... {this.state.text}</Text>
+            </View>
+        ) : (
+            <ListView dataSource={this.state.dataSource} renderRow={this.renderRow.bind(this)} style={{ flex: 1}} />
+        );
+
         return (
             <View style={styles.container}>
-                <ListView dataSource={this.state.dataSource} renderRow={this.renderRow.bind(this)} style={{ flex: 1}} />
+                {content}
             </View>
         );
     }
@@ -82,6 +104,7 @@ var styles = StyleSheet.create({
         backgroundColor: '#f9f9f9',
         flexDirection: 'column',
         alignItems: 'stretch',
+        justifyContent: 'center',
         paddingTop: 10
     },
     timeline: {
