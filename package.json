@@ -12,6 +12,7 @@
     "react-native": "^0.14.0",
     "react-native-android-iconify": "^1.0.3",
     "react-native-animatable": "^0.3.0",
+    "react-native-dialogs": "0.0.9",
     "react-native-linear-gradient": "^0.3.2",
     "react-native-material-kit": "^0.2.2",
     "react-native-vector-icons": "^0.8.3"

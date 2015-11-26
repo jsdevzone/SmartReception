@@ -5,8 +5,10 @@
  */
 'use strict';
 
-var React = require('react-native');
-var Icon = require('react-native-vector-icons/FontAwesome');
+import React from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import DialogAndroid from 'react-native-dialogs';
+import AppStore from '../../stores/appStore';
 
 var {
   AppRegistry,
@@ -16,30 +18,69 @@ var {
   Image,
   TouchableHighlight,
   TextInput,
+  TouchableWithoutFeedback,
+  NativeModules,
+  ToastAndroid,
 } = React;
 
+
 class MeetingIntro extends React.Component {
+    startMeeting(id, text) {
+        AppStore.startMeeting();
+    }
+    onStartMeeting() {
+        let options =  {
+            title: 'Select Your Meeting Room!',
+            positiveText: 'OK',
+            "items": [
+              "Room - 1",
+              "Room - 2",
+              "Room - 3",
+              "Room - 4",
+              "Room - 5",
+              "Room - 6",
+              "Room - 7",
+              "Waiting Area - 1",
+              "Waiting Area - 2"
+            ]
+        };
+
+        options.itemsCallback = (id, text) => {
+            AppStore.startMeeting(this.props.meeting);
+        };
+
+        var dialog = new DialogAndroid();
+        dialog.set(options);
+        dialog.show();
+    }
     render() {
         return (
             <View style={styles.container}>
-                <View style={styles.textFieldWrapper}>
-                    <View style={{padding: 10, justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: 170}}>
-                        <Text>Select Room Number</Text>
+                <View style={styles.titleWrapper}>
+                    <View style={styles.headerWrapper}>
+                        <Image source={require('../../../resources/images/paperwithclip.png')} style={styles.headerIcon} />
+                        <Text style={styles.title}>Meeting - #25632</Text>
+                        <Text> an unknown printer took a galley of type and scrambled it to make</Text>
+                        <Text>o popular belief, Lorem Ipsum is not simply random tex</Text>
                     </View>
-                    <View style={{backgroundColor:'#FFF', flex: 1}}>
-                        <TextInput underlineColorAndroid ="#FFF" placeholder="Room Number" />
+
+                    <View style={[styles.notification, styles.info]}>
+                        <Text>You can start you current meeting by pressing start button below this text.
+                        Please note that you can not stop the meeting once you started your meeting </Text>
                     </View>
-                </View>
-                <View style={styles.textFieldWrapper}>
-                    <View style={{padding: 10, justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: 170}}>
-                        <Text>Select Topic For Meeting</Text>
+
+                    <View style={styles.buttonWrapper}>
+                        <TouchableWithoutFeedback onPress={this.onStartMeeting.bind(this)}>
+                            <View style={[styles.button, {marginTop: 35}]}>
+                                <View style={styles.buttonIcon}>
+                                    <Icon name="check" size={24} color="#FFF" style={{marginLeft: 10}} />
+                                </View>
+                                <View style={styles.buttonTextWrapper}>
+                                    <Text style={styles.buttonText}>Start Your Meeting</Text>
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
                     </View>
-                    <View style={{backgroundColor:'#FFF', flex: 1}}>
-                        <TextInput underlineColorAndroid ="#FFF" placeholder="Meeting Topic"  />
-                    </View>
-                </View>
-                <View style={{backgroundColor:'#d14836',padding: 15, marginTop: 20}}>
-                    <Text style={{color:'#FFF'}}>Start Meeting</Text>
                 </View>
             </View>
         );
@@ -51,16 +92,61 @@ var styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
         backgroundColor: '#FFF',
+        alignItems: 'stretch'
+    },
+    titleWrapper: {
+        backgroundColor: '#FFF',
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center'
     },
-    textFieldWrapper: {
-        backgroundColor:'#F0F1F3',
-        borderColor: '#D8E0F1',
-        borderWidth: 1,
+    title: {
+        fontSize: 30,
+        color: '#919DF1',
+        marginBottom: 10
+    },
+    buttonWrapper: {},
+    button: {
+        backgroundColor: '#0072bc',
         flexDirection: 'row',
-        width: 370,
-        marginTop: 10
+        width: 300,
+        alignItems: 'center'
+    },
+    buttonIcon: {
+        backgroundColor: "#8BC34A",
+        padding: 10,
+        borderColor: '#8BC34A',
+        borderWidth: 1
+    },
+    headerWrapper: {
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    headerIcon: {
+        width: 150,
+        height: 150,
+        marginBottom: 20
+    },
+    notification: {
+        padding: 10,
+        borderWidth:1,
+        borderColor:'#66B061',
+        margin: 25,
+        marginTop: 35,
+        width: 450
+    },
+    info: {
+        backgroundColor: '#F2FFF8'
+    },
+    buttonTextWrapper: {
+        flex:1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row'
+    },
+    buttonText: {
+        color: '#FFF',
+        fontSize: 22
     }
 });
 

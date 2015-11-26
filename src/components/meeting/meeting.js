@@ -10,7 +10,12 @@ var Icon = require('react-native-vector-icons/FontAwesome');
 var Sidebar = require('../app/sidebar');
 var UserProfile = require('./userProfile');
 var MeetingArea = require('./meetingArea');
+
 import SplashScreen from '../app/splashScreen';
+import MeetingIntro from './meetingIntro';
+import AppStore from '../../stores/appStore';
+
+
 
 var {
   AppRegistry,
@@ -31,10 +36,21 @@ class Meeting extends React.Component{
         }
         this.state = {
             meeting: this.props.meeting || {},
-            hasMeeting: hasMeeting
+            hasMeeting: hasMeeting,
+            isMeetingStarted: false
         };
+
+        AppStore.on('meetingstarted', () => {
+            var meeting = this.state.meeting;
+            meeting.State = 1;
+            this.setState({ isMeetingStarted: true, meeting: meeting });
+        });
+
+
+
     }
     render() {
+        var content = this.state.isMeetingStarted ? ( <MeetingArea  meeting={this.state.meeting} /> ): ( <MeetingIntro meeting={this.state.meeting} /> )
         if(!this.state.hasMeeting) {
             return (
                 <View style={styles.container}>
@@ -47,7 +63,7 @@ class Meeting extends React.Component{
                 <View style={styles.container}>
                     <Sidebar />
                     <UserProfile user={this.state.meeting.Clients} meeting={this.state.meeting}/>
-                    <MeetingArea meeting={this.state.meeting} />
+                {content}
                 </View>
             );
         }

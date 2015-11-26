@@ -8,6 +8,7 @@
 import React from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CredentialStore from '../../stores/credentialStore';
+import AppStore from '../../stores/appStore';
 
 var {
   AppRegistry,
@@ -20,6 +21,17 @@ var {
 } = React;
 
 class Titlebar extends React.Component{
+
+    constructor(args) {
+        super(args);
+
+        this.state = {
+            text: 'Logout'
+        };
+        AppStore.on('logoff', ()=>{
+            this.setState({ text: 'User Logged Out'})
+        })
+    }
 
     onLogout() {
         CredentialStore.logout();
@@ -40,7 +52,7 @@ class Titlebar extends React.Component{
                 <TouchableHighlight underlayColor="#A51820" onPress={this.onLogout.bind(this)}>
                     <View style={styles.titlebarRightButton}>
                         <Icon name="key" size={18} style={styles.titlebarRightButtonText} />
-                        <Text style={styles.titlebarRightButtonText}>Logout</Text>
+                    <Text style={styles.titlebarRightButtonText}>{this.state.text}</Text>
                     </View>
                 </TouchableHighlight>
             </View>

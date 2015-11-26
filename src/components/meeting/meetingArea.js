@@ -12,6 +12,8 @@ import Calendar from '../ux/calendar';
 import MeetingIntro from './meetingIntro';
 import Notes from './notes';
 import MeetingTitle from './meetingTitle';
+import AppStore from '../../stores/appStore';
+import Attachments from '../app/attachments';
 
 var {
   AppRegistry,
@@ -30,44 +32,10 @@ var {
 class MeetingArea extends React.Component{
     constructor(args){
         super(args);
-        this.state = {
-            selectedTabIndex: 1
-        };
+        this.state = { selectedTabIndex: 1 };
     }
     onTabPress(index) {
-        this.setState({ selectedTabIndex: index });
-    }
-    renderRow(rowData) {
-        return(
-            <View style={styles.timeline}>
-                <View style={styles.tmLeft}>
-                    <Icon name={rowData.icon} color="#5FB9CD" size={24} />
-                    <Text style={styles.tmTimeText}>{rowData.time}</Text>
-                </View>
-                <View style={styles.tmLine}>
-                    <View style={styles.tmLineTop}>
-                    </View>
-                    <View style={styles.tmLineSeparator}>
-                    </View>
-                    <View style={styles.tmLineBottom}>
-                    </View>
-                </View>
-                <View style={styles.tmInfoWrapper}>
-                    <View style={styles.tmInfo}>
-                        <View style={styles.row}>
-                            <Text style={styles.tmDate}>{rowData.date}</Text>
-                            <View style={styles.tmDayMonthWrapper}>
-                                <Text style={styles.tmDay}>{rowData.day}</Text>
-                                <Text style={styles.tmMonth}>{rowData.month}</Text>
-                            </View>
-                        </View>
-                        <View style={styles.tmTitle}>
-                            <Text style={styles.tmTitleText}>{rowData.title}</Text>
-                        </View>
-                    </View>
-                </View>
-            </View>
-        );
+        this.setState({ selectedTabIndex: index});
     }
     render() {
         return (
@@ -79,7 +47,7 @@ class MeetingArea extends React.Component{
                             <TouchableWithoutFeedback onPress={()=>this.onTabPress(1)}>
                                 <View style={styles.tab}>
                                     <Icon name="user" size={18} style={{ color: this.state.selectedTabIndex == 1 ? '#6477C1': '#A4C1E8'   }} />
-                                    <Text style={[styles.tabText, this.state.selectedTabIndex == 1 ? styles.tabSelected : {}]}>NOTES</Text>
+                                <Text style={[styles.tabText, this.state.selectedTabIndex == 1 ? styles.tabSelected : {}]}>NOTES</Text>
                                 </View>
                             </TouchableWithoutFeedback>
                             <TouchableWithoutFeedback onPress={()=>this.onTabPress(2)}>
@@ -106,6 +74,8 @@ class MeetingArea extends React.Component{
                                 switch(this.state.selectedTabIndex) {
                                     case 1:
                                         return (<Notes />);
+                                    case 4:
+                                        return (<Attachments />);
                                     default:
                                         return (<View><Text>{this.state.selectedTabIndex}</Text></View>);
                                 }
@@ -126,14 +96,18 @@ class MeetingArea extends React.Component{
     }
 }
 
-
 class Button extends React.Component {
+    onPress() {
+        AppStore.logoff();
+    }
     render() {
         return (
-            <View style={[styles.button, this.props.style]}>
-                <Icon name={this.props.icon} size={30} />
-                <Text>{this.props.text}</Text>
-            </View>
+            <TouchableWithoutFeedback onPress={this.onPress}>
+                <View style={[styles.button, this.props.style]}>
+                    <Icon name={this.props.icon} size={30} />
+                    <Text>{this.props.text}</Text>
+                </View>
+            </TouchableWithoutFeedback>
         );
     }
 }

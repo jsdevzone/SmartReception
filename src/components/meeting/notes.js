@@ -2,7 +2,7 @@
 import React from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-var { View, Text, Component, StyleSheet, } = React;
+var { View, Text, Component, StyleSheet,TextInput, } = React;
 
 class Notes extends Component {
     constructor(args) {
@@ -17,11 +17,13 @@ class Notes extends Component {
                             <Icon name="list" size={18} />
                             <Text style={{fontSize: 15}}>Notes</Text>
                         </View>
-
                     </View>
-                    <View style={{flex:1}}></View>
+                    <View style={{flex:1}}>
+                        <TextInput style={[styles.input, {flex: 1}]}
+                            placeholder="" underlineColorAndroid="#FFF" />
+                    </View>
                     <View style={styles.footer}>
-                        <View style={{flex:2}}>
+                        <View style={{flex:1}}>
                         </View>
                         <View style={styles.button}>
                             <Icon name="ban" color="#FFF" size={18} />

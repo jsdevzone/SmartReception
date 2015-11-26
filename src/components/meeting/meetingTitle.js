@@ -18,7 +18,7 @@ class MeetingTitle extends React.Component {
             <View style={styles.meetingTitle}>
                 <View style={styles.meetingTitleInner}>
                     <View style={styles.meetingTitleTextWrapper}>
-                        <Text style={styles.meetingTitleText} >{this.props.meeting.Subject}</Text>
+                        <Text style={styles.meetingTitleText} >{this.props.meeting.Subject }</Text>
                         <View style={{flexDirection: 'row'}}>
                             <Icon name="calendar" style={{marginTop: 3}} />
                             <Text>{moment.utc(this.props.meeting.DateOfMeeting).format('MMMM Do YYYY')}</Text>

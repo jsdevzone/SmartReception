@@ -19,7 +19,7 @@ var {
   NativeModules,
 } = React;
 
-import {Config} from './Config';
+
 
 
 
@@ -37,7 +37,7 @@ var Meeting = require('./src/components/meeting/meeting');
 import Schedule from './src/components/schedule/schedule';
 import {Search} from './components/search/Search';
 import {Settings} from './components/settings/Settings';
-
+import Attachments from './src/components/app/attachments';
 /**
  * Need to optimize the import section
  */
