@@ -21,10 +21,13 @@ var CredentialStore = Object.assign({}, EventEmitter.prototype, {
     addEventListener: function(name, callback) {
         this.on(name, callback);
     },
-    logout: function (argument) {
+    logout: function (callback) {
         const STORATE_KEY = AppConstants + ':user';
          AsyncStorage.removeItem(STORATE_KEY).then(() => {
-             this.emit('logout');
+             if(callback)
+                callback();
+            else 
+                this.emit('logout');
         });
     }
 });

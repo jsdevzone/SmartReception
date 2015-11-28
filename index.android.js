@@ -1,55 +1,21 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @author Jasim
- */
+
 'use strict';
 
-var React = require('react-native');
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  Navigator,
-  BackAndroid,
-  AsyncStorage,
-  DeviceEventEmitter,
-  NativeModules,
-} = React;
+import React, { AppRegistry, StyleSheet, Text, View, Image, Navigator, 
+  BackAndroid, AsyncStorage, DeviceEventEmitter, NativeModules, } from 'react-native';
 
-
-
-
-
-import {Sidebar} from './components/meeting/Sidebar';
-import {ContentSidebar} from './components/meeting/ContentSidebar';
-
-var NavigatorActions = require('./src/actions/navigator');
-var ApplicationRoutes = require('./src/constants/appRoutes');
-
-
-var Dashboard = require('./src/components/home/dashboard');
-var UserLogin = require('./src/components/auth/userLogin');
-//var Settings = require('./src/components/settings/settingsCategory');
-var Meeting = require('./src/components/meeting/meeting');
-import Schedule from './src/components/schedule/schedule';
-import {Search} from './components/search/Search';
-import {Settings} from './components/settings/Settings';
-import Attachments from './src/components/app/attachments';
-/**
- * Need to optimize the import section
- */
+import Dashboard from './src/components/home/dashboard';
+import UserLogin from './src/components/auth/userLogin';
 import Titlebar from './src/components/app/titleBar';
-import Infobar from './src/components/app/infoBar';
+import BreadCrumb from './src/components/app/infoBar';
 import SplashScreen from './src/components/app/splashScreen';
-import CredentialStore from './src/stores/credentialStore';
 import ConnectionError from './src/components/app/connectionError';
+import CredentialStore from './src/stores/credentialStore';
+import AppStore from './src/stores/appStore';
 
 var _navigator  =  null;
-var _initialRoute =  ApplicationRoutes.getRoute('dashboard', { component: SplashScreen });
-var _isLoggedIn = CredentialStore.isAuthnticated();
+var _initialRoute =  null;
+var _isLoggedIn = false;
 
 BackAndroid.addEventListener('hardwareBackPress', () => {
     if (_navigator.getCurrentRoutes().length === 1  ) {
@@ -58,105 +24,81 @@ BackAndroid.addEventListener('hardwareBackPress', () => {
     _navigator.pop();
     return true;
 });
-var _index = 0;
-var SmartReception = React.createClass({
-  getInitialState: function(){
-    return {
-      currentState: 1,
-      roomNo: 1,
-      isAuthnticated: true,
-      isConnectedToNetwork: false
-    };
-  },
 
-  componentDidMount: function() {
-      NativeModules.SmartReception.startNetworkMonitoring();
+class SmartReception extends React.Component {
+    constructor(args) {
+        super(args);        
+        _initialRoute = { 
+            id: 'dashboard', title: 'Dashboard', component: Dashboard 
+        };
+        this.state = {
+            isAuthenticated: false,
+            isConnectedToNetwork: false
+        };
+    }
+    componentDidMount() {
+        NativeModules.SmartReception.startNetworkMonitoring();
+        AppStore.addEventListener('appsettingsloaded', this.onAppSettingsRetrieve.bind(this))
+        AppStore.addEventListener('logout', this.onAppLogout.bind(this));
+        DeviceEventEmitter.addListener('connectionchanged', this.onConnectionStatusChanged.bind(this));
+    }
+    onAppSettingsRetrieve(_settings) {
+        let route = null;
+        let isAuthnticated = (_settings.isAuthenticated != '' && _settings.isAuthnticated != null);
+        this.setState({ isAuthnticated: isAuthnticated });
+        if(!isAuthnticated) {
+            route = { component: UserLogin, id: 'login', title: 'Login' };
+        }
+        else {
+            route = { component: Dashboard, id: 'dashboard', title: 'Dashboard' };
+        }
+        _navigator.replaceAtIndex(route, 0);
+        _navigator.popToTop();
+    }
+    onAppLogout() {
+        this.setState({ isAuthnticated: false, });
+        _navigator.replaceAtIndex({ component: UserLogin, id: 'login', title: 'Login' }, 0);
+        _navigator.popToTop();
+    }
+    onConnectionStatusChanged(e) {
+        this.setState({ isConnectedToNetwork: e.isConnected });
+    }
+    configureScene() {
+        return Navigator.SceneConfigs.PushFromRight;
+    }
+    componentWillUnmount() {
+        NativeModules.SmartReception.stopNetworkMonitoring();
+    }
+    renderScene(route, navigator) {
+        let scene = null;
+        let Component = route.component;
+        let routeProps = route.props ;
+        let connectionInfo = this.state.isConnectedToNetwork ? (<ConnectionError/>) : null;
 
-      CredentialStore.isAuthnticated().then((value) => this.onGetAuthCredentials(value));
-      CredentialStore.addEventListener('logout', this.onApplicationLogout.bind(this));
+        _navigator = navigator;
 
-      DeviceEventEmitter.addListener('connectionchanged', (e)=>{
-          this.setState({ isConnectedToNetwork: e.isConnected });
-      });
-  },
-
-  componentWillUnmount: function() {
-      NativeModules.SmartReception.stopNetworkMonitoring();
-  },
-
-  onGetAuthCredentials: function(value) {
-      let route = null;
-      let isAuthnticated = (value != '' && value != null);
-      this.setState({ isAuthnticated: isAuthnticated });
-      if(!isAuthnticated) {
-          route = { component: UserLogin, id: 'login', title: 'Login' };
-      }
-      else {
-          route = { component: Dashboard, id: 'dashboard', title: 'Dashboard' };
-      }
-      _navigator.replaceAtIndex(route, 0);
-      _navigator.popToTop();
-  },
-
-  onApplicationLogout: function() {
-      this.setState({ isAuthnticated: false, });
-      _navigator.replaceAtIndex({ component: UserLogin, id: 'login', title: 'Login' }, 0);
-      _navigator.popToTop();
-  },
-
-  configureScene: function (route) {
-      return Navigator.SceneConfigs.PushFromRight;
-  },
-
-  renderScene: function (route, navigator) {
-      let scene = null;
-      let Component = route.component;
-      _navigator = navigator;
-
-     // NavigatorActions.registerNavigator(_navigator);
-
-      let meetingScene = (
-          <View style={{flex: 1, flexDirection: 'row'}}>
-              <Sidebar />
-              <View style={styles.contentWrapper}>
-                  <ContentSidebar />
-                  <View style={{flex:1}}>
-                      <Meeting />
-                  </View>
-              </View>
-          </View>
-      );
-
-      let appScene = (
-          <View style={styles.container}>
-             <Titlebar  />
-             <Infobar roomNo={this.state.roomNo} navigator={_navigator}/>
-
-             {(()=>{
-                 if(!this.state.isConnectedToNetwork)
-                    return (<ConnectionError />);
-             })()}
-
-             <View style={styles.appContainer}>
-                <Component navigator={_navigator} {...route.props} />
+        let app = (
+            <View style={ styles.container }>
+                <Titlebar />
+                <BreadCrumb navigator={_navigator} />
+                {connectionInfo}
+                <View style={ styles.appContainer }>
+                    <Component navigator={_navigator} {...route.props} />
+                </View>
             </View>
-          </View>
-      );
+        );
 
-
-      return appScene;
-  },
-
-  render: function () {
-    return (
-      <Navigator
-        debugOverlay={false}
-        initialRoute={_initialRoute}
-        configureScene={this.configureScene}
-        renderScene={this.renderScene} />
-    );
-  }
-});
+        return app;
+    }
+    render() {
+        return (
+            <Navigator debugOverlay={false} 
+                  initialRoute={_initialRoute} 
+                  configureScene={this.configureScene.bind(this)}
+                  renderScene={this.renderScene.bind(this)} />
+        );
+    }
+}
 
 var styles = StyleSheet.create({
   container: {

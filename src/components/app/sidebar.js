@@ -18,13 +18,11 @@ var {
 } = React;
 
 var data = [
-    { name: '', icon: 'home'},
-    { name: '', icon: 'calendar'},
-    { name: '', icon: 'cog'},
-    { name: '', icon: 'calendar-check-o'},
-    { name: '', icon: 'comments-o'},
-    { name: '', icon: 'check-square-o'},
-    { name: '', icon: 'power-off'},
+    { name: 'dashboard', icon: 'home'},
+    { name: 'schedule', icon: 'calendar'},
+    { name: 'settings', icon: 'cog'},
+    { name: 'clients', icon: 'calendar-check-o'},
+    { name: 'logoff', icon: 'power-off'},
 ];
 
 class Sidebar extends React.Component{

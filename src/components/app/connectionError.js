@@ -1,7 +1,5 @@
-
-import React from 'react-native';
-
-var { View, Text, StyleSheet, } = React;
+'use strict';
+import React, { View, Text, StyleSheet, } from 'react-native';
 
 class ConnectionError extends React.Component {
     constructor(args) {

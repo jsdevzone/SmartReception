@@ -1,22 +1,32 @@
+'use strict';
 
+import { AsyncStorage } from 'react-native';
 import { EventEmitter } from 'events';
+import AppConstants from '../constants/appConstants';
+import CredentialStore from './credentialStore';
 
-var AppStore = Object.assign(EventEmitter.prototype, {
-
-    currentMeeting: null,
-
-    startMeeting: function(meeting) {
-        this.currentMeeting = meeting;
-
-        // need to store to async storage 
-
-        this.emit('meetingstarted');
+var AppStore = Object.assign({}, EventEmitter.prototype, {
+		user: null,
+		currentMeeting: null,
+		loadAppSettings: function() {
+				CredentialStore.isAuthenticated().then((authenticated) => {
+						let _settings = {
+								isAuthenticated: authenticated,
+								user: { name: 'Muhammed Jasim', profession: 'Fullstack Developer' },
+						};
+						this.emit('appsettingsloaded', _settings);
+				});
+		},
+		startMeeting: function (meeting) {
+				this.currentMeeting = meeting;
+				this.emit('meetingstarted', meeting);
+		},
+    addEventListener: function(name, callback) {
+        this.on(name, callback);
     },
-
-    logoff: function() {
-        this.emit('logoff');
+    logout: function (argument) {
+        CredentialStore.logout(() => this.emit('logout'));
     }
-
-})
+});
 
 module.exports = AppStore;

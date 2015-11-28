@@ -1,58 +1,48 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * @class Titlebar
  * @author Jasim
  */
 'use strict';
 
-import React from 'react-native';
+import React, { StyleSheet, Text, View, Image, 
+	TouchableWithoutFeedback, TouchableHighlight, } from 'react-native';
+
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CredentialStore from '../../stores/credentialStore';
 import AppStore from '../../stores/appStore';
 
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableWithoutFeedback,
-  TouchableHighlight,
-} = React;
-
 class Titlebar extends React.Component{
-
     constructor(args) {
         super(args);
-
         this.state = {
-            text: 'Logout'
+        		user: { name: 'John Doe', profession: 'Business Advisor'} 
         };
-        AppStore.on('logoff', ()=>{
-            this.setState({ text: 'User Logged Out'})
-        })
+        AppStore.addEventListener('appsettingsloaded', this.onAppSettingsLoaded.bind(this));
     }
-
     onLogout() {
         CredentialStore.logout();
     }
-
+    onAppSettingsLoaded(settings) {
+    		this.setState({ user: { 
+    			name: settings.user.name, profession: settings.user.profession 
+    		}});
+    }
     render() {
         return (
             <View style={styles.titlebar}>
-                <TouchableWithoutFeedback  onPress={this.props.onTitleToggle}>
+                <TouchableWithoutFeedback>
                     <Icon name="list" size={65} color="#FFF" style={styles.icon}  />
                 </TouchableWithoutFeedback>
                 <View style={{flexDirection: 'column'}}>
-                    <Text style={styles.user}>John Doe</Text>
-                    <Text style={styles.designation}>Business Advisor</Text>
+                    <Text style={styles.user}>{this.state.user.name}>
+                    <Text style={styles.designation}>{this.state.user.profession}</Text>
                 </View>
                 <View style={styles.title}>
                 </View>
                 <TouchableHighlight underlayColor="#A51820" onPress={this.onLogout.bind(this)}>
-                    <View style={styles.titlebarRightButton}>
-                        <Icon name="key" size={18} style={styles.titlebarRightButtonText} />
-                    <Text style={styles.titlebarRightButtonText}>{this.state.text}</Text>
+                    <View style={styles.logoutButton}>
+                        <Icon name="key" size={18} style={styles.logoutButtonText} />
+                    		<Text style={styles.logoutButtonText}>Logout</Text>
                     </View>
                 </TouchableHighlight>
             </View>
@@ -61,41 +51,41 @@ class Titlebar extends React.Component{
 }
 
 var styles = StyleSheet.create({
-    titlebar: {
-        height: 55,
-        flexDirection: 'row',
-        padding: 10,
-        paddingTop: 10
-    },
-    icon: {
-        color: '#FFF',
-        width: 32,
-        height: 32,
-        fontSize: 30,
-        marginLeft: 10,
-        marginTop: 5
-    },
-    user: {
-        color: "#FFF",
-        fontSize: 18
-    },
-    designation: {
-        color: "#FFF",
-        fontSize: 13
-    },
-    title: {
-        flex: 1
-    },
-    titlebarRightButton: {
-        backgroundColor: '#A51820',
-        margin: 3,
-        padding: 5,
-        flexDirection: 'row'
-    },
-    titlebarRightButtonText: {
-        color: '#FFF',
-        fontWeight: 'bold'
-    },
+  titlebar: {
+    	height: 55,
+      flexDirection: 'row',
+      padding: 10,
+      paddingTop: 10
+  },
+  icon: {
+      color: '#FFF',
+      width: 32,
+      height: 32,
+      fontSize: 30,
+      marginLeft: 10,
+      marginTop: 5
+  },
+  user: {
+      color: "#FFF",
+      fontSize: 18
+  },
+  designation: {
+      color: "#FFF",
+      fontSize: 13
+  },
+  title: {
+      flex: 1
+  },
+  logoutButton: {
+      backgroundColor: '#A51820',
+      margin: 3,
+      padding: 5,
+      flexDirection: 'row'
+  },
+  logoutButtonText: {
+      color: '#FFF',
+      fontWeight: 'bold'
+  },
 });
 
 module.exports = Titlebar;
