@@ -8,12 +8,16 @@ import React,{ StyleSheet, Text, View, Image, TouchableHighlight, } from 'react-
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Moment from 'moment';
 
-class BreadCrumb extends React.Component{
+class BreadCrumb extends React.Component {
     constructor(args) {
         super(args);
         this.state = {
             stack: this.props.navigator.state.routeStack
         };
+    }
+    onBreadCrumbPress(index) {
+        var _route = this.props.navigator.state.routeStack[index];
+        this.props.navigator.popToRoute(_route);
     }
     iterateNavigator() {
     		let _breadCrumb = new Array();
@@ -29,7 +33,7 @@ class BreadCrumb extends React.Component{
     		return _breadCrumb;
     }
     render() {
-    		let _today = moment().format('MMMM Do YYYY');
+    		let _today = Moment().format('MMMM Do YYYY');
         return (
             <View style={styles.infobar}>
                 <View style={{flexDirection:'row'}}>

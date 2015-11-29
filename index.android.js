@@ -7,7 +7,7 @@ import React, { AppRegistry, StyleSheet, Text, View, Image, Navigator,
 import Dashboard from './src/components/home/dashboard';
 import UserLogin from './src/components/auth/userLogin';
 import Titlebar from './src/components/app/titleBar';
-import BreadCrumb from './src/components/app/infoBar';
+import BreadCrumb from './src/components/app/breadCrumb';
 import SplashScreen from './src/components/app/splashScreen';
 import ConnectionError from './src/components/app/connectionError';
 import CredentialStore from './src/stores/credentialStore';
@@ -33,19 +33,26 @@ class SmartReception extends React.Component {
         };
         this.state = {
             isAuthenticated: false,
-            isConnectedToNetwork: false
+            isConnectedToNetwork: false,
+            user: {}
         };
+        AppStore.loadAppSettings();
+        AppStore.addEventListener('appsettingsloaded', this.onAppSettingsRetrieve.bind(this))
+        AppStore.addEventListener('logout', this.onAppLogout.bind(this));
+        AppStore.addEventListener('meetingfinished', this.onMeetingFinished.bind(this));
+        DeviceEventEmitter.addListener('connectionchanged', this.onConnectionStatusChanged.bind(this));
     }
     componentDidMount() {
         NativeModules.SmartReception.startNetworkMonitoring();
-        AppStore.addEventListener('appsettingsloaded', this.onAppSettingsRetrieve.bind(this))
-        AppStore.addEventListener('logout', this.onAppLogout.bind(this));
-        DeviceEventEmitter.addListener('connectionchanged', this.onConnectionStatusChanged.bind(this));
+    }
+    onMeetingFinished() {
+        _navigator.pop();
     }
     onAppSettingsRetrieve(_settings) {
+        this.setState({ data: JSON.stringify(_settings) });
         let route = null;
-        let isAuthnticated = (_settings.isAuthenticated != '' && _settings.isAuthnticated != null);
-        this.setState({ isAuthnticated: isAuthnticated });
+        let isAuthnticated = _settings.isAuthenticated;
+        this.setState({ isAuthnticated: false, user: _settings.user, data:isAuthnticated});
         if(!isAuthnticated) {
             route = { component: UserLogin, id: 'login', title: 'Login' };
         }
@@ -73,13 +80,13 @@ class SmartReception extends React.Component {
         let scene = null;
         let Component = route.component;
         let routeProps = route.props ;
-        let connectionInfo = this.state.isConnectedToNetwork ? (<ConnectionError/>) : null;
+        let connectionInfo = !this.state.isConnectedToNetwork ? (<ConnectionError/>) : null;
 
         _navigator = navigator;
 
         let app = (
             <View style={ styles.container }>
-                <Titlebar />
+                <Titlebar user={this.state.user} />
                 <BreadCrumb navigator={_navigator} />
                 {connectionInfo}
                 <View style={ styles.appContainer }>

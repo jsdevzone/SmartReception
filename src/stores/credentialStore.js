@@ -5,12 +5,12 @@ import { EventEmitter } from 'events';
 import AppConstants from '../constants/appConstants';
 
 var CredentialStore = Object.assign({}, EventEmitter.prototype, {
-    isAuthnticated: function() {
-        const STORATE_KEY = AppConstants + ':user';
+    isAuthenticated: function() {
+       const STORATE_KEY = AppConstants.storageKey + ':user';
         return AsyncStorage.getItem(STORATE_KEY);
     },
     authenticate: function(user) {
-        const STORATE_KEY = AppConstants + ':user';
+        const STORATE_KEY = AppConstants.storageKey + ':user';
         AsyncStorage.setItem(STORATE_KEY, user.username).then(() => {
             this.emit('authenticated');
         });
@@ -22,7 +22,7 @@ var CredentialStore = Object.assign({}, EventEmitter.prototype, {
         this.on(name, callback);
     },
     logout: function (callback) {
-        const STORATE_KEY = AppConstants + ':user';
+        const STORATE_KEY = AppConstants.storageKey + ':user';
          AsyncStorage.removeItem(STORATE_KEY).then(() => {
              if(callback)
                 callback();

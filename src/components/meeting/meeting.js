@@ -1,75 +1,49 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * @class Meeting
  * @author Jasim
  */
 'use strict';
 
-var React = require('react-native');
-var Icon = require('react-native-vector-icons/FontAwesome');
-var Sidebar = require('../app/sidebar');
-var UserProfile = require('./userProfile');
-var MeetingArea = require('./meetingArea');
-
+import React, { StyleSheet, Text, View, Image, 
+    TouchableHighlight, TextInput, } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Sidebar from '../app/sidebar';
+import UserProfile from './userProfile';
+import MeetingArea from './meetingArea';
 import SplashScreen from '../app/splashScreen';
 import MeetingIntro from './meetingIntro';
 import AppStore from '../../stores/appStore';
+import MeetingStatus from '../../constants/meetingStatus';
 
-
-
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableHighlight,
-  TextInput,
-} = React;
-
-class Meeting extends React.Component{
-    constructor(args){
+class Meeting extends React.Component {
+    constructor(args) {
         super(args);
-        var hasMeeting = false;
-        if(this.props.meeting) {
-            hasMeeting = true;
-        }
-        this.state = {
-            meeting: this.props.meeting || {},
-            hasMeeting: hasMeeting,
-            isMeetingStarted: false
-        };
-
-        AppStore.on('meetingstarted', () => {
-            var meeting = this.state.meeting;
-            meeting.State = 1;
-            this.setState({ isMeetingStarted: true, meeting: meeting });
-        });
-
-
-
-    }
-    render() {
-        var content = this.state.isMeetingStarted ? ( <MeetingArea  meeting={this.state.meeting} /> ): ( <MeetingIntro meeting={this.state.meeting} /> )
-        if(!this.state.hasMeeting) {
-            return (
-                <View style={styles.container}>
-                    <SplashScreen style={{flex:1}}/>
-                </View>
-            );
+        let _status = MeetingStatus.BOOKED;
+        if(this.props.meeting.BookedMeetingId == AppStore.currentMeeting.BookedMeetingId) {
+           _status = MeetingStatus.STARTED;
         }
         else {
-            return (
-                <View style={styles.container}>
-                    <Sidebar />
-                    <UserProfile user={this.state.meeting.Clients} meeting={this.state.meeting}/>
-                {content}
-                </View>
-            );
+            _status = this.props.meeting.status
         }
+        this.state = {
+            meetingStatus: _status
+        };
+        AppStore.addEventListener('meetingstarted', this.onMeetingStarted.bind(this));
+    }
+    onMeetingStarted(meeting) {
+        this.setState({ meetingStatus: meeting.status });
+    }
+    render() {
+        let Component = this.state.meetingStatus == MeetingStatus.BOOKED ?  MeetingIntro : MeetingArea;
+        return (
+            <View style={styles.container}>
+                <Sidebar />
+                <UserProfile user={this.props.meeting.Clients} {...this.props} />
+                <Component {...this.props} />
+            </View>
+        );
     }
 }
-
 var styles = StyleSheet.create({
     container: {
         backgroundColor: '#d3d3d3',

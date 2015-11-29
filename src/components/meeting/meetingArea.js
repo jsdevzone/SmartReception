@@ -5,7 +5,8 @@
  */
 'use strict';
 
-import React from 'react-native';
+import React, {  StyleSheet, Text, View, Image, TouchableHighlight,
+  TouchableWithoutFeedback, TextInput, ListView,} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import MeetingSidebar from './meetingSidebar';
 import Calendar from '../ux/calendar';
@@ -14,20 +15,7 @@ import Notes from './notes';
 import MeetingTitle from './meetingTitle';
 import AppStore from '../../stores/appStore';
 import Attachments from '../app/attachments';
-
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableHighlight,
-  TouchableWithoutFeedback,
-  TextInput,
-  ListView,
-} = React;
-
-
+import DialogAndroid from 'react-native-dialogs';
 
 class MeetingArea extends React.Component{
     constructor(args){
@@ -36,6 +24,16 @@ class MeetingArea extends React.Component{
     }
     onTabPress(index) {
         this.setState({ selectedTabIndex: index});
+    }
+    onFinishPress() {
+        let _options = { title: 'Confirm', content: 'Are you sure want to finish current meeting?', 
+            positiveText: 'Yes', negativeText: 'No',
+            onPositive: () =>{ AppStore.finishCurrentMeeting(); } 
+        };
+        let _dlg = new DialogAndroid();
+        _dlg.set(_options);
+
+        _dlg.show();        
     }
     render() {
         return (
@@ -77,7 +75,7 @@ class MeetingArea extends React.Component{
                                     case 4:
                                         return (<Attachments />);
                                     default:
-                                        return (<View><Text>{this.state.selectedTabIndex}</Text></View>);
+                                        return (<View><Text>{this.state.selectedTabIndex} - Page</Text></View>);
                                 }
                             })()}
                         </View>
@@ -87,7 +85,7 @@ class MeetingArea extends React.Component{
                             <Button icon="list-alt" text="Questionaire" />
                             <Button icon="check-square-o" text="Survey" />
                             <Button icon="exchange" text="Transfer" />
-                            <Button icon="check" text="Finish Meeting" style={{flex:1, borderRightWidth:0}} />
+                            <Button icon="check" text="Finish Meeting" style={{flex:1, borderRightWidth:0}} onPress={this.onFinishPress.bind(this)} />
                         </View>
                     </View>
                 </View>
@@ -97,12 +95,9 @@ class MeetingArea extends React.Component{
 }
 
 class Button extends React.Component {
-    onPress() {
-        AppStore.logoff();
-    }
     render() {
         return (
-            <TouchableWithoutFeedback onPress={this.onPress}>
+            <TouchableWithoutFeedback onPress={this.props.onPress}>
                 <View style={[styles.button, this.props.style]}>
                     <Icon name={this.props.icon} size={30} />
                     <Text>{this.props.text}</Text>

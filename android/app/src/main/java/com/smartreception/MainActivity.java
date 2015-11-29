@@ -10,6 +10,8 @@ import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.app.FragmentActivity;
+import android.view.Window;
+import android.view.WindowManager;
 
 import com.facebook.react.LifecycleState;
 import com.facebook.react.ReactInstanceManager;
@@ -54,6 +56,11 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
         mReactRootView.startReactApplication(mReactInstanceManager, "SmartReception", null);
 
         setContentView(mReactRootView);
+
+        Window window = getWindow();
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(getResources().getColor(R.color.my_statusbar_color));
     }
 
     @Override

@@ -14,18 +14,9 @@ import AppStore from '../../stores/appStore';
 class Titlebar extends React.Component{
     constructor(args) {
         super(args);
-        this.state = {
-        		user: { name: 'John Doe', profession: 'Business Advisor'} 
-        };
-        AppStore.addEventListener('appsettingsloaded', this.onAppSettingsLoaded.bind(this));
     }
     onLogout() {
         CredentialStore.logout();
-    }
-    onAppSettingsLoaded(settings) {
-    		this.setState({ user: { 
-    			name: settings.user.name, profession: settings.user.profession 
-    		}});
     }
     render() {
         return (
@@ -34,8 +25,8 @@ class Titlebar extends React.Component{
                     <Icon name="list" size={65} color="#FFF" style={styles.icon}  />
                 </TouchableWithoutFeedback>
                 <View style={{flexDirection: 'column'}}>
-                    <Text style={styles.user}>{this.state.user.name}>
-                    <Text style={styles.designation}>{this.state.user.profession}</Text>
+                    <Text style={styles.user}>{this.props.user.name}</Text>
+                    <Text style={styles.designation}>{this.props.user.profession}</Text>
                 </View>
                 <View style={styles.title}>
                 </View>

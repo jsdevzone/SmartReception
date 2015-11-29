@@ -1,12 +1,22 @@
 
-import React from 'react-native';
+import React, {View, Text, Component, StyleSheet,TextInput, TouchableHighlight,} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
-var { View, Text, Component, StyleSheet,TextInput, } = React;
+import AppStore from '../../stores/appStore';
 
 class Notes extends Component {
     constructor(args) {
         super(args);
+        this.state = {
+            notes: ""//AppStore.currentMeeting.ActualMeetings[0].Notes
+        };
+    }
+    onNoteSave() {
+        //AppStore.currentMeeting.ActualMeetings[0].Notes = this.state.notes;
+        AppStore.updateMeeting();
+    }
+    onChangeText(text) {
+        this.setState({ notes: text });
+        //AppStore.currentMeeting.ActualMeetings[0].Notes = this.state.notes;
     }
     render() {
         return (
@@ -19,7 +29,8 @@ class Notes extends Component {
                         </View>
                     </View>
                     <View style={{flex:1}}>
-                        <TextInput style={[styles.input, {flex: 1}]}
+                        <TextInput style={[styles.input, {flex: 1}]} value={this.state.notes} 
+                            onChangeText={this.onChangeText.bind(this)}
                             placeholder="" underlineColorAndroid="#FFF" />
                     </View>
                     <View style={styles.footer}>
@@ -33,10 +44,12 @@ class Notes extends Component {
                             <Icon name="copy" color="#FFF" size={18} />
                             <Text style={{color:'#FFF'}}>Copy From Summary</Text>
                         </View>
-                        <View style={[ styles.button, { backgroundColor: '#1fa67a' }]}>
-                            <Icon name="save" color="#FFF" size={18} />
-                            <Text style={{color:'#FFF'}}>Save Notes</Text>
-                        </View>
+                        <TouchableHighlight onPress={this.onNoteSave.bind(this)}>
+                            <View style={[ styles.button, { backgroundColor: '#1fa67a' }]}>
+                                <Icon name="save" color="#FFF" size={18} />
+                                <Text style={{color:'#FFF'}}>Save Notes</Text>
+                            </View>
+                        </TouchableHighlight>
                     </View>
                 </View>
             </View>

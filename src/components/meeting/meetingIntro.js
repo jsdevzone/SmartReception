@@ -1,57 +1,32 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * @class MeetingIntro
  * @author Jasim
  */
 'use strict';
 
-import React from 'react-native';
+import React, { StyleSheet, Text, View, Image, TouchableHighlight,
+  TextInput, TouchableWithoutFeedback, NativeModules, ToastAndroid,} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DialogAndroid from 'react-native-dialogs';
 import AppStore from '../../stores/appStore';
-
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableHighlight,
-  TextInput,
-  TouchableWithoutFeedback,
-  NativeModules,
-  ToastAndroid,
-} = React;
-
+import RequestManager from '../../core/requestManager';
 
 class MeetingIntro extends React.Component {
-    startMeeting(id, text) {
-        AppStore.startMeeting();
+    constructor(args) {
+        super(args);
+        this.state = {
+            status: ''
+        };
     }
-    onStartMeeting() {
-        let options =  {
-            title: 'Select Your Meeting Room!',
-            positiveText: 'OK',
-            "items": [
-              "Room - 1",
-              "Room - 2",
-              "Room - 3",
-              "Room - 4",
-              "Room - 5",
-              "Room - 6",
-              "Room - 7",
-              "Waiting Area - 1",
-              "Waiting Area - 2"
-            ]
-        };
-
-        options.itemsCallback = (id, text) => {
-            AppStore.startMeeting(this.props.meeting);
-        };
-
-        var dialog = new DialogAndroid();
-        dialog.set(options);
-        dialog.show();
+    startMeeting(_roomNo) {
+        AppStore.startMeeting(this.props.meeting, _roomNo);
+    }
+    onStartButtonPress() {
+        let _options = { title: 'Select A Meeting Area', positiveText: 'Select', items: AppStore.meetingAreas };
+        _options.itemsCallback = this.startMeeting.bind(this);
+        let _dialog = new DialogAndroid();
+        _dialog.set(_options);
+        _dialog.show();
     }
     render() {
         return (
@@ -69,8 +44,13 @@ class MeetingIntro extends React.Component {
                         Please note that you can not stop the meeting once you started your meeting </Text>
                     </View>
 
+                    <View style={{width: 500}}>
+                        <Text>{this.state.status}</Text>
+                    </View>
+
+
                     <View style={styles.buttonWrapper}>
-                        <TouchableWithoutFeedback onPress={this.onStartMeeting.bind(this)}>
+                        <TouchableWithoutFeedback onPress={this.onStartButtonPress.bind(this)}>
                             <View style={[styles.button, {marginTop: 35}]}>
                                 <View style={styles.buttonIcon}>
                                     <Icon name="check" size={24} color="#FFF" style={{marginLeft: 10}} />

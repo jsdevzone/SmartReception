@@ -1,58 +1,55 @@
 
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * @class MeetingProgress
  * @author Jasim
  */
 'use strict';
 
-import React from 'react-native';
+import React, { StyleSheet, Text, View, Image, TouchableHighlight, TextInput, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ProgressBar from '../ux/progressBar';
-import { getPercentageColor } from '../../utils/color';
+import {getPercentageColor} from '../../utils/color';
+import AppStore from '../../stores/appStore';
 
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableHighlight,
-  TextInput,
-} = React;
+
 
 class MeetingProgress extends React.Component {
     constructor(args) {
         super(args);
         this.state = {
-            duration: 0,
-            percentage: 0,
-            percentageColor: '#FFF',
-            currentSecond: 0,
-            currentMinutes: '00',
-            target: '00:00',
-            current: '00:00',
-            meetingStarted: false
+            duration: 0, percentage: 0, currentHour: '00',
+            percentageColor: '#FFF', currentSecond: "00",
+            currentMinutes: '00', target: '00:00',
+            current: '00:00', meetingStarted: false
         };
-
+        
         if(this.props.meeting && this.props.meeting.Duration) {
-            var minutes =parseInt(this.props.meeting.Duration.split(":")[0]) * 60 + parseInt(this.props.meeting.Duration.split(":")[1])
-            this.state.duration = minutes;
+            let _duration = this.props.meeting.Duration.split(":");
+            let _minutes = (parseInt(_duration[0]) * 60) + parseInt(_duration[1]);
+            this.state.duration = _minutes;
             this.state.target = this.props.meeting.Duration;
-            this.state.meetinStarted = this.props.meeting.started;
         }
-    }
-    componentDidMount() {
-        if(this.state.duration > 0 && this.state.meetingStarted) {
-            let _tick = (this.state.duration * 60 * 1000) / 100;
-            let _step = 1 / (_tick/1000);
-            let _second = null;
-            let _minute = null;
 
-            setInterval(()=>{
-                if(this.state.percentage < 100) {
-                    _second = parseInt(this.state.currentSecond);
-                    _minute = parseInt(this.state.currentMinutes);
+        AppStore.addEventListener('meetingstarted', this.onMeetingStarted.bind(this));
+        AppStore.addEventListener('meetingfinished', this.stopProgress.bind(this));
+    }
+    onMeetingStarted(meeting) {
+        this.setState({ meetingStarted: true });
+        this.startProgress();
+    }
+    startProgress(startTime) {
+       
+        let _tick = (this.state.duration * 60 * 1000) / 100;
+        let _step = 1 / (_tick / 1000);
+        let _second = null;
+        let _minute = null;
+        let _hour = null;
+
+        this._timer = setInterval(()=>{
+            if(this.state.percentage < 100) {
+                _second = parseInt(this.state.currentSecond);
+                _minute = parseInt(this.state.currentMinutes);
+                _hour = parseInt(this.state.currentHour);
 
                     if(_second == 59 ) {
                         _second = 0
@@ -61,31 +58,38 @@ class MeetingProgress extends React.Component {
                     else
                         _second = _second + 1;
 
+                    if(_minute == 59)
+                        _hour = _hour + 1;
+
                     if(_second < 10)
                         _second = "0" + _second;
 
                     if(_minute < 10)
                         _minute = "0" + _minute;
 
+                    if(_hour < 10)
+                        _hour = "0" + _hour;
+
                     this.setState({
                         percentage: this.state.percentage + _step,
                         percentageColor: getPercentageColor(this.state.percentage + _step),
                         currentSecond: _second,
-                        currentMinutes: _minute
+                        currentMinutes: _minute,
+                        currentHour: _hour
                     });
                 }
             }, 1000);
-        }
     }
-
-
+    stopProgress() {
+        clearInterval(this._timer);
+    }
     render() {
         let complete = this.state.percentage;
         let incomplete = 100 - this.state.percentage;
 
         return (
             <View style={styles.container}>
-                <Text>{this.state.currentMinutes}:{this.state.currentSecond}</Text>
+                <Text>{this.state.currentHour}:{this.state.currentMinutes}:{this.state.currentSecond}</Text>
                 <View style={{ flex: 1,borderColor:'#CCC', height: 10, borderWidth: 1, marginLeft: 5, marginRight: 5, marginTop: 4, flexDirection: 'row' }}>
                     <View style={[styles.complete, { flex: complete, backgroundColor: this.state.percentageColor }]}>
                     </View>

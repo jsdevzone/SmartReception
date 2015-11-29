@@ -19,6 +19,10 @@ class ScheduleStore extends AbstractStore {
             this.emit('scheduleloaded', json);
         });
     }
+
+    startMeeting(meeting, callback) {
+        this.post('meeting/start', meeting).then((json) => callback);
+    }
 }
 
 module.exports = ScheduleStore;
