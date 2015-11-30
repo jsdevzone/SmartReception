@@ -5,29 +5,17 @@
  */
 'use strict';
 
-import React from 'react-native';
+import React, { StyleSheet, Text, View, Image, 
+    TouchableHighlight, TextInput, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Tile from './tileBlock';
 import Meeting from '../meeting/meeting';
 import Schedule from '../schedule/schedule';
 import SplashScreen from '../app/splashScreen';
-
 import UserStore from '../../stores/userStore';
 import NextMeeting from './nextMeeting';
-
 import { NotificationBar, } from './notificationBar';
 import { getRandomColor, } from '../../utils/util';
-
-
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableHighlight,
-  TextInput,
-} = React;
 
 var routes = {
     meeting: { title: 'Meeting', id: 'meeting', component: Meeting },
@@ -35,13 +23,11 @@ var routes = {
     splashScreen: { title: 'Meeting', id: 'schedule', component: SplashScreen }
 };
 
-
 class Dashboard extends React.Component{
     constructor(args){
         super(args);
         this.state = {
-            meeting: {
-            }
+            meeting: { }
         };
     }
     onTilePress(route) {

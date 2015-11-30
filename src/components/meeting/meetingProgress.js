@@ -109,7 +109,10 @@ var styles = StyleSheet.create({
         flexDirection: 'row',
         borderTopColor: '#D8E0F1',
         borderTopWidth: 1,
-        justifyContent: 'center'
+        borderRightColor: '#D8E0F1',
+        borderRightWidth: 1,
+        justifyContent: 'center',
+        width: 300
     },
     incomplete: {
         backgroundColor: '#CCC'

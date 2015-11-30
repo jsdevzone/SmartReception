@@ -26,66 +26,77 @@ class UserProfile extends React.Component{
     constructor(args){
         super(args);
 
+
         this.state = {
             selectedTabIndex: 1,
             userId: 0,
-            user: this.props.user || {},
-            meeting: this.props.meeting || {}
+            meeting: this.props.meeting || {},
         };
     }
     onTabPress(index) {
         this.setState({ selectedTabIndex: index})
     }
     render() {
-        return (
-            <View style={styles.container}>
-                <View style={styles.titleBar}>
-                    <Icon name="user" color="#BCCFE7" size={16} />
-                    <Text style={styles.titleText}> User Profile</Text>
-                </View>
-                <View style={styles.userProfileWrapper}>
-                    <Image source={{uri:'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg'}} style={styles.profileImage} />
-                    <View style={styles.profileInfoWrapper}>
-                        <Text style={styles.name}>{this.state.user.FirstName + " " + this.state.user.LastName}</Text>
-                        <View style={styles.profileItemWrapper}>
-                            <Icon name="envelope" size={18} color="#B5C8E2" />
-                            <Text style={styles.profileItem}>{this.state.user.Email}</Text>
-                        </View>
-                        <View style={styles.profileItemWrapper}>
-                            <Icon name="phone" size={18} color="#B5C8E2" />
-                            <Text style={styles.profileItem}>{this.state.user.Mobile}</Text>
-                        </View>
-                        <View style={styles.profileItemWrapper}>
-                            <Icon name="map-marker" size={18} color="#B5C8E2" />
-                            <Text style={styles.profileItem}>{this.state.user.Location}</Text>
+        let _component = null;
+        if(true) {
+            _component =(
+                <View style={styles.container}>
+                    <View style={styles.titleBar}>
+                        <Icon name="user" color="#BCCFE7" size={16} />
+                        <Text style={styles.titleText}>User Profile</Text>
+                    </View>
+                    <View style={styles.userProfileWrapper}>
+                        <Image source={{uri:'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg'}} style={styles.profileImage} />
+                        <View style={styles.profileInfoWrapper}>
+                            <Text style={styles.name}>{this.props.user.FirstName + " " + this.props.user.LastName}</Text>
+                            <View style={styles.profileItemWrapper}>
+                                <Icon name="envelope" size={18} color="#B5C8E2" />
+                                <Text style={styles.profileItem}>{this.props.user.Email}</Text>
+                            </View>
+                            <View style={styles.profileItemWrapper}>
+                                <Icon name="phone" size={18} color="#B5C8E2" />
+                                <Text style={styles.profileItem}>{this.props.user.Mobile}</Text>
+                            </View>
+                            <View style={styles.profileItemWrapper}>
+                                <Icon name="map-marker" size={18} color="#B5C8E2" />
+                                <Text style={styles.profileItem}>{this.props.user.Location}</Text>
+                            </View>
                         </View>
                     </View>
+                    <View style={styles.tabWrapper}>
+                        <TouchableWithoutFeedback onPress={() => this.onTabPress(1) }>
+                            <View style={styles.tab}>
+                                <Icon name="user" size={18} style={{ color: this.state.selectedTabIndex == 1 ? '#193F71': '#A4C1E8'   }}/>
+                                <Text style={[styles.tabText, this.state.selectedTabIndex == 1 ? styles.tabSelected : {}]}> PROFILE</Text>
+                            </View>
+                        </TouchableWithoutFeedback>
+                        <TouchableWithoutFeedback onPress={() => this.onTabPress(2) }>
+                            <View style={[styles.tab, { borderRightWidth: 0 }]}>
+                                <Icon name="clock-o" size={18} style={{ color: this.state.selectedTabIndex == 2 ? '#193F71': '#A4C1E8' }}/>
+                                <Text style={[styles.tabText, this.state.selectedTabIndex == 2 ? styles.tabSelected : {}]}> HISTORY</Text>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                    {(() => {
+                        switch(this.state.selectedTabIndex) {
+                            case 1:
+                                return (<ProfileDetails user={this.props.user} />);
+                            case 2:
+                                return (<TimeLine user={this.props.user} />);
+                        }
+                    })()}
                 </View>
-                <View style={styles.tabWrapper}>
-                    <TouchableWithoutFeedback onPress={() => this.onTabPress(1) }>
-                        <View style={styles.tab}>
-                            <Icon name="user" size={18} style={{ color: this.state.selectedTabIndex == 1 ? '#193F71': '#A4C1E8'   }}/>
-                            <Text style={[styles.tabText, this.state.selectedTabIndex == 1 ? styles.tabSelected : {}]}> PROFILE</Text>
-                        </View>
-                    </TouchableWithoutFeedback>
-                    <TouchableWithoutFeedback onPress={() => this.onTabPress(2) }>
-                        <View style={[styles.tab, { borderRightWidth: 0 }]}>
-                            <Icon name="clock-o" size={18} style={{ color: this.state.selectedTabIndex == 2 ? '#193F71': '#A4C1E8' }}/>
-                            <Text style={[styles.tabText, this.state.selectedTabIndex == 2 ? styles.tabSelected : {}]}> HISTORY</Text>
-                        </View>
-                    </TouchableWithoutFeedback>
+            );
+        }
+        else {
+            _component = (
+                <View style={styles.container}>
+                    <Text>No User Found</Text>
                 </View>
-                {(() => {
-                    switch(this.state.selectedTabIndex) {
-                        case 1:
-                            return (<ProfileDetails user={this.state.user} />);
-                        case 2:
-                            return (<TimeLine user={this.state.user} />);
-                    }
-                })()}
-                <MeetingProgress meeting={this.state.meeting} />
-            </View>
-        );
+            );
+        }
+
+        return _component;
     }
 }
 

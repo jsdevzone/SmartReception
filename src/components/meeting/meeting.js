@@ -14,6 +14,7 @@ import SplashScreen from '../app/splashScreen';
 import MeetingIntro from './meetingIntro';
 import AppStore from '../../stores/appStore';
 import MeetingStatus from '../../constants/meetingStatus';
+import MeetingProgress from './meetingProgress';
 
 class Meeting extends React.Component {
     constructor(args) {
@@ -38,7 +39,10 @@ class Meeting extends React.Component {
         return (
             <View style={styles.container}>
                 <Sidebar />
-                <UserProfile user={this.props.meeting.Clients} {...this.props} />
+                <View style={{flexDirection: 'column', alignItems: 'stretch'}}>
+                    <UserProfile user={this.props.meeting.Clients} {...this.props} />
+                    <MeetingProgress meeting={this.props.meeting} />
+                </View>
                 <Component {...this.props} />
             </View>
         );
@@ -48,7 +52,8 @@ var styles = StyleSheet.create({
     container: {
         backgroundColor: '#d3d3d3',
         flex: 1,
-        flexDirection: 'row'
+        flexDirection: 'row',
+        alignItems: 'stretch'
     },
 });
 

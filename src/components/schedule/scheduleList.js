@@ -1,26 +1,15 @@
 
-import React from 'react-native';
+import React, { View, Text, StyleSheet, Component, 
+    ListView, TouchableHighlight, Image, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
-
 import ScheduleStore from '../../stores/scheduleStore';
 import { getRandomColor } from '../../utils/util';
 
-var { View, Text, StyleSheet, Component, ListView, TouchableHighlight, Image, } = React;
 
-var data = [
-];
 class ScheduleList extends Component {
     constructor(args) {
         super(args);
-        var dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
-
-        this.store = new ScheduleStore();
-        this.store.on('gettodayschedules', (json)=>{ this.setState({dataSource: dataSource.cloneWithRows(json)}) })
-        //this.store.getTodaySchedules();
-        this.state = {
-            dataSource: dataSource.cloneWithRows(data)
-        }
     }
     render() {
         return (

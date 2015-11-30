@@ -8,6 +8,9 @@ class AbstractStore extends EventEmitter {
     post(action, params) {
         return RequestManager.post(action, params);
     }
+    addEventListener(eventName, callback) {
+    	this.on(eventName, callback);
+    }
 }
 
 module.exports = AbstractStore;

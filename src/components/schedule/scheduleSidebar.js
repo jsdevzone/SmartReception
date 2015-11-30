@@ -2,8 +2,9 @@
 import React from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Sidebar from '../app/sidebar';
-import CalendarView from '../ux/calendar';
+import Calendar from '../ux/calendar';
 import ScheduleList from './scheduleList';
+
 
 var { View, Text, StyleSheet, Component, ListView, TouchableHighlight,} = React;
 
@@ -14,6 +15,7 @@ class ScheduleSidebar extends Component {
         }
     }
     render() {
+        var customDayHeadings = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
         return (
             <View style={styles.container}>
                 <View style={styles.titleBar}>
@@ -21,13 +23,13 @@ class ScheduleSidebar extends Component {
                     <Text style={styles.titleText}> Schedule </Text>
                 </View>
                 <View style={styles.calendarWrapper}>
-                    <CalendarView style={{flex: 1, width: 250, height: 280}} />
+                    <Calendar />
                 </View>
                 <View style={styles.today}>
                     <Icon name="calendar" size={18} />
                     <Text>Today, May 25, 2015</Text>
                 </View>
-                <ScheduleList />
+                <ScheduleList dataSource={this.props.dataSource} onSchedulePress={this.props.onSchedulePress} />
             </View>
         );
     }
@@ -58,8 +60,8 @@ var styles = StyleSheet.create({
         paddingTop: 0,
         borderBottomColor: '#C4D3E7',
         borderBottomWidth: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'stretch',
+        height: 250
     },
     today: {
         flexDirection: 'row',

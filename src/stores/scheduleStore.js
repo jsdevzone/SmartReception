@@ -1,5 +1,6 @@
 
 import AbstractStore from '../core/abstractStore';
+import moment from 'moment';
 
 var employeeId = 1;
 
@@ -15,7 +16,7 @@ class ScheduleStore extends AbstractStore {
     }
 
     getSchedule(date) {
-        this.get('meeting/filter/date', { employeeId: 1, date: date }).then((json) => {
+        this.get('meeting/filter/date', { employeeId: 1, date: moment(date).format("M/D/YYYY  00:00:00") }).then((json) => {
             this.emit('scheduleloaded', json);
         });
     }
