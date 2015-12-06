@@ -10,7 +10,6 @@ var Animatable = require('react-native-animatable');
 var Icon = require('react-native-vector-icons/FontAwesome');
 
 import { getRandomColor } from '../../utils/util';
-var NavigatorActions = require('../../actions/navigator');
 
 var {
   AppRegistry,

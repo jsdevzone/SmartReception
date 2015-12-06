@@ -14,9 +14,7 @@ import RequestManager from '../../core/requestManager';
 class MeetingIntro extends React.Component {
     constructor(args) {
         super(args);
-        this.state = {
-            status: ''
-        };
+        this.state = { };
     }
     startMeeting(_roomNo) {
         AppStore.startMeeting(this.props.meeting, _roomNo);
@@ -43,11 +41,6 @@ class MeetingIntro extends React.Component {
                         <Text>You can start you current meeting by pressing start button below this text.
                         Please note that you can not stop the meeting once you started your meeting </Text>
                     </View>
-
-                    <View style={{width: 500}}>
-                        <Text>{this.state.status}</Text>
-                    </View>
-
 
                     <View style={styles.buttonWrapper}>
                         <TouchableWithoutFeedback onPress={this.onStartButtonPress.bind(this)}>

@@ -5,12 +5,15 @@
  */
 'use strict';
 
-import React, { StyleSheet, Text, View, Image, TouchableHighlight, TextInput, } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import React, { StyleSheet, Text, View, Image, 
+    
+    TouchableHighlight, TextInput, } from 'react-native';
+
+import moment from 'moment';
 import ProgressBar from '../ux/progressBar';
-import {getPercentageColor} from '../../utils/color';
 import AppStore from '../../stores/appStore';
 
+import {getPercentageColor} from '../../utils/color';
 
 
 class MeetingProgress extends React.Component {
@@ -32,6 +35,14 @@ class MeetingProgress extends React.Component {
 
         AppStore.addEventListener('meetingstarted', this.onMeetingStarted.bind(this));
         AppStore.addEventListener('meetingfinished', this.stopProgress.bind(this));
+    }
+    componentDidMount() {
+        if(AppStore.currentMeeting && AppStore.currentMeeting.ActualMeetings) {
+            let _tick = (this.state.duration * 60 * 1000) / 100;
+            let _step = 1 / (_tick / 1000);     
+            let _strt = moment(AppStore.currentMeeting.ActualMeetings.MeetinStartTime);
+            let _diff = (new Date().getTime() - _strt._d.getTime()) / 1000;
+        }
     }
     onMeetingStarted(meeting) {
         this.setState({ meetingStarted: true });

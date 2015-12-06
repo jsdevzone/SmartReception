@@ -4,8 +4,6 @@
  */
 'use strict';
  import React from 'react-native';
- import NavigatorActions  from '../../actions/navigator';
- import ApplicationRoutes from '../../constants/appRoutes';
  import Dashboard from '../home/dashboard';
  import CredentialStore from '../../stores/credentialStore';
 

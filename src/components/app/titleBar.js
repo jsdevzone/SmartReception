@@ -11,7 +11,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import CredentialStore from '../../stores/credentialStore';
 import AppStore from '../../stores/appStore';
 
-class Titlebar extends React.Component{
+class Titlebar extends React.Component {
     constructor(args) {
         super(args);
     }
@@ -33,7 +33,7 @@ class Titlebar extends React.Component{
                 <TouchableHighlight underlayColor="#A51820" onPress={this.onLogout.bind(this)}>
                     <View style={styles.logoutButton}>
                         <Icon name="key" size={18} style={styles.logoutButtonText} />
-                    		<Text style={styles.logoutButtonText}>Logout</Text>
+                    	<Text style={styles.logoutButtonText}>Logout</Text>
                     </View>
                 </TouchableHighlight>
             </View>

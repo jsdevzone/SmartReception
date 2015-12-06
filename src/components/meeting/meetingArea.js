@@ -7,11 +7,14 @@
 
 import React, {  StyleSheet, Text, View, Image, TouchableHighlight,
   TouchableWithoutFeedback, TextInput, ListView,} from 'react-native';
+
 import Icon from 'react-native-vector-icons/FontAwesome';
 import MeetingSidebar from './meetingSidebar';
 import Calendar from '../ux/calendar';
 import MeetingIntro from './meetingIntro';
 import Notes from './notes';
+import Summary from './summary';
+import MinutesOfMeeting from './minutesOfMeeting';
 import MeetingTitle from './meetingTitle';
 import AppStore from '../../stores/appStore';
 import Attachments from '../app/attachments';
@@ -26,10 +29,14 @@ class MeetingArea extends React.Component{
         this.setState({ selectedTabIndex: index});
     }
     onFinishPress() {
+        
         let _options = { title: 'Confirm', content: 'Are you sure want to finish current meeting?', 
             positiveText: 'Yes', negativeText: 'No',
-            onPositive: () =>{ AppStore.finishCurrentMeeting(); } 
+            onPositive: () =>{ 
+                AppStore.finishCurrentMeeting(); 
+            } 
         };
+
         let _dlg = new DialogAndroid();
         _dlg.set(_options);
 
@@ -63,7 +70,7 @@ class MeetingArea extends React.Component{
                             <TouchableWithoutFeedback onPress={()=>this.onTabPress(4)}>
                                 <View style={[styles.tab, { borderRightWidth: 0 }]}>
                                     <Icon name="image" size={18} style={{ color: this.state.selectedTabIndex == 4 ? '#6477C1': '#A4C1E8'   }} />
-                                    <Text style={[styles.tabText, this.state.selectedTabIndex == 4 ? styles.tabSelected : {}]}>ATTACHMENTS</Text>
+                                    <Text style={[styles.tabText, this.state.selectedTabIndex == 4 ? styles.tabSelected : {}]}>ATTACHMENTS </Text>
                                 </View>
                             </TouchableWithoutFeedback>
                         </View>
@@ -72,10 +79,18 @@ class MeetingArea extends React.Component{
                                 switch(this.state.selectedTabIndex) {
                                     case 1:
                                         return (<Notes />);
+                                    case 2:
+                                        return (<Summary />);
+                                    case 3:
+                                        return (<MinutesOfMeeting />);
                                     case 4:
                                         return (<Attachments />);
                                     default:
-                                        return (<View><Text>{this.state.selectedTabIndex} - Page</Text></View>);
+                                        return (
+                                            <View>
+                                                <Text>{this.state.selectedTabIndex} - Page</Text>
+                                            </View>
+                                        );
                                 }
                             })()}
                         </View>

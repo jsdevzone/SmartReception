@@ -10,7 +10,6 @@ import Titlebar from './src/components/app/titleBar';
 import BreadCrumb from './src/components/app/breadCrumb';
 import SplashScreen from './src/components/app/splashScreen';
 import ConnectionError from './src/components/app/connectionError';
-import CredentialStore from './src/stores/credentialStore';
 import AppStore from './src/stores/appStore';
 
 var _navigator  =  null;
@@ -29,12 +28,13 @@ class SmartReception extends React.Component {
     constructor(args) {
         super(args);        
         _initialRoute = { 
-            id: 'dashboard', title: 'Dashboard', component: Dashboard 
+            id: 'splashscreen', title: 'SplashScreen', component: SplashScreen 
         };
         this.state = {
+            isLoading: true,
             isAuthenticated: false,
             isConnectedToNetwork: false,
-            user: {}
+            user: {},
         };
         AppStore.loadAppSettings();
         AppStore.addEventListener('appsettingsloaded', this.onAppSettingsRetrieve.bind(this))
@@ -52,7 +52,9 @@ class SmartReception extends React.Component {
         this.setState({ data: JSON.stringify(_settings) });
         let route = null;
         let isAuthnticated = _settings.isAuthenticated;
-        this.setState({ isAuthnticated: false, user: _settings.user, data:isAuthnticated});
+        this.setState({ isAuthnticated: false, user: _settings.user, 
+            data:isAuthnticated, isLoading: true
+        });
         if(!isAuthnticated) {
             route = { component: UserLogin, id: 'login', title: 'Login' };
         }

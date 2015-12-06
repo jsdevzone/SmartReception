@@ -1,0 +1,27 @@
+<html>
+  <head>
+     <script type="text/javascript" src="node_modules/moment/moment.js"></script>
+     <script type="text/javascript">
+        window.onload = () => {
+            'use strict';
+            let weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            let startDay = moment([2015, 11]);
+            let days = {};
+            for(var i=0;i<startDay.day();i++) {
+                if(!days[weekDays[i]]) {
+                   days[weekDays[i]] = new Array();
+                }
+                days[weekDays[i]].push(0);
+            }     
+            for(var i=1;i<=startDay.daysInMonth();i++) {
+                    startDay = startDay.add(1, 'day');
+                if(!days[weekDays[startDay.day()]]) {
+                   days[weekDays[startDay.day()]] = new Array();
+                }
+                days[weekDays[startDay.day()]].push(i);
+            }     
+            console.log(days);
+        } 
+     </script>
+  </head>
+</html>

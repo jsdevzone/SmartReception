@@ -26,8 +26,8 @@ public class ReactCalendarViewManager extends SimpleViewManager<CalendarView> {
         return new CalendarView(context);
     }
 
-    @Override
+    /*@Override
     public ReactTextShadowNode createCSSNodeInstance() {
         return new ReactTextShadowNode(false);
-    }
+    }*/
 }

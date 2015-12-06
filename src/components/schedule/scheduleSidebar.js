@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Sidebar from '../app/sidebar';
 import Calendar from '../ux/calendar';
 import ScheduleList from './scheduleList';
-
+import Moment from 'moment'
 
 var { View, Text, StyleSheet, Component, ListView, TouchableHighlight,} = React;
 
@@ -12,24 +12,33 @@ class ScheduleSidebar extends Component {
     constructor(args) {
         super(args);
         this.state = {
+            today: Moment()
         }
     }
     render() {
         var customDayHeadings = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
         return (
             <View style={styles.container}>
-                <View style={styles.titleBar}>
-                    <Icon name="calendar" color="#BCCFE7" size={16} />
-                    <Text style={styles.titleText}> Schedule </Text>
+                <View style={[styles.panel, styles.calendarWrapper]}>
+                    <Calendar onDaySelected={this.props.onDaySelected} />
                 </View>
-                <View style={styles.calendarWrapper}>
-                    <Calendar />
-                </View>
-                <View style={styles.today}>
+                <View style={[styles.panel, styles.today]}>
                     <Icon name="calendar" size={18} />
-                    <Text>Today, May 25, 2015</Text>
+                    <Text>{this.props.scheduleDate.format('dddd, MMMM DD, YYYY')}</Text>
                 </View>
-                <ScheduleList dataSource={this.props.dataSource} onSchedulePress={this.props.onSchedulePress} />
+                <View style={[styles.panel, styles.scheduleList]}>
+                {
+                    (() => {
+                        if(this.props.isLoading) {
+                        return (<Text>Loading</Text>)
+                    }
+                    else
+                    {
+                        return (<ScheduleList dataSource={this.props.dataSource} onSchedulePress={this.props.onSchedulePress} />);
+                    }
+                    })()
+                }
+                </View>
             </View>
         );
     }
@@ -38,51 +47,29 @@ class ScheduleSidebar extends Component {
 var styles = StyleSheet.create({
     container: {
         width: 250,
-        backgroundColor: '#F7F8FC',
         flexDirection: 'column',
         alignItems: 'stretch',
-        borderRightColor: '#D8E0F1',
-        borderRightWidth: 1
     },
-    titleBar: {
+    panel: {
+        backgroundColor: '#FFF',
+        borderColor: '#ECECEC',
+        borderWidth: 1,
         padding: 10,
-        borderBottomColor: '#C4D3E7',
-        borderBottomWidth: 1,
-        flexDirection: 'row'
-    },
-    titleText: {
-        color: '#5075B2',
-        fontWeight: 'bold'
+        margin: 10
     },
     calendarWrapper: {
-        backgroundColor: '#F7F8FC',
-        padding: 10,
-        paddingTop: 0,
-        borderBottomColor: '#C4D3E7',
-        borderBottomWidth: 1,
         alignItems: 'stretch',
         height: 250
     },
     today: {
         flexDirection: 'row',
         padding: 15,
-        borderBottomColor: '#C4D3E7',
-        borderBottomWidth: 1
+        marginTop: 0,
+        marginBottom: 0
     },
-    row: {
-        flexDirection: 'row',
-        padding: 12,
-        paddingLeft: 15
-    },
-    separator: {
-        height: 1,
-        backgroundColor: '#C4D3E7',
-    },
-    text: {
-        flex: 1,
-    },
-    time: {
-        marginRight: 15
+    scheduleList: {
+        padding: 0,
+        flex: 1
     },
 });
 

@@ -19,33 +19,44 @@ import MeetingProgress from './meetingProgress';
 class Meeting extends React.Component {
     constructor(args) {
         super(args);
-        let _status = MeetingStatus.BOOKED;
-        if(this.props.meeting.BookedMeetingId == AppStore.currentMeeting.BookedMeetingId) {
-           _status = MeetingStatus.STARTED;
-        }
-        else {
-            _status = this.props.meeting.status
-        }
+        
         this.state = {
-            meetingStatus: _status
+            meetingStatus: MeetingStatus.BOOKED,
+            hasMeeting: false
         };
+
+        if (this.props.meeting) {
+            if(this.props.meeting.BookedMeetingId == AppStore.currentMeeting.BookedMeetingId) 
+                this.state.meetingStatus = MeetingStatus.STARTED;
+            else
+                this.state.meetingStatus = this.props.meeting.Status;
+            this.state.hasMeeting = true;
+        }
+
         AppStore.addEventListener('meetingstarted', this.onMeetingStarted.bind(this));
     }
     onMeetingStarted(meeting) {
-        this.setState({ meetingStatus: meeting.status });
+        this.setState({ meetingStatus: meeting.Status });
     }
     render() {
-        let Component = this.state.meetingStatus == MeetingStatus.BOOKED ?  MeetingIntro : MeetingArea;
-        return (
-            <View style={styles.container}>
-                <Sidebar />
-                <View style={{flexDirection: 'column', alignItems: 'stretch'}}>
-                    <UserProfile user={this.props.meeting.Clients} {...this.props} />
-                    <MeetingProgress meeting={this.props.meeting} />
+        if(this.state.hasMeeting) {
+            let Component = this.state.meetingStatus == MeetingStatus.BOOKED ?  MeetingIntro : MeetingArea;
+            return (
+                <View style={styles.container}>
+                    <Sidebar />
+                    <View style={{flexDirection: 'column', alignItems: 'stretch'}}>
+                        <UserProfile user={this.props.meeting.Clients} {...this.props} />
+                        <MeetingProgress meeting={this.props.meeting} />
+                    </View>
+                    <Component {...this.props} />
                 </View>
-                <Component {...this.props} />
-            </View>
-        );
+            );
+        }
+        else {
+            return (
+                <View><Text>Please select a meeting</Text></View>
+            );
+        }
     }
 }
 var styles = StyleSheet.create({

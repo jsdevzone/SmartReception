@@ -7,16 +7,24 @@ class Notes extends Component {
     constructor(args) {
         super(args);
         this.state = {
-            notes: ""//AppStore.currentMeeting.ActualMeetings[0].Notes
+            notes: ""
         };
+        if(AppStore.currentMeeting && AppStore.currentMeeting.ActualMeetings) {
+            this.state.notes = AppStore.currentMeeting.ActualMeetings[0].Notes;
+        }
+        
     }
     onNoteSave() {
-        //AppStore.currentMeeting.ActualMeetings[0].Notes = this.state.notes;
-        AppStore.updateMeeting();
+        if(AppStore.currentMeeting && AppStore.currentMeeting.ActualMeetings) {
+            AppStore.currentMeeting.ActualMeetings[0].Notes = this.state.notes;
+            AppStore.updateMeeting();
+        }
     }
     onChangeText(text) {
         this.setState({ notes: text });
-        //AppStore.currentMeeting.ActualMeetings[0].Notes = this.state.notes;
+        if(AppStore.currentMeeting && AppStore.currentMeeting.ActualMeetings) {
+            AppStore.currentMeeting.ActualMeetings[0].Notes = this.state.notes;  
+        }
     }
     render() {
         return (
@@ -29,7 +37,9 @@ class Notes extends Component {
                         </View>
                     </View>
                     <View style={{flex:1}}>
-                        <TextInput style={[styles.input, {flex: 1}]} value={this.state.notes} 
+                        <TextInput style={[styles.input, {flex: 1}]} 
+                            multiline={true}
+                            value={this.state.notes} 
                             onChangeText={this.onChangeText.bind(this)}
                             placeholder="" underlineColorAndroid="#FFF" />
                     </View>

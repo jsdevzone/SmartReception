@@ -16,15 +16,12 @@ var AppStore = Object.assign({}, EventEmitter.prototype, {
 	],
 	loadAppSettings: function() {
 		const STORAGE_KEY = AppConstants.storageKey ;
-		AsyncStorage.multiGet([
-			STORAGE_KEY + ':currentMeeting',
-			STORAGE_KEY + ':user',
-		]).then((data) => {
+		AsyncStorage.multiGet([ STORAGE_KEY + ':currentMeeting', STORAGE_KEY + ':user', ]).then((data) => {
 			let _settings = {
 				isAuthenticated: data[1][1] != null && data[1][1] != '',
 				user: { name: 'Muhammed Jasim', profession: 'Fullstack Developer' },
 			};
-			if(data[0][1] != null && data[0][1] != ''){
+			if(data[0][1] != null && data[0][1] != '') {
 				this.currentMeeting = JSON.parse(data[0][1])
 				_settings.currentMeeting = this.currentMeeting;
 				_settings.user.name = this.currentMeeting.Clients.FirstName + this.currentMeeting.Clients.LastName
@@ -56,18 +53,18 @@ var AppStore = Object.assign({}, EventEmitter.prototype, {
 		const STORAGE_KEY = AppConstants.storageKey + ':currentMeeting';
 		if(this.currentMeeting && this.currentMeeting.ActualMeetings && this.currentMeeting.ActualMeetings.length > 0) {
 			RequestManager.post('meeting/finish', this.currentMeeting).then((json) => {
-				this.currentMeeting = {};
 				AsyncStorage.setItem(STORAGE_KEY, "");
 				this.emit('meetingfinished', this.currentMeeting);
+				this.currentMeeting = {};
 			});
 		}	
 	},
-    addEventListener: function(name, callback) {
-        this.on(name, callback);
-    },
-    logout: function (argument) {
-        CredentialStore.logout(() => this.emit('logout'));
-    }
+  addEventListener: function(name, callback) {
+    this.on(name, callback);
+  },
+  logout: function (argument) {
+    CredentialStore.logout(() => this.emit('logout'));
+  }
 });
 
 module.exports = AppStore;

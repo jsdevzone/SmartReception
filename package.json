@@ -3,14 +3,14 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node node_modules/react-native/packager/packager.js"
+    "start": "node node_modules/react-native/local-cli/cli.js start"
   },
   "dependencies": {
     "es6-promise": "^2.0.1",
     "events": "^1.0.2",
     "lodash": "^3.10.1",
     "moment": "^2.10.6",
-    "react-native": "^0.14.0",
+    "react-native": "^0.15.0",
     "react-native-android-iconify": "^1.0.3",
     "react-native-animatable": "^0.3.0",
     "react-native-calendar": "^0.6.1",

@@ -33,7 +33,7 @@ class BreadCrumb extends React.Component {
     		return _breadCrumb;
     }
     render() {
-    		let _today = Moment().format('MMMM Do YYYY');
+    	let _today = Moment().format('MMMM Do YYYY');
         return (
             <View style={styles.infobar}>
                 <View style={{flexDirection:'row'}}>
@@ -71,19 +71,19 @@ var styles = StyleSheet.create({
     marginTop: 5
   },
   breadCrumbItem: {
-  		color: '#FFF', 
-  		marginLeft: 2, 
-  		marginTop: 3, 
-  		fontSize: 15
+  	color: '#FFF', 
+  	marginLeft: 2, 
+  	marginTop: 3, 
+  	fontSize: 15
   },
   rightSectionWrapper: {
-  		flexDirection:'row'
+  	flexDirection:'row'
   },
   date: {
-  		color: '#FFF', 
-  		marginLeft: 2, 
-  		marginTop: 3, 
-  		fontSize: 15
+  	color: '#FFF', 
+  	marginLeft: 2, 
+  	marginTop: 3, 
+  	fontSize: 15
   }
 });
 
