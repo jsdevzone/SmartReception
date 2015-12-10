@@ -38,9 +38,14 @@ class Meeting extends React.Component {
     onMeetingStarted(meeting) {
         this.setState({ meetingStatus: meeting.Status });
     }
+    getContentArea() {
+        if(this.state.meetingStatus == MeetingStatus.BOOKED) 
+            return (<MeetingIntro {...this.props} />);
+        else
+            return (<MeetingArea {...this.props} />);
+    }
     render() {
         if(this.state.hasMeeting) {
-            let Component = this.state.meetingStatus == MeetingStatus.BOOKED ?  MeetingIntro : MeetingArea;
             return (
                 <View style={styles.container}>
                     <Sidebar />
@@ -48,7 +53,7 @@ class Meeting extends React.Component {
                         <UserProfile user={this.props.meeting.Clients} {...this.props} />
                         <MeetingProgress meeting={this.props.meeting} />
                     </View>
-                    <Component {...this.props} />
+                    { this.getContentArea() }
                 </View>
             );
         }

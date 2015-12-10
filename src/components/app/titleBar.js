@@ -6,9 +6,8 @@
 
 import React, { StyleSheet, Text, View, Image, 
 	TouchableWithoutFeedback, TouchableHighlight, } from 'react-native';
-
+import Dimensions from 'Dimensions';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import CredentialStore from '../../stores/credentialStore';
 import AppStore from '../../stores/appStore';
 
 class Titlebar extends React.Component {
@@ -16,33 +15,34 @@ class Titlebar extends React.Component {
         super(args);
     }
     onLogout() {
-        CredentialStore.logout();
+        AppStore.logout();
     }
     render() {
         return (
-            <View style={styles.titlebar}>
-                <TouchableWithoutFeedback>
-                    <Icon name="list" size={65} color="#FFF" style={styles.icon}  />
-                </TouchableWithoutFeedback>
-                <View style={{flexDirection: 'column'}}>
-                    <Text style={styles.user}>{this.props.user.name}</Text>
-                    <Text style={styles.designation}>{this.props.user.profession}</Text>
+            <Image source={require('../../../resources/images/header.png')} style={styles.titlebar}>
+              <TouchableWithoutFeedback>
+                <Icon name="list" size={65} color="#FFF" style={styles.icon}  />
+              </TouchableWithoutFeedback>
+              <View style={{flexDirection: 'column'}}>
+                <Text style={styles.user}>{this.props.user.name}</Text>
+                <Text style={styles.designation}>{this.props.user.profession}</Text>
+              </View>
+              <View style={styles.title}>
+              </View>
+              <TouchableWithoutFeedback underlayColor="#A51820" onPress={this.onLogout.bind(this)}>
+                <View style={styles.logoutButton}>
+                  <Icon name="key" size={18} style={styles.logoutButtonText} />
+                  <Text style={styles.logoutButtonText}>Logout</Text>
                 </View>
-                <View style={styles.title}>
-                </View>
-                <TouchableHighlight underlayColor="#A51820" onPress={this.onLogout.bind(this)}>
-                    <View style={styles.logoutButton}>
-                        <Icon name="key" size={18} style={styles.logoutButtonText} />
-                    	<Text style={styles.logoutButtonText}>Logout</Text>
-                    </View>
-                </TouchableHighlight>
-            </View>
+              </TouchableWithoutFeedback>
+            </Image>
         );
     }
 }
 
 var styles = StyleSheet.create({
   titlebar: {
+      width:Dimensions.get('window').width,
     	height: 55,
       flexDirection: 'row',
       padding: 10,
@@ -65,7 +65,7 @@ var styles = StyleSheet.create({
       fontSize: 13
   },
   title: {
-      flex: 1
+      flex: 1,
   },
   logoutButton: {
       backgroundColor: '#A51820',

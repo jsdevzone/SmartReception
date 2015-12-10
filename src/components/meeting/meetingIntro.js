@@ -14,17 +14,32 @@ import RequestManager from '../../core/requestManager';
 class MeetingIntro extends React.Component {
     constructor(args) {
         super(args);
-        this.state = { };
+        this.state = {};
     }
     startMeeting(_roomNo) {
         AppStore.startMeeting(this.props.meeting, _roomNo);
     }
     onStartButtonPress() {
-        let _options = { title: 'Select A Meeting Area', positiveText: 'Select', items: AppStore.meetingAreas };
-        _options.itemsCallback = this.startMeeting.bind(this);
-        let _dialog = new DialogAndroid();
-        _dialog.set(_options);
-        _dialog.show();
+        let dialog = new DialogAndroid();
+        let options = {};
+        if(!AppStore.hasActualMeeting()) {
+            options = { 
+                title: 'Select A Meeting Area', 
+                positiveText: 
+                'Select', items: AppStore.meetingAreas 
+            };
+            options.itemsCallback = this.startMeeting.bind(this);
+        }
+        else
+        {
+            options = { 
+                title: 'Error!', 
+                content: "Can't start start new meeting without stopping current one", 
+                positiveText: "OK"
+            };
+        }
+        dialog.set(options);
+        dialog.show();
     }
     render() {
         return (

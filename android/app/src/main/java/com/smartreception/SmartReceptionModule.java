@@ -5,9 +5,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 
 import com.facebook.react.bridge.Arguments;
@@ -76,7 +80,35 @@ public class SmartReceptionModule extends ReactContextBaseJavaModule {
                 .setSmallIcon(R.drawable.ic_launcher);
 
         new MeetingProgress().execute();
+    }
 
+
+    @ReactMethod
+    public  void createNotification(String title, String message) {
+        mNotifyManager = (NotificationManager) mReactContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        mBuilder = new NotificationCompat.Builder(mReactContext);
+        mBuilder.setContentTitle(title)
+                .setContentText(message)
+                .setSmallIcon(R.drawable.ic_launcher);
+
+        mNotifyManager.notify(100, mBuilder.build());
+    }
+
+    @ReactMethod
+    public void notifySound() {
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(mReactContext, notification);
+            r.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @ReactMethod
+    public void vibrate(int milliseconds) {
+        ((Vibrator)mReactContext.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(milliseconds);
     }
 
     private class MeetingProgress extends AsyncTask<Void, Integer, Integer> {

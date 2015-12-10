@@ -2,6 +2,7 @@ package com.smartreception;
 
 import android.content.Context;
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.net.ConnectivityManager;
@@ -32,9 +33,6 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
     private ReactInstanceManager mReactInstanceManager;
     private ReactRootView mReactRootView;
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,8 +45,8 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
                 .addPackage(new MainReactPackage())
                 .addPackage(new VectorIconsPackage())
                 .addPackage(new ReactMaterialKitPackage())
-                .addPackage(new AndroidWidgetPackage())
-                 .addPackage(new ReactNativeDialogsPackage(this))
+                .addPackage(new AndroidWidgetPackage(this))
+                .addPackage(new ReactNativeDialogsPackage(this))
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
                 .setInitialLifecycleState(LifecycleState.RESUMED)
                 .build();
@@ -56,7 +54,10 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
         mReactRootView.startReactApplication(mReactInstanceManager, "SmartReception", null);
 
         setContentView(mReactRootView);
+        setNotificationBarColor();
+    }
 
+    public void setNotificationBarColor() {
         Window window = getWindow();
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -74,16 +75,16 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
 
     @Override
     public void onBackPressed() {
-      if (mReactInstanceManager != null) {
-        mReactInstanceManager.onBackPressed();
-      } else {
-        super.onBackPressed();
-      }
+        if (mReactInstanceManager != null) {
+            mReactInstanceManager.onBackPressed();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
     public void invokeDefaultOnBackPressed() {
-      super.onBackPressed();
+        super.onBackPressed();
     }
 
     @Override
@@ -99,6 +100,22 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
         super.onResume();
         if (mReactInstanceManager != null) {
             mReactInstanceManager.onResume(this);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            mReactInstanceManager.getCurrentReactContext()
+                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit("camerapicturereceived", null);
+        }
+        if (requestCode == 2 && resultCode == RESULT_OK) {
+            mReactInstanceManager.getCurrentReactContext()
+                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit("imagereceivedfromgallery", null);
         }
     }
 }

@@ -20,39 +20,59 @@ var {
 } = React;
 
 var data = [
-    { name: 'Mogen Polish', position: 'Writer, Mag Editor', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg' },
-    { name: 'Joge Lucky', position: 'Art Director, Movie Cut', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/sauro/128.jpg' },
-    { name: 'Folisise Chosielie', position: 'Musician, Player',image: 'https://s3.amazonaws.com/uifaces/faces/twitter/mlane/128.jpg' },
-    { name: 'Peter', position: 'Musician, Player', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/rem/128.jpg' },
-    { name: 'John Doe', position: 'Art Director, Moview Cut', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/chadengle/128.jpg' },
-    { name: 'Billy Duke', position: 'Director, Operations', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/tutvid/128.jpg' },
-    { name: 'Folisise Chosielie', position: 'Musician, Player',image: 'https://s3.amazonaws.com/uifaces/faces/twitter/philcoffman/128.jpg' },
-    { name: 'Joge Lucky', position: 'Art Director, Movie Cut', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/msurguy/128.jpg' },
-    { name: 'Mogen Polish', position: 'Writer, Mag Editor', image: 'https://s3.amazonaws.com/uifaces/faces/twitter/danbenoni/128.jpg' },
 ];
+
+
+import ClientStore from '../../stores/clientStore';
+
 
 export class UserList extends React.Component {
     constructor(args) {
         super(args);
-        var dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+        
+        this.dataSource = new ListView.DataSource({ 
+            rowHasChanged: (r1, r2) => r1 !== r2 
+        });
+        
         this.state = {
-            dataSource: dataSource.cloneWithRows(data)
-        }
+            isLoading: false,
+            dataSource: this.dataSource.cloneWithRows(data),
+        };
+
+        ClientStore.addEventListener('clientlistloaded', this.clientStoreLoaded.bind(this));
+        ClientStore.addEventListener('beforeclientload', this.beforeClientLoad.bind(this));
+        ClientStore.getClients('');
+    }
+    clientStoreLoaded(clients) {
+        this.setState({ isLoading: false, dataSource: this.dataSource.cloneWithRows(clients)})
+    }
+    beforeClientLoad() {
+        this.setState({ isLoading: true });
     }
     render() {
-        return (<ListView dataSource={this.state.dataSource} renderRow={this.renderRow.bind(this)} style={styles.container} />)
+        return (<ListView dataSource={this.state.dataSource} renderRow={this.renderRow.bind(this)} style={[styles.container, this.props.style]} />)
     }
     renderRow(rowData, sectionID: number, rowID: number) {
-
-        var showSeparator = this.props.showSeparator ? {borderBottomColor: '#F9F9F9', borderBottomWidth: 1}: {};
+        let showSeparator = this.props.showSeparator ? {borderBottomColor: '#F9F9F9', borderBottomWidth: 1}: {};
+        let photo = null;
+        if(rowData.Photo != null) {
+            photo =(<Image source={{uri: rowData.Photo }} style={styles.profileImage} />);
+        }
+        else {
+            photo =(
+                <View style={[styles.profileImage, {backgroundColor: getRandomColor()}]}>
+                    <Text style={styles.profileText}>{rowData.FirstName ? rowData.FirstName.substr(0,1) : ""}</Text>
+                </View>
+            );
+        } 
 
         return (
             <TouchableHighlight underlayColor="#C6C7EA">
                 <View style={[styles.listItem, showSeparator ]}>
-                    <Image source={{uri: rowData.image }} style={styles.profileImage} />
+                    { photo }
                     <View style={styles.profileInfo}>
-                        <Text style={styles.profileName}>{rowData.name}</Text>
-                        <Text style={styles.position}>{rowData.position}</Text>
+                        <Text style={styles.profileName}>{rowData.FirstName + " " + rowData.LastName}</Text>
+                        <Text style={styles.position}>{rowData.Position}</Text>
                     </View>
                 </View>
            </TouchableHighlight>
@@ -72,7 +92,9 @@ var styles = StyleSheet.create({
     profileImage: {
         width: 50,
         height: 50,
-        borderRadius: 25
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     profileInfo: {
         flexDirection: 'column',
@@ -85,5 +107,9 @@ var styles = StyleSheet.create({
     },
     position: {
         color:"#A1A1A1"
+    },
+    profileText: {
+        color: '#FFF',
+        fontSize: 25
     }
 });

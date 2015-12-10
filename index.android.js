@@ -12,6 +12,7 @@ import SplashScreen from './src/components/app/splashScreen';
 import ConnectionError from './src/components/app/connectionError';
 import AppStore from './src/stores/appStore';
 
+
 var _navigator  =  null;
 var _initialRoute =  null;
 var _isLoggedIn = false;
@@ -35,11 +36,14 @@ class SmartReception extends React.Component {
             isAuthenticated: false,
             isConnectedToNetwork: false,
             user: {},
+            data: '',
+            hasCurrentMeeting: false
         };
         AppStore.loadAppSettings();
         AppStore.addEventListener('appsettingsloaded', this.onAppSettingsRetrieve.bind(this))
         AppStore.addEventListener('logout', this.onAppLogout.bind(this));
         AppStore.addEventListener('meetingfinished', this.onMeetingFinished.bind(this));
+        AppStore.addEventListener('meetingposted', this.onMeetingFinished.bind(this));
         DeviceEventEmitter.addListener('connectionchanged', this.onConnectionStatusChanged.bind(this));
     }
     componentDidMount() {
@@ -52,15 +56,19 @@ class SmartReception extends React.Component {
         this.setState({ data: JSON.stringify(_settings) });
         let route = null;
         let isAuthnticated = _settings.isAuthenticated;
-        this.setState({ isAuthnticated: false, user: _settings.user, 
-            data:isAuthnticated, isLoading: true
-        });
-        if(!isAuthnticated) {
+        let newState = { 
+            isAuthnticated: false, 
+            user: _settings.user, 
+            data:isAuthnticated, 
+            isLoading: true
+        };
+        if(!isAuthnticated) 
             route = { component: UserLogin, id: 'login', title: 'Login' };
-        }
         else {
-            route = { component: Dashboard, id: 'dashboard', title: 'Dashboard' };
+            newState.hasCurrentMeeting = _settings.currentMeeting != undefined;
+            route = { component: Dashboard, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
         }
+        this.setState(newState);
         _navigator.replaceAtIndex(route, 0);
         _navigator.popToTop();
     }
@@ -77,6 +85,9 @@ class SmartReception extends React.Component {
     }
     componentWillUnmount() {
         NativeModules.SmartReception.stopNetworkMonitoring();
+        if(AppStore.isRecording) {
+            NativeModules.MediaHelper.stopRecording();
+        }
     }
     renderScene(route, navigator) {
         let scene = null;
@@ -97,6 +108,16 @@ class SmartReception extends React.Component {
             </View>
         );
 
+        if(route.props && route.props.isClientModule == true) {
+            app = (
+                <View style={ styles.container }>
+                    <View style={ styles.appContainer }>
+                        <Component navigator={_navigator} {...route.props} />
+                    </View>
+                </View>
+            );
+        }
+
         return app;
     }
     render() {
@@ -114,7 +135,8 @@ var styles = StyleSheet.create({
     flex: 1,
     width: null,
     height: null,
-    backgroundColor: '#d9232d'
+    backgroundColor: '#d9232d',
+    alignItems: 'stretch'
   },
   appContainer: {
     flexDirection: 'row',

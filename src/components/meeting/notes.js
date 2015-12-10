@@ -2,29 +2,46 @@
 import React, {View, Text, Component, StyleSheet,TextInput, TouchableHighlight,} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AppStore from '../../stores/appStore';
+import Button from '../meeting/button';
+
+const modes = { EDIT: 1, READ: 2 };
 
 class Notes extends Component {
     constructor(args) {
         super(args);
         this.state = {
-            notes: ""
+            notes: "",
+            mode: modes.READ
         };
-        if(AppStore.currentMeeting && AppStore.currentMeeting.ActualMeetings) {
-            this.state.notes = AppStore.currentMeeting.ActualMeetings[0].Notes;
-        }
-        
+        if(this.hasActualMeeting()) 
+            this.state.notes = this.props.meeting.ActualMeetings[0].Notes;
+        AppStore.addEventListener('actualMeetingupdated', this.onMeetingUpdated.bind(this));
+    }
+    hasActualMeeting() {
+        return this.props.meeting && this.props.meeting.ActualMeetings.length > 0;
+    }
+    onMeetingUpdated(meeting) {
+        this.setState({ mode: modes.READ });
     }
     onNoteSave() {
-        if(AppStore.currentMeeting && AppStore.currentMeeting.ActualMeetings) {
-            AppStore.currentMeeting.ActualMeetings[0].Notes = this.state.notes;
-            AppStore.updateMeeting();
+        if(this.hasActualMeeting()) {
+            this.props.meeting.ActualMeetings[0].Notes = this.state.notes;
+            if(this.props.onMeetingUpdate) {
+                this.props.onMeetingUpdate(this.props.meeting);
+            }
         }
     }
     onChangeText(text) {
         this.setState({ notes: text });
-        if(AppStore.currentMeeting && AppStore.currentMeeting.ActualMeetings) {
-            AppStore.currentMeeting.ActualMeetings[0].Notes = this.state.notes;  
-        }
+    }
+    isCurrentMeeting() {
+        return (AppStore.currentMeeting && AppStore.currentMeeting.BookedMeetingId == this.props.meeting.BookedMeetingId);
+    }
+    onEdit() {
+        this.setState({ mode: modes.EDIT });
+    }
+    onCancel() {
+        this.setState({ mode: modes.READ });
     }
     render() {
         return (
@@ -36,31 +53,32 @@ class Notes extends Component {
                             <Text style={{fontSize: 15}}>Notes</Text>
                         </View>
                     </View>
-                    <View style={{flex:1}}>
-                        <TextInput style={[styles.input, {flex: 1}]} 
-                            multiline={true}
-                            value={this.state.notes} 
-                            onChangeText={this.onChangeText.bind(this)}
-                            placeholder="" underlineColorAndroid="#FFF" />
+                    <View style={styles.content}>
+                        <View style={styles.notesArea}>
+                           {
+                            (() => {
+                                if(this.state.mode == modes.READ) {
+                                    return (<Text style={[styles.input, {flex: 1}]}>{this.state.notes}</Text>);
+                                }
+                                else
+                                {
+                                return (
+                                    <TextInput style={[styles.input, {flex: 1}]} 
+                                        multiline={true}
+                                        value={this.state.notes} 
+                                        onChangeText={this.onChangeText.bind(this)}
+                                        placeholder="" underlineColorAndroid="#FFFFFF" />);
+                                }
+                            })()
+                           }
+                        </View>
                     </View>
-                    <View style={styles.footer}>
-                        <View style={{flex:1}}>
-                        </View>
-                        <View style={styles.button}>
-                            <Icon name="ban" color="#FFF" size={18} />
-                            <Text style={{color:'#FFF'}}>Cancel Changes</Text>
-                        </View>
-                        <View style={[styles.button, { backgroundColor: '#6887ff' }]}>
-                            <Icon name="copy" color="#FFF" size={18} />
-                            <Text style={{color:'#FFF'}}>Copy From Summary</Text>
-                        </View>
-                        <TouchableHighlight onPress={this.onNoteSave.bind(this)}>
-                            <View style={[ styles.button, { backgroundColor: '#1fa67a' }]}>
-                                <Icon name="save" color="#FFF" size={18} />
-                                <Text style={{color:'#FFF'}}>Save Notes</Text>
-                            </View>
-                        </TouchableHighlight>
-                    </View>
+                </View>
+                <View style={styles.buttonBar}>
+                    <View style={[styles.button, {flex:1} ]}></View>
+                    <Button icon="pencil" text="Edit" borderPosition="bottom" onPress={this.onEdit.bind(this)} />
+                    <Button icon="ban" text="Cancel" borderPosition="bottom" onPress={this.onCancel.bind(this)} />
+                    <Button icon="floppy-o" text="Save" borderPosition="none" onPress={this.onNoteSave.bind(this)} />
                 </View>
             </View>
         );
@@ -70,15 +88,11 @@ class Notes extends Component {
 var styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f0f0f0',
-        flexDirection: 'column',
+        flexDirection: 'row',
         alignItems: 'stretch',
-        padding: 10
     },
     containerInner: {
         backgroundColor: '#FFF',
-        borderWidth: 1,
-        borderColor: '#EAE5E5',
         flex: 1,
         flexDirection: 'column',
         alignItems: 'stretch'
@@ -96,13 +110,35 @@ var styles = StyleSheet.create({
         borderTopColor: '#f4f4f4',
     },
     button: {
-        backgroundColor:'#AF3D3D',
         padding: 10,
-        flex:1,
-        flexDirection: 'row',
+        flexDirection: 'column',
         justifyContent: 'center',
-        alignItems: 'center'
-    }
+        alignItems: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: '#EAE5E5',
+    },
+    content: {
+        flexDirection: 'row',
+        flex: 1,
+        alignItems: 'stretch'
+    },
+    notesArea: {
+        flex: 1,
+        padding: 10,
+    },
+    buttonContainer: {
+        width: 100,
+        borderLeftWidth: 1,
+        borderLeftColor: '#EAE5E5'
+    },
+    buttonBar: {
+        backgroundColor:'#F0F1F3',
+        borderLeftColor: '#D8E0F1',
+        borderLeftWidth: 1,
+        width: 100,
+        flexDirection: 'column',
+        alignItems: 'stretch'
+    },
 });
 
 module.exports = Notes;

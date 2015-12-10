@@ -12,7 +12,7 @@ class Button extends React.Component {
             <TouchableWithoutFeedback onPress={this.props.onPress}>
                 <View style={[styles.button, styles[this.props.borderPosition || 'right'], this.props.style]}>
                     <Icon name={this.props.icon} size={30} />
-                    <Text>{this.props.text}</Text>
+                    <Text style={{textAlign:'center'}}>{this.props.text}</Text>
                 </View>
             </TouchableWithoutFeedback>
         );
@@ -38,6 +38,9 @@ var styles = StyleSheet.create({
     bottom: {
         borderBottomColor: '#D8E0F1',
         borderBottomWidth: 1,
+    },
+    none: {
+        borderWidth: 0
     }
 });
 

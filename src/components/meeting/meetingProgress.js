@@ -23,25 +23,30 @@ class MeetingProgress extends React.Component {
             duration: 0, percentage: 0, currentHour: '00',
             percentageColor: '#FFF', currentSecond: "00",
             currentMinutes: '00', target: '00:00',
-            current: '00:00', meetingStarted: false
+            current: '00:00', meetingStarted: false, elapsedTime: new Date('01/01/2015 00:00:00')
         };
         
-        if(this.props.meeting && this.props.meeting.Duration) {
-            let _duration = this.props.meeting.Duration.split(":");
+        if(AppStore.hasActualMeeting()) {
+            let meeting = AppStore.currentMeeting;
+            let _duration = meeting.Duration.split(":");
             let _minutes = (parseInt(_duration[0]) * 60) + parseInt(_duration[1]);
             this.state.duration = _minutes;
-            this.state.target = this.props.meeting.Duration;
+            this.state.target = meeting.Duration;
         }
 
         AppStore.addEventListener('meetingstarted', this.onMeetingStarted.bind(this));
         AppStore.addEventListener('meetingfinished', this.stopProgress.bind(this));
     }
     componentDidMount() {
-        if(AppStore.currentMeeting && AppStore.currentMeeting.ActualMeetings) {
+        if(AppStore.hasActualMeeting()) {
             let _tick = (this.state.duration * 60 * 1000) / 100;
             let _step = 1 / (_tick / 1000);     
-            let _strt = moment(AppStore.currentMeeting.ActualMeetings.MeetinStartTime);
-            let _diff = (new Date().getTime() - _strt._d.getTime()) / 1000;
+            let _strt = moment(AppStore.currentMeeting.ActualMeetings[0].MeetingStartTime);
+            let _diff = (new Date() - _strt._d);
+            let _elapsedTime = moment(this.state.elapsedTime).add(_diff, 'milliseconds')._d;
+
+            this.setState({ percentage: (_diff / 1000) * _step, elapsedTime: _elapsedTime})
+            this.startProgress()
         }
     }
     onMeetingStarted(meeting) {
@@ -49,44 +54,18 @@ class MeetingProgress extends React.Component {
         this.startProgress();
     }
     startProgress(startTime) {
-       
         let _tick = (this.state.duration * 60 * 1000) / 100;
         let _step = 1 / (_tick / 1000);
         let _second = null;
         let _minute = null;
         let _hour = null;
-
         this._timer = setInterval(()=>{
             if(this.state.percentage < 100) {
-                _second = parseInt(this.state.currentSecond);
-                _minute = parseInt(this.state.currentMinutes);
-                _hour = parseInt(this.state.currentHour);
-
-                    if(_second == 59 ) {
-                        _second = 0
-                        _minute = _minute + 1;
-                    }
-                    else
-                        _second = _second + 1;
-
-                    if(_minute == 59)
-                        _hour = _hour + 1;
-
-                    if(_second < 10)
-                        _second = "0" + _second;
-
-                    if(_minute < 10)
-                        _minute = "0" + _minute;
-
-                    if(_hour < 10)
-                        _hour = "0" + _hour;
-
+                let _elapsedTime = moment(this.state.elapsedTime).add(1, 'second')._d;
                     this.setState({
                         percentage: this.state.percentage + _step,
                         percentageColor: getPercentageColor(this.state.percentage + _step),
-                        currentSecond: _second,
-                        currentMinutes: _minute,
-                        currentHour: _hour
+                         elapsedTime: _elapsedTime
                     });
                 }
             }, 1000);
@@ -97,19 +76,21 @@ class MeetingProgress extends React.Component {
     render() {
         let complete = this.state.percentage;
         let incomplete = 100 - this.state.percentage;
-
+        let borderColor = this.props.isInBreadCrumb ? '#FFF': '#CCC';
+        let style = this.props.isInBreadCrumb ? styles.breadCrumbStyle : styles.container; 
+        let color = this.props.isInBreadCrumb ? '#FFF' : '#000';
         return (
-            <View style={styles.container}>
-                <Text>{this.state.currentHour}:{this.state.currentMinutes}:{this.state.currentSecond}</Text>
-                <View style={{ flex: 1,borderColor:'#CCC', height: 10, borderWidth: 1, marginLeft: 5, marginRight: 5, marginTop: 4, flexDirection: 'row' }}>
+            <View style={[style]}>
+                <Text style={{color:color}}>{moment(this.state.elapsedTime).format('HH:mm:ss')}</Text>
+                <View style={{ flex: 1,borderColor:borderColor, height: 10, borderWidth: 1, marginLeft: 5, marginRight: 5, marginTop: 4, flexDirection: 'row' }}>
                     <View style={[styles.complete, { flex: complete, backgroundColor: this.state.percentageColor }]}>
                     </View>
                     <View style={[ styles.incomplete, { flex: incomplete}]}>
-                    </View>
+                     </View>
                 </View>
-                <Text>{this.props.meeting.Duration}</Text>
+                <Text style={{color:color}}>{AppStore.currentMeeting.Duration}</Text>
             </View>
-        );
+            );
     }
 }
 
@@ -122,6 +103,12 @@ var styles = StyleSheet.create({
         borderTopWidth: 1,
         borderRightColor: '#D8E0F1',
         borderRightWidth: 1,
+        justifyContent: 'center',
+        width: 300
+    },
+    breadCrumbStyle: {
+        paddingTop: 5,
+        flexDirection: 'row',
         justifyContent: 'center',
         width: 300
     },

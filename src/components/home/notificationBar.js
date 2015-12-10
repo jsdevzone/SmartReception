@@ -1,30 +1,13 @@
 'use strict';
 
-var React = require('react-native');
-
-var Animatable = require('react-native-animatable');
-var Icon = require('react-native-vector-icons/FontAwesome');
-import moment from 'moment';
-
+import React, { StyleSheet, Text, View, Image, TouchableWithoutFeedback, 
+    TouchableNativeFeedback, ListView, TouchableHighlight,} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Moment from 'moment';
 import Meeting from '../meeting/meeting';
-
 import ScheduleList from '../schedule/scheduleList';
 import ScheduleStore from '../../stores/scheduleStore';
-import { UserList } from '../users/userList';
-import { getCurrentDateFormatted, getDayName, } from '../../utils/util';
-
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableWithoutFeedback,
-  ToastAndroid,
-  ListView,
-  TouchableHighlight,
-} = React;
-
+import LoadMask from '../app/loadMask';
 
 export class NotificationBar extends React.Component {
     constructor(args) {
@@ -36,11 +19,11 @@ export class NotificationBar extends React.Component {
 
         this.store = new ScheduleStore();
         this.store.on('gettodayschedules', (json)=>{
-            this.setState({dataSource: dataSource.cloneWithRows(json)})
+            this.setState({dataSource: dataSource.cloneWithRows(json), isLoading:false})
         });
 
         this.store.on('scheduleloaded', (json)=>{
-            this.setState({dataSource: dataSource.cloneWithRows(json)})
+            this.setState({dataSource: dataSource.cloneWithRows(json), isLoading: false})
         });
         this.store.getTodaySchedules();
 
@@ -49,7 +32,7 @@ export class NotificationBar extends React.Component {
         this.state = {
             selectedTabIndex: 0,
             dataSource: dataSource.cloneWithRows(data),
-            text:''
+            isLoading: true
         };
     }
 
@@ -60,19 +43,17 @@ export class NotificationBar extends React.Component {
     }
 
     onTabPress(idx) {
-            this.setState({ selectedTabIndex: idx });
-            var date = moment().add(idx, 'days').format('YYYY-MM-D');
-            this.setState({text:date})
-            this.store.getSchedule(date);
+        this.setState({ selectedTabIndex: idx, isLoading: true });
+        this.store.getSchedule(Moment().add(idx, 'days').format('YYYY-MM-DD'));
     }
     render() {
         return (
             <View style={styles.notificationTile}>
                 <View style={styles.statusContainer}>
-                    <View style={{ flex:1 }}></View>
+                    <View style={{ flex:1 }} />
                     <View style={{ flexDirection: 'row'}}>
                         <Icon name="clock-o" size={12}  style={{ color: '#FF6335', marginRight: 4}} />
-                        <Text style={{ color: '#515151', fontSize: 11 }}>{moment().format('MMMM Do YYYY')}</Text>
+                        <Text style={{ color: '#515151', fontSize: 11 }}>{Moment().format('MMMM Do YYYY')}</Text>
                     </View>
                     <View style={styles.visibility}>
                         <Text style={{fontSize: 11, color: '#FFF' }}>Online</Text>
@@ -109,23 +90,31 @@ export class NotificationBar extends React.Component {
                 </View>
                 <Image source={require('../../../resources/images/fancy_separator.png')} style={{width: 350, height: 30}} />
                 <View style={styles.tabStripWrapper}>
-                    <TouchableWithoutFeedback onPress={this.onTabPress.bind(this, 0)}>
+                    <TouchableHighlight onPress={this.onTabPress.bind(this, 0)} style={styles.tabWrapper}>
                         <View style={[styles.tab, this.state.selectedTabIndex == 0 ? styles.tabSelected : null]}>
                             <Text style={styles.tabText}>Today</Text>
                         </View>
-                    </TouchableWithoutFeedback>
-                    <TouchableWithoutFeedback onPress={this.onTabPress.bind(this, 1)}>
+                    </TouchableHighlight>
+                    <TouchableHighlight onPress={this.onTabPress.bind(this, 1)} style={styles.tabWrapper}>
                         <View style={[styles.tab, this.state.selectedTabIndex == 1 ? styles.tabSelected : null]}>
-                            <Text style={styles.tabText}>{moment().add(1, 'days').format('dddd')}</Text>
+                            <Text style={styles.tabText}>{Moment().add(1, 'days').format('dddd')}</Text>
                         </View>
-                    </TouchableWithoutFeedback>
-                    <TouchableWithoutFeedback onPress={this.onTabPress.bind(this, 2)}>
+                    </TouchableHighlight>
+                    <TouchableHighlight onPress={this.onTabPress.bind(this, 2)} style={styles.tabWrapper}>
                         <View style={[styles.tab, this.state.selectedTabIndex == 2 ? styles.tabSelected : null]}>
-                            <Text style={styles.tabText}>{moment().add(2, 'days').format('dddd')}</Text>
+                            <Text style={styles.tabText}>{Moment().add(2, 'days').format('dddd')}</Text>
                         </View>
-                    </TouchableWithoutFeedback>
+                    </TouchableHighlight>
                 </View>
-                <ScheduleList dataSource = {this.state.dataSource} {...this.props} onSchedulePress={this.onSchedulePress.bind(this)}/>
+                {(() => {
+                    if(this.state.isLoading) {
+                        return (<LoadMask />);
+                    }
+                    else
+                    {
+                        return (<ScheduleList dataSource = {this.state.dataSource} {...this.props} onSchedulePress={this.onSchedulePress.bind(this)}/>);
+                    }
+                })()}
             </View>
         );
     }
@@ -167,6 +156,9 @@ var styles = StyleSheet.create({
         backgroundColor: '#5C6BC0',
         borderTopColor: '#7481CE',
         borderTopWidth: 1
+    },
+    tabWrapper: {
+        flex: 1
     },
     tab: {
         padding: 13,

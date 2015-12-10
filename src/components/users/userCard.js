@@ -22,8 +22,6 @@ var {
 class UserCard extends React.Component{
     constructor(args){
         super(args);
-
-
         this.state = {
             selectedTabIndex: 1,
             userId: 0,

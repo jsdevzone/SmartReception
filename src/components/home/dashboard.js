@@ -6,7 +6,7 @@
 'use strict';
 
 import React, { StyleSheet, Text, View, Image, 
-    TouchableHighlight, TextInput, } from 'react-native';
+    TouchableHighlight, TextInput, NativeModules } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Tile from './tileBlock';
 import Meeting from '../meeting/meeting';
@@ -14,13 +14,18 @@ import Schedule from '../schedule/schedule';
 import SplashScreen from '../app/splashScreen';
 import UserStore from '../../stores/userStore';
 import NextMeeting from './nextMeeting';
+import ClientHome from '../client/ClientHome';
+import ClientSearch from '../client/clientSearch';
+
 import { NotificationBar, } from './notificationBar';
 import { getRandomColor, } from '../../utils/util';
 
 var routes = {
     meeting: { title: 'Meeting', id: 'meeting', component: Meeting },
     calendar: { title: 'Meeting', id: 'schedule', component: Schedule },
-    splashScreen: { title: 'Meeting', id: 'schedule', component: SplashScreen }
+    splashScreen: { title: 'Meeting', id: 'schedule', component: SplashScreen },
+    client: { title: 'Clients', id: 'clients', component: ClientHome, props: { isClientModule: true }},
+    clientSearch: { title: 'Clients', id: 'clients', component: ClientSearch },
 };
 
 class Dashboard extends React.Component{
@@ -45,12 +50,16 @@ class Dashboard extends React.Component{
                             </View>
                             <NextMeeting />
                             <View style={styles.horizontal}>
-                                <Tile  onPress={() => this.onTilePress(routes.splashScreen)} icon="cog" text="Settings" />
-                                <Tile icon="user" text="Clients" />
+                                <Tile onPress={() => this.onTilePress(routes.splashScreen)} icon="cog" text="Settings" />
+                                <Tile onPress={() => this.onTilePress(routes.clientSearch)} icon="user" text="Clients" />
                             </View>
                             <View style={styles.horizontal}>
-                                <Tile icon="comments-o" text="Feedback" />
-                                <Tile icon="check-square-o" text="Survey" />
+                                <Tile icon="comments-o" text="Feedback" onPress={()=>{
+                                    NativeModules.MediaHelper.startRecording() 
+                                }} />
+                                <Tile icon="check-square-o" text="Survey" onPress={()=>{
+                                   NativeModules.MediaHelper.stopRecording() 
+                                }} />
                             </View>
                         </View>
                         <View>
@@ -60,7 +69,7 @@ class Dashboard extends React.Component{
                             </Tile>
                             <View style={styles.horizontal}>
                                 <Tile icon="list-alt" text="Questionaire" />
-                                <Tile>
+                                <Tile  onPress={() => this.onTilePress(routes.client)}>
                                     <Text>Wednsday, 11:19:05</Text>
                                     <Text style={{fontSize: 20, marginTop: 4}}>October</Text>
                                     <Text style={{fontSize: 35}}>28</Text>

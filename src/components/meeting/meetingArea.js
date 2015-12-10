@@ -6,12 +6,9 @@
 'use strict';
 
 import React, {  StyleSheet, Text, View, Image, TouchableHighlight,
-  TouchableWithoutFeedback, TextInput, ListView,} from 'react-native';
+  TouchableWithoutFeedback, TextInput, ListView, NativeModules, } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
-import MeetingSidebar from './meetingSidebar';
-import Calendar from '../ux/calendar';
-import MeetingIntro from './meetingIntro';
 import Notes from './notes';
 import Summary from './summary';
 import MinutesOfMeeting from './minutesOfMeeting';
@@ -19,28 +16,56 @@ import MeetingTitle from './meetingTitle';
 import AppStore from '../../stores/appStore';
 import Attachments from '../app/attachments';
 import DialogAndroid from 'react-native-dialogs';
+import MeetingStatus from '../../constants/meetingStatus';
 
 class MeetingArea extends React.Component{
     constructor(args){
         super(args);
-        this.state = { selectedTabIndex: 1 };
+        this.state = { selectedTabIndex: 1, isRecording: false };
+        if(AppStore.isRecording)
+            this.state.isRecording = true;
     }
     onTabPress(index) {
         this.setState({ selectedTabIndex: index});
     }
+    onMeetingUpdate(meeting) {
+        AppStore.updateActualMeeting(meeting);
+    }
     onFinishPress() {
-        
-        let _options = { title: 'Confirm', content: 'Are you sure want to finish current meeting?', 
-            positiveText: 'Yes', negativeText: 'No',
-            onPositive: () =>{ 
-                AppStore.finishCurrentMeeting(); 
-            } 
+        if(AppStore.getCurrentMeetingId() == this.props.meeting.BookedMeetingId) {
+            let dialog = new DialogAndroid();
+            let options = { 
+                title: 'Confirm', 
+                content: 'Are you sure want to finish current meeting?' ,
+                positiveText: 'Yes',
+                negativeText: 'No',
+                onPositive: () => AppStore.finishCurrentMeeting()
+            };
+            dialog.set(options);
+            dialog.show();      
+        }
+    }
+    postMeeting() {
+        let dialog = new DialogAndroid();
+        let options = { 
+            title: 'Confirm', 
+            content: 'Are you sure ?' ,
+            positiveText: 'Yes',
+            negativeText: 'No',
+            onPositive: () => AppStore.postMeeting(this.props.meeting)
         };
-
-        let _dlg = new DialogAndroid();
-        _dlg.set(_options);
-
-        _dlg.show();        
+        dialog.set(options);
+        dialog.show();      
+    }
+    recordAudio() {
+        this.setState({ isRecording: true });
+        AppStore.isRecording = true;
+        NativeModules.MediaHelper.startRecording() 
+    }
+    stopRecording() {
+        this.setState({ isRecording: false });
+        AppStore.isRecording = false;
+        NativeModules.MediaHelper.stopRecording() 
     }
     render() {
         return (
@@ -51,25 +76,25 @@ class MeetingArea extends React.Component{
                         <View style={styles.tabWrapper}>
                             <TouchableWithoutFeedback onPress={()=>this.onTabPress(1)}>
                                 <View style={styles.tab}>
-                                    <Icon name="user" size={18} style={{ color: this.state.selectedTabIndex == 1 ? '#6477C1': '#A4C1E8'   }} />
-                                <Text style={[styles.tabText, this.state.selectedTabIndex == 1 ? styles.tabSelected : {}]}>NOTES</Text>
+                                    <Icon name="sticky-note-o" size={18} style={{ color: this.state.selectedTabIndex == 1 ? '#6477C1': '#A4C1E8'   }} />
+                                    <Text style={[styles.tabText, this.state.selectedTabIndex == 1 ? styles.tabSelected : {}]}>NOTES</Text>
                                 </View>
                             </TouchableWithoutFeedback>
                             <TouchableWithoutFeedback onPress={()=>this.onTabPress(2)}>
                                 <View style={styles.tab}>
-                                    <Icon name="clock-o" size={18} style={{ color: this.state.selectedTabIndex == 2 ? '#6477C1': '#A4C1E8'   }} />
+                                    <Icon name="file-text-o" size={18} style={{ color: this.state.selectedTabIndex == 2 ? '#6477C1': '#A4C1E8'   }} />
                                     <Text style={[styles.tabText, this.state.selectedTabIndex == 2 ? styles.tabSelected : {}]}>SUMMARY</Text>
                                 </View>
                             </TouchableWithoutFeedback>
                             <TouchableWithoutFeedback onPress={()=>this.onTabPress(3)}>
                                 <View style={[styles.tab]}>
-                                    <Icon name="image" size={18} style={{ color: this.state.selectedTabIndex == 3 ? '#6477C1': '#A4C1E8'   }}/>
+                                    <Icon name="list-alt" size={18} style={{ color: this.state.selectedTabIndex == 3 ? '#6477C1': '#A4C1E8'   }}/>
                                     <Text style={[styles.tabText, this.state.selectedTabIndex == 3 ? styles.tabSelected : {}]}>MINUTES OF MEETING</Text>
                                 </View>
                             </TouchableWithoutFeedback>
                             <TouchableWithoutFeedback onPress={()=>this.onTabPress(4)}>
                                 <View style={[styles.tab, { borderRightWidth: 0 }]}>
-                                    <Icon name="image" size={18} style={{ color: this.state.selectedTabIndex == 4 ? '#6477C1': '#A4C1E8'   }} />
+                                    <Icon name="paperclip" size={18} style={{ color: this.state.selectedTabIndex == 4 ? '#6477C1': '#A4C1E8'   }} />
                                     <Text style={[styles.tabText, this.state.selectedTabIndex == 4 ? styles.tabSelected : {}]}>ATTACHMENTS </Text>
                                 </View>
                             </TouchableWithoutFeedback>
@@ -78,29 +103,50 @@ class MeetingArea extends React.Component{
                             {(() => {
                                 switch(this.state.selectedTabIndex) {
                                     case 1:
-                                        return (<Notes />);
+                                        return (<Notes {...this.props} onMeetingUpdate={this.onMeetingUpdate.bind(this)} />);
                                     case 2:
-                                        return (<Summary />);
+                                        return (<Summary {...this.props}  onMeetingUpdate={this.onMeetingUpdate.bind(this)}/>);
                                     case 3:
-                                        return (<MinutesOfMeeting />);
+                                        return (<MinutesOfMeeting {...this.props} onMeetingUpdate={this.onMeetingUpdate.bind(this)}/>);
                                     case 4:
-                                        return (<Attachments />);
-                                    default:
-                                        return (
-                                            <View>
-                                                <Text>{this.state.selectedTabIndex} - Page</Text>
-                                            </View>
-                                        );
+                                        return (<Attachments {...this.props} />);
                                 }
                             })()}
                         </View>
                         <View style={styles.footer}>
-                            <Button icon="envelope" text="Email Minutes Of Meeting" />
+                            {(()=>{
+                                if(!this.state.isRecording) {
+                                    return (<Button icon="microphone" text="Record Audio" onPress={this.recordAudio.bind(this)} />);
+                                }
+                                else {
+                                    return (<Button icon="stop" text="Stop Recording" onPress={this.stopRecording.bind(this)} />);
+                                }
+                            })()}
+                            
+
                             <Button icon="comments-o" text="Feedback" />
                             <Button icon="list-alt" text="Questionaire" />
                             <Button icon="check-square-o" text="Survey" />
                             <Button icon="exchange" text="Transfer" />
-                            <Button icon="check" text="Finish Meeting" style={{flex:1, borderRightWidth:0}} onPress={this.onFinishPress.bind(this)} />
+                            {(() => {
+                                if(this.props.meeting.Status == MeetingStatus.FINISHED) {
+                                    return (
+                                        <Button icon="check" 
+                                            text="Confirm & Update Meeting" 
+                                            style={{flex:1, borderRightWidth:0}} 
+                                            onPress={this.postMeeting.bind(this)} />
+                                    );
+                                }
+                                else {
+                                    return (
+                                        <Button icon="check" 
+                                            text="Finish Meeting" 
+                                            disabled={AppStore.getCurrentMeetingId() != this.props.meeting.BookedMeetingId} 
+                                            style={{flex:1, borderRightWidth:0}} 
+                                            onPress={this.onFinishPress.bind(this)} />
+                                    );
+                                }
+                            })()}
                         </View>
                     </View>
                 </View>
@@ -111,11 +157,14 @@ class MeetingArea extends React.Component{
 
 class Button extends React.Component {
     render() {
+        let color = "#424242";
+        if(this.props.disabled)
+            color = "#CCC";
         return (
             <TouchableWithoutFeedback onPress={this.props.onPress}>
                 <View style={[styles.button, this.props.style]}>
-                    <Icon name={this.props.icon} size={30} />
-                    <Text>{this.props.text}</Text>
+                    <Icon name={this.props.icon} size={30} color={color} />
+                    <Text style={{color: color}}>{this.props.text}</Text>
                 </View>
             </TouchableWithoutFeedback>
         );

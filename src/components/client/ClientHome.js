@@ -5,46 +5,49 @@
  */
 'use strict';
 
-var React = require('react-native');
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableHighlight,
-  Navigator,
-  TextInput,
-  TouchableWithoutFeedback,
-  Navigator,
-  BackAndroid,
-} = React;
+import React, { StyleSheet, Text, View, Image, 
+  TouchableHighlight, TextInput, TouchableWithoutFeedback, NativeModules, } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import Moment from 'moment';
+import ClientStore from '../../stores/clientStore';
 
-var Icon = require('react-native-vector-icons/FontAwesome');
-
-export class WelcomeScreen extends React.Component{
+export default class ClientHome extends React.Component{
   constructor(props) {
      super(props);
      this.state = {
        isLoading: false,
        currentPhase: PHASES.WELCOME,
-       scheduled: true
+       scheduled: true,
+       meeting: {}
      };
   }
-  _onScanButtonPress() {
+  onClientMeetingReceived(meeting) {
+    this.setState({ isLoading: false });
+  }
+  onScanButtonPress() {
       this.setState({ isLoading: true });
-      setTimeout(()=> {
-          this.setState({ isLoading: false, currentPhase: PHASES.CONFIRMATION });
-      }, 1000);
+      ClientStore.getClientMeeting().then(json => {
+        if(json) {
+          this.setState({ currentPhase: PHASES.CONFIRMATION, isLoading: false, meeting: json  })
+        }
+        else
+        {
+          this.setState({ currentPhase: PHASES.FINAL, isLoading: false, scheduled: false});
+          setTimeout(() => { this.setState({ currentPhase: PHASES.WELCOME }); }, 5000);  
+        }
+      });
   }
   onScheduleConfirm() {
-      this.setState({ isLoading: true });
-      setTimeout(()=> {
-          this.setState({ isLoading: false, currentPhase: PHASES.FINAL });
-          setTimeout(() => {
-              this.setState({ currentPhase: PHASES.WELCOME });
-          }, 5000);
-      }, 1000);
+      this.setState({ isLoading: false, currentPhase: PHASES.FINAL });
+      var clientName = "";
+      if(this.state.meeting.Clients)
+        clientName = "("+ this.state.meeting.Clients. FirstName + " " + this.state.meeting.Clients.LastName +")";
+      NativeModules.SmartReception.createNotification("New Meeting", "You have a client "+ clientName +" waiting for your next meeting.");
+      NativeModules.SmartReception.notifySound();
+      NativeModules.SmartReception.vibrate(1000);
+      setTimeout(() => {
+          this.setState({ currentPhase: PHASES.WELCOME });
+      }, 5000);
   }
   onRegister() {
       this.setState({ isLoading: true, scheduled: false });
@@ -69,11 +72,11 @@ export class WelcomeScreen extends React.Component{
           switch(this.state.currentPhase) {
               case PHASES.WELCOME:
                 return (<SplashScreen
-                    onScanButtonPress = {this._onScanButtonPress.bind(this)}
+                    onScanButtonPress = {this.onScanButtonPress.bind(this)}
                     onRegisterPress = { this.onRegisterLinkPress.bind(this) } />);
                 break;
               case PHASES.CONFIRMATION:
-                return (<ScheduleConfirmation onConfirm={this.onScheduleConfirm.bind(this)} />);
+                return (<ScheduleConfirmation meeting={this.state.meeting} onConfirm={this.onScheduleConfirm.bind(this)} />);
                 break;
               case PHASES.FINAL:
                 return (<FinalConfirmation scheduled={this.state.scheduled} />);
@@ -89,7 +92,7 @@ export class WelcomeScreen extends React.Component{
         <View style={styles.container}>
             <View style={{flex: 1, backgroundColor: '#', alignItems: 'center'}}>
                 <View style={{ padding: 5, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#FFF', marginTop: 40, alignItems: 'center' }}>
-                    <Image source={require('./resources/images/logo.png')} style={{width: 400, height: 160, marginBottom: 20}} />
+                    <Image source={require('../../../resources/images/logo.png')} style={{width: 400, height: 160, marginBottom: 20}} />
                     { this.renderPhases() }
                 </View>
             </View>
@@ -124,28 +127,54 @@ class LoadMask extends React.Component {
 class ScheduleConfirmation extends React.Component {
     constructor(args) {
         super(args);
-        this.state = {};
+        this.state = {
+          mobile: null,
+          email: null
+        };
+        if(this.props.meeting) {
+          this.state.mobile = this.props.meeting.Clients.Mobile;
+          this.state.email = this.props.meeting.Clients.Email;
+        }
+    }
+    onConfirm() {
+      if(this.props.onConfirm)
+      {
+        var client = this.props.meeting.Clients;
+        client.Mobile = this.state.mobile;
+        client.Email = this.state.email;
+        ClientStore.updateClientContacts(client).then(json => {
+          this.props.onConfirm(json)
+        })
+      }
     }
     render() {
         return (
             <View style={{alignItems: 'center', flex: 1}}>
                 <Image source={{uri: 'http://avenger.kaijuthemes.com/assets/demo/avatar/avatar_02.png'}} style={styles.profileImage} />
-                <Text style={styles.profileName}>Billy Duke</Text>
-                <Text>Chief Executive Officer</Text>
-                <Text>Globex Corporation</Text>
+                <Text style={styles.profileName}>{this.props.meeting.Clients.FirstName + " " + this.props.meeting.Clients.LastName}</Text>
+                <Text>{this.props.meeting.Clients.Position}</Text>
+                <Text>{this.props.meeting.Clients.Companies.Name}</Text>
                 <View style={styles.scheduleConfirmationNotification}>
-                    <Text style={{ fontSize: 20, fontStyle: 'bold' }}> Your meeting is scheduled on Today 10: AM </Text>
+                    <Text style={{ fontSize: 20, fontStyle: 'bold' }}> Your meeting is scheduled on Today {Moment(this.props.meeting.DateOfMeeting).format('HH:MM A')} </Text>
                 </View>
                 <View style={[styles.phoneConfirmationWrapper, { marginBottom: 20 }]}>
                     <Text>Please confirm your mobile number & email id: </Text>
                     <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 15 }} >
-                        <TextInput textAlign="center" underlineColorAndroid="#FFF" keyboardType="numeric" placeholder="052-867-0788" style={{ flex: 1 }} />
+                        <TextInput textAlign="center" underlineColorAndroid="#FFF" 
+                          value={this.state.mobile} 
+                          keyboardType="numeric" 
+                          placeholder="052-867-0788" 
+                          onChangeText={text=>this.setState({ mobile: text})}
+                          style={{ flex: 1 }} />
                     </View>
                     <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 10 }} >
-                        <TextInput textAlign="center" underlineColorAndroid="#FFF" placeholder="user@domain.com" style={{ flex: 1 }} />
+                        <TextInput textAlign="center" 
+                          underlineColorAndroid="#FFF" value={this.state.email} 
+                          onChangeText={text=>this.setState({ email: text})}
+                          placeholder="user@domain.com" style={{ flex: 1 }} />
                     </View>
                 </View>
-                <TouchableHighlight onPress={this.props.onConfirm}>
+                <TouchableHighlight onPress={this.onConfirm.bind(this)}>
                     <View style={styles.button}>
                         <Text style={styles.buttonText}>Confirm</Text>
                         <Icon name="arrow-right" color="#FFF" size={20} style={{marginTop: 4, marginLeft: 10}} />
@@ -168,7 +197,7 @@ class SplashScreen extends React.Component {
         return (
             <View style={{alignItems: 'center', flex: 1}}>
                 <Text style={{margin:10,fontSize: 45, color:'#000'}}>Welcome To Dubai SME</Text>
-                <Image source={require('image!emiratesid')} style={{width: 350, height: 220, marginTop: 40, marginBottom: 40}} />
+                <Image source={require('../../../resources/images/emiratesid.png')} style={{width: 350, height: 220, marginTop: 40, marginBottom: 40}} />
                 <TouchableHighlight onPress={this.props.onScanButtonPress}>
                     <View style={{flexDirection: 'row', width: 280, padding: 10, backgroundColor: '#D9232D', borderWidth: 1, borderColor: '#731117', alignItems: 'center', justifyContent: 'center'}}>
                         <Text style={{color:'#FFF', fontSize: 20}}>Scan Your Emirates Id</Text>
@@ -196,9 +225,9 @@ class FinalConfirmation extends React.Component {
             seconds: 59,
             isMeetingScheduled: true
         };
+        this.state.isMeetingScheduled = this.props.scheduled != undefined ? this.props.scheduled : true;
     }
     componentWillMount() {
-        this.setState({ isMeetingScheduled: this.props.scheduled ? this.props.scheduled: true });
         setInterval(() => { this.setState({ seconds: this.state.seconds - 1 })}, 1000);
     }
     renderMeetingScheduled() {
@@ -223,7 +252,7 @@ class FinalConfirmation extends React.Component {
     renderWalkin() {
         return (
             <View style={{ flexDirection: 'column', alignItems: 'center'}}>
-                <Text style={{ color: '#766946', fontSize: 32 }}>Sorry we can't find a scheduled meeting for you</Text>
+                <Text style={{ color: '#766946', fontSize: 32 }}>Sorry we can''t find a scheduled meeting for you</Text>
                 <Text style={{ color: '#000', fontSize: 32 }}>Please proceed to the reception staff </Text>
                 <Text style={{ color: '#000', fontSize: 32 }}>Thank you for choosing SME Smart Reception Service</Text>
             </View>

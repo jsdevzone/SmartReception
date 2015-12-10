@@ -102,6 +102,7 @@ class UserProfile extends React.Component{
 
 var styles = StyleSheet.create({
     container: {
+        flex: 1,
         width: 300,
         backgroundColor: '#d3d3d3',
         flexDirection: 'column',
