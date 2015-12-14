@@ -14,7 +14,8 @@ export default class MinutesOfMeeting extends React.Component {
 			minutes: null,
 			mode: modes.READ
 		};
-		this.state.minutes = this.props.meeting.ActualMeetings[0].MinutesOfMeeting;
+		if(this.props.meeting && this.props.meeting.ActualMeetings.length > 0)
+			this.state.minutes = this.props.meeting.ActualMeetings[0].MinutesOfMeeting;
 		AppStore.addEventListener('actualMeetingupdated', this.onMeetingUpdated.bind(this));
 	}
 	copyNotes() {
@@ -94,17 +95,17 @@ export default class MinutesOfMeeting extends React.Component {
                                 if(this.state.mode == modes.READ) {
                                     return (<ScrollView style={{flex:1}}>
                                     	<View style={{flex:1}}>
-                                    		<Text style={[styles.input, {flex: 1}]}>{this.state.minutes}</Text> 
+                                    		<Text style={[styles.input, {flex: 1}]}>{this.state.minutes}</Text>
                                     	</View>
                                     	</ScrollView>);
                                 }
                                 else
                                 {
                                 return (
-                                	
-                                    	<TextInput style={[styles.input, {flex: 1}]} 
+
+                                    	<TextInput style={[styles.input, {flex: 1}]}
                                         	multiline={true}
-                                        	value={this.state.minutes} 
+                                        	value={this.state.minutes}
                                         	onChangeText={this.onChangeText.bind(this)}
                                         	placeholder="" underlineColorAndroid="#FFFFFF" />
 
@@ -123,14 +124,14 @@ export default class MinutesOfMeeting extends React.Component {
                     <Button icon="pencil" text="Edit" borderPosition="bottom" onPress={this.onEdit.bind(this)} />
                     <Button icon="ban" text="Cancel" borderPosition="bottom" onPress={this.onCancel.bind(this)} />
                     <Button icon="floppy-o" text="Save" borderPosition="none" onPress={this.onMeetingUpdate.bind(this)} />
-                            
+
                         </View>
             </View>
 		);
 	}
 }
 
-const styles = StyleSheet.create({ 
+const styles = StyleSheet.create({
 	container: {
         flex: 1,
         flexDirection: 'row',
@@ -187,4 +188,3 @@ const styles = StyleSheet.create({
         alignItems: 'stretch'
     },
 });
-

@@ -5,7 +5,7 @@
  */
 'use strict';
 
-import React, { StyleSheet, Text, View, Image, 
+import React, { StyleSheet, Text, View, Image,
     TouchableHighlight, TextInput, NativeModules } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Tile from './tileBlock';
@@ -16,6 +16,7 @@ import UserStore from '../../stores/userStore';
 import NextMeeting from './nextMeeting';
 import ClientHome from '../client/ClientHome';
 import ClientSearch from '../client/clientSearch';
+import Feedback from '../feedback/feedback';
 
 import { NotificationBar, } from './notificationBar';
 import { getRandomColor, } from '../../utils/util';
@@ -26,6 +27,7 @@ var routes = {
     splashScreen: { title: 'Meeting', id: 'schedule', component: SplashScreen },
     client: { title: 'Clients', id: 'clients', component: ClientHome, props: { isClientModule: true }},
     clientSearch: { title: 'Clients', id: 'clients', component: ClientSearch },
+    feedback: { title: 'Feedback', id: 'feedback', component: Feedback },
 };
 
 class Dashboard extends React.Component{
@@ -54,12 +56,8 @@ class Dashboard extends React.Component{
                                 <Tile onPress={() => this.onTilePress(routes.clientSearch)} icon="user" text="Clients" />
                             </View>
                             <View style={styles.horizontal}>
-                                <Tile icon="comments-o" text="Feedback" onPress={()=>{
-                                    NativeModules.MediaHelper.startRecording() 
-                                }} />
-                                <Tile icon="check-square-o" text="Survey" onPress={()=>{
-                                   NativeModules.MediaHelper.stopRecording() 
-                                }} />
+                                <Tile icon="comments-o" text="Feedback" onPress={() => this.onTilePress(routes.feedback)} />
+                                <Tile icon="check-square-o" text="Survey" />
                             </View>
                         </View>
                         <View>

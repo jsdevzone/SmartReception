@@ -29,11 +29,11 @@ import ClientStore from '../../stores/clientStore';
 export class UserList extends React.Component {
     constructor(args) {
         super(args);
-        
-        this.dataSource = new ListView.DataSource({ 
-            rowHasChanged: (r1, r2) => r1 !== r2 
+
+        this.dataSource = new ListView.DataSource({
+            rowHasChanged: (r1, r2) => r1 !== r2
         });
-        
+
         this.state = {
             isLoading: false,
             dataSource: this.dataSource.cloneWithRows(data),
@@ -64,10 +64,10 @@ export class UserList extends React.Component {
                     <Text style={styles.profileText}>{rowData.FirstName ? rowData.FirstName.substr(0,1) : ""}</Text>
                 </View>
             );
-        } 
+        }
 
         return (
-            <TouchableHighlight underlayColor="#C6C7EA">
+            <TouchableHighlight underlayColor="#C6C7EA" onPress={() => this.props.onPress(rowData) }>
                 <View style={[styles.listItem, showSeparator ]}>
                     { photo }
                     <View style={styles.profileInfo}>

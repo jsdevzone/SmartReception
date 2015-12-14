@@ -16,7 +16,16 @@ class ScheduleSidebar extends Component {
         }
     }
     render() {
-        var customDayHeadings = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        let customDayHeadings = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        let component =  (<ScheduleList dataSource={this.props.dataSource} onSchedulePress={this.props.onSchedulePress} />);
+        if(this.props.isLoading)
+            component = (
+                <View style={styles.loadingWrapper}>
+                    <View style={styles.loadingInner}>
+                        <Text>Loading</Text>
+                    </View>
+                </View>
+            );
         return (
             <View style={styles.container}>
                 <View style={[styles.panel, styles.calendarWrapper]}>
@@ -27,17 +36,7 @@ class ScheduleSidebar extends Component {
                     <Text>{this.props.scheduleDate.format('dddd, MMMM DD, YYYY')}</Text>
                 </View>
                 <View style={[styles.panel, styles.scheduleList]}>
-                {
-                    (() => {
-                        if(this.props.isLoading) {
-                        return (<Text>Loading</Text>)
-                    }
-                    else
-                    {
-                        return (<ScheduleList dataSource={this.props.dataSource} onSchedulePress={this.props.onSchedulePress} />);
-                    }
-                    })()
-                }
+                    {component}
                 </View>
             </View>
         );
@@ -46,16 +45,12 @@ class ScheduleSidebar extends Component {
 
 var styles = StyleSheet.create({
     container: {
-        width: 250,
+        width: 270,
         flexDirection: 'column',
         alignItems: 'stretch',
+        backgroundColor: '#F7F8FC'
     },
     panel: {
-        backgroundColor: '#FFF',
-        borderColor: '#ECECEC',
-        borderWidth: 1,
-        padding: 10,
-        margin: 10
     },
     calendarWrapper: {
         alignItems: 'stretch',
@@ -65,12 +60,28 @@ var styles = StyleSheet.create({
         flexDirection: 'row',
         padding: 15,
         marginTop: 0,
-        marginBottom: 0
+        marginBottom: 0,
+        borderTopWidth: 1,
+        borderTopColor: '#E8E8E8',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E8E8E8'
     },
     scheduleList: {
         padding: 0,
         flex: 1
     },
+    loadingWrapper: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    loadingInner: {
+        backgroundColor: '#FFF',
+        padding: 10,
+        borderRadius: 4,
+        borderColor: '#CCC',
+        borderWidth: 1
+    }
 });
 
 module.exports = ScheduleSidebar;

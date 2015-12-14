@@ -47,7 +47,7 @@ var i = 0, last=0; while(i<=data.length){
         }
         newData.push(a)
      }
-     last = i; 
+     last = i;
     }
     i++;
 }
@@ -83,7 +83,7 @@ class Attachments extends React.Component{
         this.setState({ mode: modes.EDIT });
     }
     onGalleryImageReceived() {
-        this.setState({ mode: modes.EDIT });   
+        this.setState({ mode: modes.EDIT });
     }
     onUpload(name, desc) {
         data.push({ id:data.length + 1, name: name, des: desc, type:'image' });
@@ -93,7 +93,7 @@ class Attachments extends React.Component{
         NativeModules.MediaHelper.showCamera();
     }
     onGallery() {
-        NativeModules.MediaHelper.showGallery();   
+        NativeModules.MediaHelper.showGallery();
     }
     onIconPress(item) {
         item.selected = true;
@@ -101,6 +101,19 @@ class Attachments extends React.Component{
     }
     render() {
         let component = (<ListView dataSource={this.state.dataSource} renderRow={this.renderRow.bind(this)}  />);
+        let toolbar = (
+            <View style={styles.buttonBar}>
+                <Button icon="camera" onPress={this.onCamera.bind(this)} text="Take Picture" borderPosition="bottom" />
+                <Button icon="picture-o" text="Take From Gallery" borderPosition="bottom" onPress={this.onGallery.bind(this)} />
+                <Button icon="trash" text="Delete Selected" borderPosition="bottom" />
+                <Button icon="upload" text="Upload All" borderPosition="bottom" />
+                <Button icon="download" text="Download Selected" borderPosition="none" />
+            </View>
+        );
+        if(this.props.showToolbar != undefined && this.props.showToolbar == false) {
+            toolbar = null;
+        }
+
         if(this.state.mode == modes.EDIT) {
             component = (<AttachmentEditor onSave={this.onUpload.bind(this)} />)
         }
@@ -109,13 +122,7 @@ class Attachments extends React.Component{
                 <ScrollView style={{flex:1, padding: 10}}>
                     {component}
                 </ScrollView>
-                <View style={styles.buttonBar}>
-                    <Button icon="camera" onPress={this.onCamera.bind(this)} text="Take Picture" borderPosition="bottom" />
-                    <Button icon="picture-o" text="Take From Gallery" borderPosition="bottom" onPress={this.onGallery.bind(this)} />
-                    <Button icon="trash" text="Delete Selected" borderPosition="bottom" />
-                    <Button icon="upload" text="Upload All" borderPosition="bottom" />
-                    <Button icon="download" text="Download Selected" borderPosition="none" />
-                </View>
+                {toolbar}
             </View>
         );
     }
@@ -150,7 +157,7 @@ class FileIcon extends React.Component {
                 type = require('../../../resources/images/folder.png');
                 break;
         }
-    
+
         return (
             <TouchableWithoutFeedback onPress={this.props.onIconPress}>
                 <View style={[iconStyles.container, this.props.isSelected ? iconStyles.selected : {}]}>
@@ -178,7 +185,7 @@ class AttachmentEditor extends React.Component {
                     <Image source={require('../../../resources/images/image.png')} style={{width:200, height: 150, margin: 10}} />
 
                     <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 10 }} >
-                        <TextInput textAlign="center" 
+                        <TextInput textAlign="center"
                           underlineColorAndroid="#FFF"
                           value={this.state.name}
                           onTextChange={text=>this.setState({name:text})}
@@ -186,7 +193,7 @@ class AttachmentEditor extends React.Component {
                           placeholder="Name of the attachment" style={{ flex: 1 }} />
                     </View>
                      <View style={{ width: 350,height: 80, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 10 }} >
-                        <TextInput textAlign="center" 
+                        <TextInput textAlign="center"
                           underlineColorAndroid="#FFF"
                           multiline={true}
                           onTextChange={text=>this.setState({desc:text})}

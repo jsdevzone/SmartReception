@@ -3,14 +3,29 @@ package com.smartreception.module;
 import android.app.Activity;
 import android.content.Intent;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 
 /**
  * Created by itse4 on 12/8/2015.
@@ -72,5 +87,4 @@ public class MediaModule extends ReactContextBaseJavaModule {
         photoPickerIntent.setType("image/*");
         mActivity.startActivityForResult(photoPickerIntent, 2);
     }
-
 }

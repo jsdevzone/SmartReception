@@ -34,38 +34,38 @@ class MeetingArea extends React.Component{
     onFinishPress() {
         if(AppStore.getCurrentMeetingId() == this.props.meeting.BookedMeetingId) {
             let dialog = new DialogAndroid();
-            let options = { 
-                title: 'Confirm', 
+            let options = {
+                title: 'Confirm',
                 content: 'Are you sure want to finish current meeting?' ,
                 positiveText: 'Yes',
                 negativeText: 'No',
                 onPositive: () => AppStore.finishCurrentMeeting()
             };
             dialog.set(options);
-            dialog.show();      
+            dialog.show();
         }
     }
     postMeeting() {
         let dialog = new DialogAndroid();
-        let options = { 
-            title: 'Confirm', 
+        let options = {
+            title: 'Confirm',
             content: 'Are you sure ?' ,
             positiveText: 'Yes',
             negativeText: 'No',
             onPositive: () => AppStore.postMeeting(this.props.meeting)
         };
         dialog.set(options);
-        dialog.show();      
+        dialog.show();
     }
     recordAudio() {
         this.setState({ isRecording: true });
         AppStore.isRecording = true;
-        NativeModules.MediaHelper.startRecording() 
+        NativeModules.MediaHelper.startRecording()
     }
     stopRecording() {
         this.setState({ isRecording: false });
         AppStore.isRecording = false;
-        NativeModules.MediaHelper.stopRecording() 
+        NativeModules.MediaHelper.stopRecording()
     }
     render() {
         return (
@@ -122,27 +122,29 @@ class MeetingArea extends React.Component{
                                     return (<Button icon="stop" text="Stop Recording" onPress={this.stopRecording.bind(this)} />);
                                 }
                             })()}
-                            
+
 
                             <Button icon="comments-o" text="Feedback" />
                             <Button icon="list-alt" text="Questionaire" />
                             <Button icon="check-square-o" text="Survey" />
-                            <Button icon="exchange" text="Transfer" />
+                            <Button icon="exchange" text="Transfer"  onPress={()=>{
+                                    NativeModules.MediaHelper.uploadFile();
+                                }}/>
                             {(() => {
                                 if(this.props.meeting.Status == MeetingStatus.FINISHED) {
                                     return (
-                                        <Button icon="check" 
-                                            text="Confirm & Update Meeting" 
-                                            style={{flex:1, borderRightWidth:0}} 
+                                        <Button icon="check"
+                                            text="Confirm & Update Meeting"
+                                            style={{flex:1, borderRightWidth:0}}
                                             onPress={this.postMeeting.bind(this)} />
                                     );
                                 }
                                 else {
                                     return (
-                                        <Button icon="check" 
-                                            text="Finish Meeting" 
-                                            disabled={AppStore.getCurrentMeetingId() != this.props.meeting.BookedMeetingId} 
-                                            style={{flex:1, borderRightWidth:0}} 
+                                        <Button icon="check"
+                                            text="Finish Meeting"
+                                            disabled={AppStore.getCurrentMeetingId() != this.props.meeting.BookedMeetingId}
+                                            style={{flex:1, borderRightWidth:0}}
                                             onPress={this.onFinishPress.bind(this)} />
                                     );
                                 }

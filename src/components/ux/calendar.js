@@ -5,7 +5,7 @@ import moment from 'moment';
 
 const  weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const months = [
-                "January", "February", "March","April", "May", "June", "July", "August", 
+                "January", "February", "March","April", "May", "June", "July", "August",
                 "September", "October", "November", "December"
             ];
 
@@ -15,13 +15,15 @@ class Calendar extends React.Component {
         this.state = {
             year: 2015,
             month: 11,
-            selectedDate: moment()
+            selectedDate: moment(),
+            selectedDay: new Date().getDate()
         };
     }
     onDaySelected(day) {
         if(this.props.onDaySelected) {
             this.props.onDaySelected(moment([this.state.year, this.state.month, day]));
         }
+        this.setState({ selectedDay: day });
     }
     onNext() {
         let _currentMonth = this.state.month;
@@ -47,10 +49,10 @@ class Calendar extends React.Component {
         else
             _currentMonth = _currentMonth - 1;
 
-        this.setState({ month: _currentMonth, year: _currentYear });   
+        this.setState({ month: _currentMonth, year: _currentYear });
     }
     renderCalendar() {
-            
+
             var startDay = moment([this.state.year, this.state.month]);
             var days = {};
             for(var i=0;i<startDay.day();i++) {
@@ -58,31 +60,47 @@ class Calendar extends React.Component {
                    days[weekDays[i]] = new Array();
                 }
                 days[weekDays[i]].push(0);
-            }     
+            }
             for(var i=1;i<=startDay.daysInMonth();i++) {
                 if(!days[weekDays[startDay.day()]]) {
                    days[weekDays[startDay.day()]] = new Array();
                 }
                 days[weekDays[startDay.day()]].push(i);
                 startDay = startDay.add(1, 'day');
-            }     
+            }
         var _arr = [];
-        
-        return (
-            <View style={{flexDirection:'row'}}>
-                {weekDays.map((item) => {
-            return (<View><Text style={styles.weekHeader}>{item}</Text>{
-                
-            days[item].map((d) => {
-                var cur={};
 
-                var text = d;
-                if(d == 0)
-                    text = "";
-                return <TouchableWithoutFeedback onPress={()=>{this.onDaySelected(d)}}><Text style={[{width:30,height:30}]}>{text}</Text></TouchableWithoutFeedback>;
-            })}
-            </View>);
-        })}       
+        return (
+            <View style={styles.calendarWrapper}>
+                <View style={styles.calendarWrapperInner}>
+                    {
+                        weekDays.map(weekDay => {
+                            return (
+                                <View style={styles.column}>
+                                    <View style={styles.calendarEntry}>
+                                        <Text style={styles.weekHeader}>{weekDay}</Text>
+                                    </View>
+                                    {
+                                        days[weekDay].map(day => {
+                                            let text = day;
+                                            if(day == 0)
+                                                text = "";
+                                            let selected = this.state.selectedDay == day ? styles.selected : {};
+                                            let selectedText = this.state.selectedDay == day ? styles.selectedText : {};
+                                            return (
+                                                <TouchableHighlight onPress={()=>{ this.onDaySelected(day) }}>
+                                                    <View style={[styles.calendarEntry, selected ]}>
+                                                        <Text style={[styles.dayText, selectedText]}>{text}</Text>
+                                                    </View>
+                                                </TouchableHighlight>
+                                            )
+                                        })
+                                    }
+                                </View>
+                            )
+                        })
+                    }
+                </View>
             </View>
         );
     }
@@ -91,7 +109,7 @@ class Calendar extends React.Component {
             <View style={styles.headerWrapper}>
                 <View style={styles.navigation}>
                     <TouchableWithoutFeedback onPress={this.onPrevious.bind(this)}>
-                        <Icon name="arrow-circle-left" size={20} color="#000" />
+                        <Icon name="arrow-left" size={18} color="#000" />
                     </TouchableWithoutFeedback>
                 </View>
                 <View style={styles.header}>
@@ -100,7 +118,7 @@ class Calendar extends React.Component {
                 </View>
                 <View style={styles.navigation}>
                     <TouchableWithoutFeedback onPress={this.onNext.bind(this)}>
-                        <Icon name="arrow-circle-right" size={20} color="#000" />
+                        <Icon name="arrow-right" size={18} color="#000" />
                     </TouchableWithoutFeedback>
                 </View>
             </View>
@@ -120,17 +138,21 @@ var styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column'
-    }, 
+    },
     headerWrapper: {
-        padding: 10,
-        flexDirection: 'row'
+        padding: 5,
+        flexDirection: 'row',
+        marginBottom: 5,
     },
     week: {
         flexDirection: 'column',
-        width: 50, 
+        width: 50,
     },
     weekHeader: {
-        fontWeight: "bold"
+        fontWeight: 'bold',
+        textAlign: 'center',
+        paddingBottom: 10,
+        color: '#000'
     },
     navigation: {
         padding: 5,
@@ -141,7 +163,8 @@ var styles = StyleSheet.create({
         flexDirection: 'row',
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        marginTop: 5
     },
     month: {
         fontSize: 18,
@@ -151,6 +174,33 @@ var styles = StyleSheet.create({
         fontSize: 18,
         color: '#000',
         marginLeft: 10
+    },
+    calendarWrapper: {
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 10
+    },
+    calendarWrapperInner: {
+        flexDirection: 'row'
+    },
+    column: {
+        width: 35,
+        alignItems: 'stretch'
+    },
+    calendarEntry: {
+        height: 30,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    dayText: {
+        textAlign: 'center'
+    },
+    selected: {
+        backgroundColor: '#6E7EA2'
+    },
+    selectedText: {
+        color: '#FFF'
     }
 });
 

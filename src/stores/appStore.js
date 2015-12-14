@@ -28,14 +28,14 @@ var AppStore = Object.assign({}, EventEmitter.prototype, {
 					}
 				}
 				if(item[0] == STORAGE_KEY + ":currentMeeting") {
-					if(item[1] != null && item[1] != "") { 
+					if(item[1] != null && item[1] != "") {
 						this.currentMeeting = JSON.parse(item[1])
 						_settings.currentMeeting = this.currentMeeting;
 					}
 				}
 			})
 
-			this.emit('appsettingsloaded', _settings);	
+			this.emit('appsettingsloaded', _settings);
 		});
 	},
 	startMeeting: function (_meeting, _roomNo) {
@@ -45,7 +45,7 @@ var AppStore = Object.assign({}, EventEmitter.prototype, {
 		RequestManager.post('meeting/start', _meeting).then((json) => {
 			this.currentMeeting = json;
         	AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(json));
-			this.emit('meetingstarted', this.currentMeeting);	
+			this.emit('meetingstarted', this.currentMeeting);
 		});
 	},
 	updateActualMeeting: function(meeting) {
@@ -78,12 +78,15 @@ var AppStore = Object.assign({}, EventEmitter.prototype, {
 				this.emit('meetingfinished', this.currentMeeting);
 				this.currentMeeting = {};
 			});
-		}	
+		}
 	},
 	postMeeting: function(meeting) {
 		RequestManager.post('meeting/confirm', meeting).then(json => {
 			this.emit('meetingposted', json);
 		});
+	},
+	postUserFeedback: function(meeting, feedback) {
+		return RequestManager.post('meeting/feedback/' + feedback, meeting);
 	},
   	addEventListener: function(name, callback) {
     	this.on(name, callback);
@@ -92,8 +95,8 @@ var AppStore = Object.assign({}, EventEmitter.prototype, {
 	    CredentialStore.logout(() => this.emit('logout'));
   	},
   	hasActualMeeting: function() {
-  		return (this.currentMeeting != null && 
-  			this.currentMeeting.ActualMeetings != undefined && 
+  		return (this.currentMeeting != null &&
+  			this.currentMeeting.ActualMeetings != undefined &&
   			this.currentMeeting.ActualMeetings.length >  0);
   	},
   	getCurrentMeetingId: function() {
