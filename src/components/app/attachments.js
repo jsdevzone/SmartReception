@@ -25,7 +25,7 @@ Animated,
 } = React;
 import Progressbar from '../ux/progressBar';
 
-var data = [
+/*var data = [
     { id:1, name: 'Profile Image', type: 'image', },
     { id:2, name: 'License Agreement', type: 'folder', },
     { id:3, name: 'Profile Image', type: 'folder', },
@@ -33,8 +33,8 @@ var data = [
     { id:5, name: 'Profile Image', type: 'doc', },
     { id:7, name: 'Profile Image', type: 'image', },
     { id:8, name: 'Profile Image', type: 'image', },
-];
-function splitData() {
+];*/
+function splitData(data) {
     var newData =[];
 
 var i = 0, last=0; while(i<=data.length){
@@ -72,9 +72,13 @@ class Attachments extends React.Component{
     constructor(args) {
         super(args);
         this.state = {
-            dataSource: dataSource.cloneWithRows(splitData()),
+            dataSource: dataSource.cloneWithRows(splitData([])),
             selected: {},
-            mode: modes.READ
+            mode: modes.READ,
+            currentFile: null
+        }
+        if(this.props.meeting.Attachments && this.props.meeting.Attachments.length > 0) {
+            this.state.dataSource = dataSource.cloneWithRows(splitData(this.props.meeting.Attachments));
         }
         DeviceEventEmitter.addListener('camerapicturereceived', this.onCameraImage.bind(this));
         DeviceEventEmitter.addListener('imagereceivedfromgallery', this.onGalleryImageReceived.bind(this))
@@ -82,12 +86,13 @@ class Attachments extends React.Component{
     onCameraImage() {
         this.setState({ mode: modes.EDIT });
     }
-    onGalleryImageReceived() {
-        this.setState({ mode: modes.EDIT });
+    onGalleryImageReceived(filename) {
+        this.setState({ mode: modes.EDIT, currentFile: filename });
     }
     onUpload(name, desc) {
-        data.push({ id:data.length + 1, name: name, des: desc, type:'image' });
-        this.setState({ dataSource: dataSource.cloneWithRows(splitData()), mode: modes.READ });
+        this.props.meeting.Attachments.push({ id:this.props.meeting.Attachments.length + 1, name: name, des: desc, type:'image' });
+        this.setState({ dataSource: dataSource.cloneWithRows(splitData(this.props.meeting.Attachments)), mode: modes.READ });
+        NativeModules.MediaHelper.uploadFile(this.state.currentFile, this.props.meeting.BookedMeetingId.toString(), name, desc);
     }
     onCamera() {
         NativeModules.MediaHelper.showCamera();
@@ -117,6 +122,7 @@ class Attachments extends React.Component{
         if(this.state.mode == modes.EDIT) {
             component = (<AttachmentEditor onSave={this.onUpload.bind(this)} />)
         }
+
         return (
             <View style={styles.container}>
                 <ScrollView style={{flex:1, padding: 10}}>
@@ -127,10 +133,14 @@ class Attachments extends React.Component{
         );
     }
     renderRow(rowData, sectionID: number, rowID: number) {
+
         return (
             <View style={styles.row}>
                 {rowData.map((item,index)=>{
-                    return(<FileIcon name={item.name} isSelected={this.state.selected.id == item.id ? true: false} onIconPress={()=>this.onIconPress(item)} icon={item.type} />);
+                    var type = "image";
+                    if(item.Path && item.Path != null)
+                        type = item.Path.substr(item.Path.lastIndexOf(".") + 1);
+                    return(<FileIcon name={item.Name} isSelected={this.state.selected.AttachmentId == item.AttachmentId ? true: false} onIconPress={()=>this.onIconPress(item)} icon={type} />);
                 })}
             </View>
        );
@@ -147,6 +157,9 @@ class FileIcon extends React.Component {
         var type = require('../../../resources/images/pdf.png');
         switch(this.props.icon) {
             case 'image':
+            case 'png':
+            case 'jpg':
+            case 'gif':
                 type = require('../../../resources/images/image.png');
                 break;
             case 'doc':

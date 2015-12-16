@@ -60,12 +60,15 @@ class MeetingArea extends React.Component{
     recordAudio() {
         this.setState({ isRecording: true });
         AppStore.isRecording = true;
-        NativeModules.MediaHelper.startRecording()
+        NativeModules.MediaHelper.startRecording(this.props.meeting.BookedMeetingId.toString());
     }
     stopRecording() {
         this.setState({ isRecording: false });
         AppStore.isRecording = false;
-        NativeModules.MediaHelper.stopRecording()
+        NativeModules.MediaHelper.stopRecording();
+        if(this.props.onAttachmentAdded) {
+            this.props.onAttachmentAdded({ name: 'Voice Record', file: 'SmartReception/Record.3gp' });
+        }
     }
     render() {
         return (

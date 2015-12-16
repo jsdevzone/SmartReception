@@ -12,10 +12,13 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
+
+import org.json.JSONObject;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -44,7 +47,7 @@ public class MediaModule extends ReactContextBaseJavaModule {
         mActivity = activity;
 
         mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-        mFileName += "/audiorecordtest.3gp";
+        mFileName += "/SmartReception";
     }
 
     @Override
@@ -53,24 +56,32 @@ public class MediaModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void startRecording() {
-        mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mediaRecorder.setOutputFile(mFileName);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+    public void startRecording(String meetingId) {
+
+        File folder = new File(mFileName += "/" + meetingId);
+        if (!folder.exists())
+            folder.mkdirs();
+
         try {
+            mediaRecorder = new MediaRecorder();
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            mediaRecorder.setOutputFile(mFileName += "/record.3gp");
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             mediaRecorder.prepare();
+            mediaRecorder.start();
         } catch (IOException e) {
         }
-        mediaRecorder.start();
+
     }
 
     @ReactMethod
     public void stopRecording() {
-        mediaRecorder.stop();
-        mediaRecorder.release();
-        mediaRecorder = null;
+        if (mediaRecorder != null) {
+            mediaRecorder.stop();
+            mediaRecorder.release();
+            mediaRecorder = null;
+        }
     }
 
     @ReactMethod
@@ -86,5 +97,32 @@ public class MediaModule extends ReactContextBaseJavaModule {
         Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
         photoPickerIntent.setType("image/*");
         mActivity.startActivityForResult(photoPickerIntent, 2);
+    }
+
+
+    @ReactMethod
+    public void uploadFile(String uri, String meetingId, String name, String desc) {
+        try {
+            File sourceFile = new File(uri);
+            OkHttpClient client = new OkHttpClient();
+            RequestBody requestBody = new MultipartBuilder()
+                    .type(MultipartBuilder.FORM)
+                    .addFormDataPart("BookedMeetingId", meetingId)
+                    .addFormDataPart("Name", name)
+                    .addFormDataPart("Description", desc)
+                    .addFormDataPart("file", sourceFile.getName(), RequestBody.create(MediaType.parse("image/jpg"), sourceFile))
+                    .build();
+
+            Request request = new Request.Builder()
+                    .url("http://192.168.4.77/SmartReception.Service/api/meeting/attachments/upload")
+                    .post(requestBody)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+            JSONObject responseString = new JSONObject(response.body().string());
+
+        } catch (Exception ex) {
+
+        }
     }
 }

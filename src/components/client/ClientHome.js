@@ -5,7 +5,7 @@
  */
 'use strict';
 
-import React, { StyleSheet, Text, View, Image, 
+import React, { StyleSheet, Text, View, Image,
   TouchableHighlight, TextInput, TouchableWithoutFeedback, NativeModules, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Moment from 'moment';
@@ -24,16 +24,16 @@ export default class ClientHome extends React.Component{
   onClientMeetingReceived(meeting) {
     this.setState({ isLoading: false });
   }
-  onScanButtonPress() {
+  onScanButtonPress(identity) {
       this.setState({ isLoading: true });
-      ClientStore.getClientMeeting().then(json => {
+      ClientStore.getClientMeeting(identity).then(json => {
         if(json) {
           this.setState({ currentPhase: PHASES.CONFIRMATION, isLoading: false, meeting: json  })
         }
         else
         {
           this.setState({ currentPhase: PHASES.FINAL, isLoading: false, scheduled: false});
-          setTimeout(() => { this.setState({ currentPhase: PHASES.WELCOME }); }, 5000);  
+          setTimeout(() => { this.setState({ currentPhase: PHASES.WELCOME }); }, 5000);
         }
       });
   }
@@ -90,11 +90,11 @@ export default class ClientHome extends React.Component{
   render() {
     return (
         <View style={styles.container}>
-            <View style={{flex: 1, backgroundColor: '#', alignItems: 'center'}}>
-                <View style={{ padding: 5, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#FFF', marginTop: 40, alignItems: 'center' }}>
-                    <Image source={require('../../../resources/images/logo.png')} style={{width: 400, height: 160, marginBottom: 20}} />
-                    { this.renderPhases() }
-                </View>
+            <View style={{flex: 1, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center'}}>
+                <Image source={require('../../../resources/images/logo.png')} style={{width: 400, height: 160, marginBottom: 20}} />
+            </View>
+            <View style={{ padding: 5, backgroundColor: '#F4F4F4', flex: 1 }}>
+                { this.renderPhases() }
             </View>
         </View>
     );
@@ -160,16 +160,16 @@ class ScheduleConfirmation extends React.Component {
                 <View style={[styles.phoneConfirmationWrapper, { marginBottom: 20 }]}>
                     <Text>Please confirm your mobile number & email id: </Text>
                     <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 15 }} >
-                        <TextInput textAlign="center" underlineColorAndroid="#FFF" 
-                          value={this.state.mobile} 
-                          keyboardType="numeric" 
-                          placeholder="052-867-0788" 
+                        <TextInput textAlign="center" underlineColorAndroid="#FFF"
+                          value={this.state.mobile}
+                          keyboardType="numeric"
+                          placeholder="052-867-0788"
                           onChangeText={text=>this.setState({ mobile: text})}
                           style={{ flex: 1 }} />
                     </View>
                     <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 10 }} >
-                        <TextInput textAlign="center" 
-                          underlineColorAndroid="#FFF" value={this.state.email} 
+                        <TextInput textAlign="center"
+                          underlineColorAndroid="#FFF" value={this.state.email}
                           onChangeText={text=>this.setState({ email: text})}
                           placeholder="user@domain.com" style={{ flex: 1 }} />
                     </View>
@@ -192,23 +192,37 @@ class ScheduleConfirmation extends React.Component {
 class SplashScreen extends React.Component {
     constructor(args) {
         super(args);
+        this.state = {
+            identity: ""
+        };
     }
     render() {
         return (
-            <View style={{alignItems: 'center', flex: 1}}>
-                <Text style={{margin:10,fontSize: 45, color:'#000'}}>Welcome To Dubai SME</Text>
-                <Image source={require('../../../resources/images/emiratesid.png')} style={{width: 350, height: 220, marginTop: 40, marginBottom: 40}} />
-                <TouchableHighlight onPress={this.props.onScanButtonPress}>
-                    <View style={{flexDirection: 'row', width: 280, padding: 10, backgroundColor: '#D9232D', borderWidth: 1, borderColor: '#731117', alignItems: 'center', justifyContent: 'center'}}>
-                        <Text style={{color:'#FFF', fontSize: 20}}>Scan Your Emirates Id</Text>
-                        <Icon name="arrow-right" color="#FFF" size={20} style={{marginTop: 4, marginLeft: 10}} />
+            <View style={{alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                <View style={{backgroundColor: '#FFF', padding: 20, borderWidth: 1, borderColor: '#d5d5d5', borderTopColor: '#427fed', borderTopWidth: 5, alignItems: 'center', justifyContent: 'center', width: 300}}>
+                    <Image source={require('../../../resources/images/app-logo.png')} style={{width: 100, height: 100, marginBottom: 10}} />
+                    <View style={{alignItems:'center', justifyContent:'center', marginTop:20, marginBottom:20}}>
+                        <Text style={{textAlign:'center'}}>Please scan your emirates id or enter your emirates id below</Text>
                     </View>
-                </TouchableHighlight>
-                <TouchableWithoutFeedback onPress={ this.props.onRegisterPress }>
-                    <View>
-                        <Text style={{color:'#766946', fontSize: 17, marginTop: 10}}>I don''t have Emirates ID</Text>
+                    <View style={{backgroundColor: '#fbfbfb', borderColor: '#d5d5d5', borderWidth: 1, height: 40, width: 250, borderRadius: 4, marginBottom: 20 }} placeholder="Enter Your Emirates Id">
+                        <TextInput style={{flex: 1}} underlineColorAndroid="#fbfbfb"
+                            value = {this.state.identity}
+                            onChangeText={ text => this.setState({ identity: text }) }
+                            placeholder="Emirates Id #" keyboardType="numeric" />
                     </View>
-                </TouchableWithoutFeedback>
+                    <TouchableHighlight onPress={() => this.props.onScanButtonPress(this.state.identity) }>
+                        <View style={{flexDirection: 'row', width: 200, paddingTop: 10, paddingBottom: 10, padding: 5, backgroundColor: '#427fed', borderWidth: 1, borderColor: '#427fed', alignItems: 'center', justifyContent: 'center'}}>
+                            <Text style={{color:'#FFF'}}>Login</Text>
+                        </View>
+                    </TouchableHighlight>
+                </View>
+                <View style={{backgroundColor: '#FFF', padding: 10, borderWidth: 1, borderColor: '#d5d5d5', alignItems: 'center', justifyContent: 'center', marginTop: 20, width: 300 }}>
+                    <TouchableWithoutFeedback onPress={ this.props.onRegisterPress }>
+                        <View>
+                            <Text>I don''t have Emirates ID</Text>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </View>
             </View>
         );
     }
@@ -339,7 +353,7 @@ const PHASES = {
 var styles = StyleSheet.create({
   container: {
       flex: 1,
-      flexDirection: 'column',
+      flexDirection: 'row',
       backgroundColor: '#FFF'
   },
   profileImage: {

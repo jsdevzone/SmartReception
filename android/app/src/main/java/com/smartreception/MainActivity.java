@@ -2,8 +2,11 @@ package com.smartreception;
 
 import android.content.Context;
 import android.app.Activity;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.KeyEvent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -27,6 +30,8 @@ import com.facebook.soloader.SoLoader;
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.github.xinthink.rnmk.ReactMaterialKitPackage;
 import com.aakashns.reactnativedialogs.ReactNativeDialogsPackage;
+
+import java.io.File;
 
 public class MainActivity extends FragmentActivity implements DefaultHardwareBackBtnHandler {
 
@@ -113,9 +118,24 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
                     .emit("camerapicturereceived", null);
         }
         if (requestCode == 2 && resultCode == RESULT_OK) {
+            Uri selectedImageURI = data.getData();
+            File imageFile = new File(getRealPathFromURI(selectedImageURI));
             mReactInstanceManager.getCurrentReactContext()
                     .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                    .emit("imagereceivedfromgallery", null);
+                    .emit("imagereceivedfromgallery", imageFile.getAbsolutePath());
         }
+    }
+    private String getRealPathFromURI(Uri contentURI) {
+        String result;
+        Cursor cursor = getContentResolver().query(contentURI, null, null, null, null);
+        if (cursor == null) { // Source is Dropbox or other similar local file path
+            result = contentURI.getPath();
+        } else {
+            cursor.moveToFirst();
+            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            result = cursor.getString(idx);
+            cursor.close();
+        }
+        return result;
     }
 }

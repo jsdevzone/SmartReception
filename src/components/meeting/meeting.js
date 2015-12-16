@@ -4,7 +4,7 @@
  */
 'use strict';
 
-import React, { StyleSheet, Text, View, Image, 
+import React, { StyleSheet, Text, View, Image,
     TouchableHighlight, TextInput, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Sidebar from '../app/sidebar';
@@ -19,18 +19,20 @@ import MeetingProgress from './meetingProgress';
 class Meeting extends React.Component {
     constructor(args) {
         super(args);
-        
+
         this.state = {
             meetingStatus: MeetingStatus.BOOKED,
-            hasMeeting: false
+            hasMeeting: false,
+            meeting: {}
         };
 
         if (this.props.meeting) {
-            if(this.props.meeting.BookedMeetingId == AppStore.currentMeeting.BookedMeetingId) 
+            if(this.props.meeting.BookedMeetingId == AppStore.currentMeeting.BookedMeetingId)
                 this.state.meetingStatus = MeetingStatus.STARTED;
             else
                 this.state.meetingStatus = this.props.meeting.Status;
             this.state.hasMeeting = true;
+            this.state.meeting = this.props.meeting;
         }
 
         AppStore.addEventListener('meetingstarted', this.onMeetingStarted.bind(this));
@@ -38,11 +40,22 @@ class Meeting extends React.Component {
     onMeetingStarted(meeting) {
         this.setState({ meetingStatus: meeting.Status });
     }
+    onAttachmentAdded(attachment) {
+        let meeting = this.state.meeting;
+        if(!meeting.Attachments) {
+            meeting.Attachments = new Array();
+        }
+        meeting.Attachments.push(attachment);
+        this.setState({ meeting: meeting });
+    }
     getContentArea() {
-        if(this.state.meetingStatus == MeetingStatus.BOOKED) 
+        if(this.state.meetingStatus == MeetingStatus.BOOKED)
             return (<MeetingIntro {...this.props} />);
         else
-            return (<MeetingArea {...this.props} />);
+            return (<MeetingArea
+                        {...this.props}
+                        meeting={this.state.meeting}
+                        onAttachmentAdded = {this.onAttachmentAdded.bind(this)} />);
     }
     render() {
         if(this.state.hasMeeting) {

@@ -6,17 +6,17 @@ import AppConstants from '../constants/appConstants';
 import RequestManager from '../core/requestManager';
 
 var ClientStore = Object.assign({}, EventEmitter.prototype, {
-	getClientMeeting: function() {
-		return RequestManager.get('meeting/byclient', { clientIdentity: '9809869904'});
+	getClientMeeting: function(identity) {
+		return RequestManager.get('meeting/byclient', { clientIdentity: identity});
 	},
 	updateClientContacts: function(client) {
 		return RequestManager.post('client/updatecontact', client);
 	},
 	registerClient: function(client) {
-		return RequestManager.post('client/register', client);	
+		return RequestManager.post('client/register', client);
 	},
 	getClients: function(filter) {
-		return RequestManager.get('client/filter', { filter: filter != undefined ? filter : '' }).then(clients => { 
+		return RequestManager.get('client/filter', { filter: filter != undefined ? filter : '' }).then(clients => {
 			this.emit('clientlistloaded', clients);
 		});
 	},

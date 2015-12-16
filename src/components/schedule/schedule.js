@@ -58,16 +58,45 @@ class Schedule extends Component {
         );
     }
 }
-
+const contentTypes =  ["Notes", "Summary", "Minutes Of Meeting"];
 class ScheduleContentArea extends Component {
     constructor(args) {
         super(args);
         this.state = {
             selectedTabIndex: 1,
+            content: null
         };
+        if(this.props.schedule && this.props.schedule.ActualMeetings.length > 0) {
+            let types  = contentTypes[this.state.selectedTabIndex - 1].replace(/\s/gi,"");
+            this.state.content = this.props.schedule.ActualMeetings[0][types];
+        }
+    }
+    componentWillReceiveProps() {
+        if(this.props.schedule && this.props.schedule.ActualMeetings.length > 0) {
+            let types  = contentTypes[this.state.selectedTabIndex - 1].replace(/\s/gi,"");
+            this.setState({ content: this.props.schedule.ActualMeetings[0][types] });
+        }
     }
     onTabPress(index) {
-        this.setState({ selectedTabIndex: index });
+        let content = null;
+        if(this.props.schedule && this.props.schedule.ActualMeetings.length > 0) {
+            let types  = contentTypes[this.state.selectedTabIndex - 1].replace(/\s/gi,"");
+            content = this.props.schedule.ActualMeetings[0][types];
+        }
+        this.setState({ selectedTabIndex: index, content: content });
+    }
+    renderContent() {
+        if(this.state.content == null) {
+            let message = "No " + contentTypes[this.state.selectedTabIndex - 1] + " Found."
+            return (
+                <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                    <Notification message={message} />
+                </View>
+            );
+        }
+        else {
+            return (<Text>{this.state.content}</Text>)
+        }
     }
     render() {
         return (
@@ -80,6 +109,11 @@ class ScheduleContentArea extends Component {
                         <Text style={styles.title}>{this.props.schedule.Subject}</Text>
                         <Text style={styles.titleTime}>{moment(this.props.schedule.DateOfMeeting).format('MMMM, Do dddd, YYYY - hh:mm A')}</Text>
                     </View>
+                    <View style={styles.statusWrapper}>
+                        <View style={[styles.notification, styles.info]}>
+                            <Text style={[styles.notificationText, styles.infoText]}>Go To Meeting Screen</Text>
+                        </View>
+                    </View>
                 </View>
                 <View style={styles.tabHeaderWrapper}>
                     <Tab onPress={() => this.onTabPress(1)} icon="sticky-note-o" text="NOTES" selected={this.state.selectedTabIndex == 1} />
@@ -88,18 +122,28 @@ class ScheduleContentArea extends Component {
                 </View>
                 <View style={styles.tabBodyWrapper}>
                     <View style={{flex:1}}>
-                        <View style={{flex:2, backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#F4F4F4'}}>
-                            <Text>Notes Goes Here</Text>
+                        <View style={[styles.contentArea]}>
+                            {this.renderContent()}
                         </View>
                         <View style={{flex:1}}>
-                            <View style={{padding:10}}>
+                            <View style={styles.attachmentHeader}>
                                 <Text>Attachments</Text>
                             </View>
-                            <Attachments showToolbar={false} layout="horizontal" />
+                            <Attachments showToolbar={false} layout="horizontal" meeting={this.props.schedule} />
                         </View>
                     </View>
                     <UserProfile user={this.props.schedule.Clients} />
                 </View>
+            </View>
+        );
+    }
+}
+
+class Notification extends Component {
+    render() {
+        return (
+            <View style={styles.notification}>
+                <Text style={styles.notificationText}>{this.props.message}</Text>
             </View>
         );
     }
@@ -146,9 +190,20 @@ class UserProfile extends Component {
     }
 }
 
-
-
 var styles = StyleSheet.create({
+    notification: {
+        backgroundColor: '#fff1a8',
+        padding: 10,
+        borderLeftWidth: 5,
+        borderLeftColor: '#ffce55'
+    },
+    contentArea: {
+        flex:2,
+        backgroundColor: '#FFF',
+        borderBottomWidth: 1,
+        borderBottomColor: '#F4F4F4',
+        padding: 10
+    },
     container: {
         backgroundColor: '#f0f0f0',
         flex: 1,
@@ -172,6 +227,7 @@ var styles = StyleSheet.create({
     titleContainer: {
         backgroundColor: '#fff',
         padding: 5,
+        flex: 1
     },
     title: {
         color: 'rgb(82, 140, 214)',
@@ -222,6 +278,27 @@ var styles = StyleSheet.create({
         borderLeftColor: '#F4F4F4',
         borderLeftWidth: 1
     },
+    attachmentHeader: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F4F4F4',
+        backgroundColor: '#FFF',
+        flexDirection: 'row',
+        borderLeftWidth: 5,
+        borderLeftColor: '#2dc3e8'
+    },
+    info: {
+        borderLeftColor: '#11a9cc',
+        backgroundColor: '#57b5e3'
+    },
+    infoText: {
+        color: "#FFF"
+    },
+    statusWrapper: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingTop: 15
+    }
 });
 
 module.exports = Schedule;
