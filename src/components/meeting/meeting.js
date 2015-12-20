@@ -5,7 +5,7 @@
 'use strict';
 
 import React, { StyleSheet, Text, View, Image,
-    TouchableHighlight, TextInput, } from 'react-native';
+    TouchableHighlight, TextInput, NativeModules, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Sidebar from '../app/sidebar';
 import UserProfile from './userProfile';
@@ -15,6 +15,8 @@ import MeetingIntro from './meetingIntro';
 import AppStore from '../../stores/appStore';
 import MeetingStatus from '../../constants/meetingStatus';
 import MeetingProgress from './meetingProgress';
+
+import PenSurface from '../ux/penSurface';
 
 class Meeting extends React.Component {
     constructor(args) {
@@ -72,7 +74,21 @@ class Meeting extends React.Component {
         }
         else {
             return (
-                <View><Text>Please select a meeting</Text></View>
+                <View style={styles.container}>
+                    <PenSurface style={{flex:1}}/>
+                    <View style={{height: 100}}>
+                        <TouchableHighlight onPress={()=>{
+                            NativeModules.PenSurface.switchToEraserMode();
+                        }}>
+                            <Text>Eraser</Text>
+                        </TouchableHighlight>
+                        <TouchableHighlight onPress={()=>{
+                            NativeModules.PenSurface.switchToPenMode();
+                        }}>
+                            <Text>Pen</Text>
+                        </TouchableHighlight>
+                    </View>
+                </View>
             );
         }
     }

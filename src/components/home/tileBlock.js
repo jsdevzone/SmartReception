@@ -1,70 +1,88 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @author Jasim
- */
 'use strict';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ */
 
-var React = require('react-native');
-var Animatable = require('react-native-animatable');
-var Icon = require('react-native-vector-icons/FontAwesome');
+import React, { StyleSheet, Text, View, Image, TouchableHighlight, } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-import { getRandomColor } from '../../utils/util';
+const config = { width: 120, height: 120, margin: 10 };
+const possibleIconColors = [ '#8F78D4', '#58AB6A', '#BD79C1', '#B7A047', '#DE7A99', '#55A09A' ];
+/**
+ * @class Tile
+ * @extends React.Component
+ * 
+ * Represents a single tile in dashboard screen
+ *
+ * @props {String} scale represents the size of a tile. Values can be small, large, extralarge, fullColumn
+ * @props {String} iconColor hex color code for icon
+ * @props {String} textColor hex color code for text
+ * @props {Function} onPress event handler for on tile press event
+ * @props {String} text tile text
+ * @props {String} icon for tile, should be the font icon name
+ * @props {StyleSheet} style if any extra styles should be rendered 
+ * @props {Function} onPress press event handler
+ */
+export default class Tile extends React.Component {
 
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableHighlight,
-  TouchableWithoutFeedback,
-} = React;
-
-
-const TILE_HEIGHT = 120;
-const TILE_WIDTH = 120;
-const TILE_MARGIN = 10
-
-class Tile extends React.Component{
+    /**
+     * Renders the scene. [See Rect Js Render Method for more details]
+     * 
+     * @render
+     * @return {View} the tile view
+     */
     render() {
-        var colors = ['#8F78D4', '#58AB6A', '#BD79C1', '#B7A047', '#DE7A99', '#55A09A'];
-        var scale = this.props.scale ? this.props.scale : 'small';
-        var iconColor = this.props.iconColor ? this.props.iconColor : colors[Math.floor(Math.random() * 6)];
-        var textColor = this.props.textColor ? this.props.textColor: '#313131'
+        
+        let scale = this.props.scale || 'small';
+        let iconColor = this.props.iconColor || possibleIconColors[Math.floor(Math.random() * 6)];
+        let textColor = this.props.textColor || '#313131';
 
+        /**
+         * This is the default tile content. A text and icon placed vertically in container using flexDirection column style.
+         */
+        let content = (
+            <View style={styles.tileInner}>
+                <Icon name={this.props.icon} size={65} color={iconColor} style={{ marginLeft: 10, flex: 1 }}/>
+                <Text>{this.props.text}</Text>
+            </View>
+        );
+
+        /**
+         * If we pass some child object then it should be displayed instead of default content
+         */
+        if(this.props.children)
+            content = this.props.children;
+
+        let component = (
+            <TouchableHighlight onPress={this.props.onPress} underlayColor="#FF0">
+                <View style={[styles.tile, styles[scale], this.props.style]}>
+                    {content}
+                </View>
+            </TouchableHighlight>
+        );
+
+        /**
+         * Scale full column means the container with full screen height. 
+         * When using this mode childrens are mandatory
+         */
         if(this.props.scale == 'fullColumn') {
-            return (
-                <View animation="slideInDown" duration={500} style={[styles.tile, styles[scale], this.props.style]}>
+            component = (
+                <View style={[styles.tile, styles[scale], this.props.style]}>
                     {this.props.children}
                 </View>
             );
         }
-        else {
-            return (
-                <TouchableWithoutFeedback onPress={this.props.onPress}>
-                    <View animation="slideInDown" duration={500} style={[styles.tile, styles[scale], this.props.style]}>
-                        {(() => {
-                            if(!this.props.children) {
-                                return (
-                                    <View style={styles.tileInner}>
-                                        <Icon name={this.props.icon} size={65} color={iconColor} style={{marginLeft: 10, flex: 1}}/>
-                                        <Text>{this.props.text}</Text>
-                                    </View>
-                                );
-                            }
-                            else {
-                                return this.props.children;
-                            }
-                        })()}
-                    </View>
-                </TouchableWithoutFeedback>
-            );
-        }
+
+        return component;
     }
 }
 
-var styles = StyleSheet.create({
+/**
+ * @style
+ */
+const styles = StyleSheet.create({
     tile: {
         backgroundColor: '#FFF',
         margin: 5,
@@ -80,24 +98,23 @@ var styles = StyleSheet.create({
     },
     small:{
         backgroundColor: '#FFF',
-        width:TILE_WIDTH,
-        height:TILE_HEIGHT
+        width:config.width,
+        height:config.height
     },
     large: {
         backgroundColor: '#FFF',
-        width: (TILE_WIDTH * 2) + TILE_MARGIN,
-        height: TILE_HEIGHT
+        width: (config.width * 2) + config.margin,
+        height: config.height
     },
     extraLarge: {
         backgroundColor: '#FFF',
-        width: (TILE_WIDTH * 2) + TILE_MARGIN,
-        height: (TILE_WIDTH * 2) + TILE_MARGIN
+        width: (config.width * 2) + config.margin,
+        height: (config.height * 2) + config.margin
     },
     fullColumn: {
         backgroundColor: '#FFF',
         flex: 1,
-        width: ((TILE_WIDTH + 50) * 2) + TILE_MARGIN,
-        height: (TILE_WIDTH * 4) + (TILE_MARGIN*3),
+        width: ((config.width + 50) * 2) + config.margin,
+        height: (config.height * 4) + (config.margin * 3),
     },
 });
-module.exports = Tile;

@@ -13,7 +13,7 @@ class Notes extends Component {
             notes: "",
             mode: modes.READ
         };
-        if(this.hasActualMeeting()) 
+        if(this.hasActualMeeting())
             this.state.notes = this.props.meeting.ActualMeetings[0].Notes;
         AppStore.addEventListener('actualMeetingupdated', this.onMeetingUpdated.bind(this));
     }
@@ -63,9 +63,9 @@ class Notes extends Component {
                                 else
                                 {
                                 return (
-                                    <TextInput style={[styles.input, {flex: 1}]} 
+                                    <TextInput style={[styles.input, {flex: 1}]}
                                         multiline={true}
-                                        value={this.state.notes} 
+                                        value={this.state.notes}
                                         onChangeText={this.onChangeText.bind(this)}
                                         placeholder="" underlineColorAndroid="#FFFFFF" />);
                                 }
@@ -130,6 +130,9 @@ var styles = StyleSheet.create({
         width: 100,
         borderLeftWidth: 1,
         borderLeftColor: '#EAE5E5'
+    },
+    input: {
+        fontSize: 22
     },
     buttonBar: {
         backgroundColor:'#F0F1F3',

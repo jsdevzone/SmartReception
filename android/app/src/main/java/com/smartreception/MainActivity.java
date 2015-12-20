@@ -30,6 +30,7 @@ import com.facebook.soloader.SoLoader;
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.github.xinthink.rnmk.ReactMaterialKitPackage;
 import com.aakashns.reactnativedialogs.ReactNativeDialogsPackage;
+import com.samsung.android.sdk.pen.Spen;
 
 import java.io.File;
 
@@ -60,6 +61,14 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
 
         setContentView(mReactRootView);
         setNotificationBarColor();
+
+        boolean isPenEnabled = false;
+        Spen spenPackage = new Spen();
+        try {
+            spenPackage.initialize(this);
+            spenPackage.isFeatureEnabled(Spen.DEVICE_PEN);
+        } catch (Exception ex) {
+        }
     }
 
     public void setNotificationBarColor() {
@@ -125,6 +134,7 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
                     .emit("imagereceivedfromgallery", imageFile.getAbsolutePath());
         }
     }
+
     private String getRealPathFromURI(Uri contentURI) {
         String result;
         Cursor cursor = getContentResolver().query(contentURI, null, null, null, null);

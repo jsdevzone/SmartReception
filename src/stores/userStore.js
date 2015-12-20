@@ -1,5 +1,64 @@
+'use strict';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ */
 
-import AbstractStore from '../core/abstractStore';
+import { AsyncStorage } from 'react-native';
+import { EventEmitter } from 'events';
+
+import RequestManager from '../core/requestManager';
+
+/**
+ * User Store is flux store to load app user related data from the server 
+ * and serves the incoming data to the view components.
+ *
+ * @class UserStore
+ * @extends EventEmitter
+ * @store
+ * @singleton
+ */
+var UserStore = module.exports = Object.assign({}, EventEmitter.prototype, {
+    
+    /**
+     * Add the event listener for this object 
+     * @param {String} evt the event name
+     * @param {Function} callback, the callback function that should be triggered.
+     * @return {Void} undefined
+     */
+    addEventListener: function(evt, callback) {
+        this.on(evt, callback);
+    },
+
+    /**
+     * Loads client details from the server.
+     *
+     * @url - http://[server]/[service]/api/client?id={userId}
+     *
+     * @param {Number} userId
+     * @return {Promise} data
+     */
+    getUserDetails: function(userId) {
+        let promise =  RequestManager.get('client', { id: userId || 1});
+        return promise;
+    },
+
+    /**
+     * Loads upcoming meeting of this user
+     *
+     * @url - http://[server]/[service]/api/meeting/upcoming?employeeId={id}
+     *
+     * @param {Number} userId
+     * @return {Promise} data
+     */
+    getUpcomingMeeting: function(userId) {
+        let promise = RequestManager.get('meeting/upcoming', { employeeId: userId || 1});
+        promise.then( json => { this.emit('nextmeetingloaded', json) });
+        return promise;
+    }
+});
+/*
 
 var employeeId = 1;
 
@@ -48,3 +107,4 @@ class UserStore extends AbstractStore {
 }
 
 module.exports = UserStore;
+*/

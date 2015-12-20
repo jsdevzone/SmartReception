@@ -102,13 +102,11 @@ export default class MinutesOfMeeting extends React.Component {
                                 else
                                 {
                                 return (
-
                                     	<TextInput style={[styles.input, {flex: 1}]}
                                         	multiline={true}
                                         	value={this.state.minutes}
                                         	onChangeText={this.onChangeText.bind(this)}
                                         	placeholder="" underlineColorAndroid="#FFFFFF" />
-
                                    );
                                 }
                             })()
@@ -177,8 +175,9 @@ const styles = StyleSheet.create({
         borderLeftWidth: 1,
         borderLeftColor: '#EAE5E5'
     },
-
-
+	input: {
+		fontSize: 22
+	},
     buttonBar: {
         backgroundColor:'#F0F1F3',
         borderLeftColor: '#D8E0F1',

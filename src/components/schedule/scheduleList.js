@@ -1,16 +1,43 @@
+'use strict';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ */
 
-import React, { View, Text, StyleSheet, Component, 
-    ListView, TouchableHighlight, Image, } from 'react-native';
+import React, { StyleSheet, Text, View, TouchableHighlight, ListView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import moment from 'moment';
-import ScheduleStore from '../../stores/scheduleStore';
+import Moment from 'moment';
 import { getRandomColor } from '../../utils/util';
 
+// Store
+import ScheduleStore from '../../stores/scheduleStore';
 
-class ScheduleList extends Component {
+/**
+ * @class ScheduleList 
+ * @extends React.Component 
+ * 
+ * List of schedules 
+ *
+ * @props {DataSource} dataSource
+ * @props {Boolean}  showSeparator
+ * @props {Function} onSchedulePress 
+ */
+export default class ScheduleList extends React.Component {
+
+    /**
+     * @constructor
+     */
     constructor(args) {
         super(args);
     }
+
+    /**
+     * Renders the scene. [See Rect Js Render Method for more details]
+     * 
+     * @render
+     * @return {View} undefined
+     */
     render() {
         return (
             <View style={styles.container}>
@@ -18,13 +45,24 @@ class ScheduleList extends Component {
             </View>
         );
     }
+
+    /**
+     * Transforms each row of list view. [See ListView for more details]
+     *
+     * @param {Object} rowData
+     * @param {Number} sectionID
+     * @param {Number} rowID
+     */
     renderRow(rowData, sectionID: number, rowID: number) {
-        var showSeparator = this.props.showSeparator ? {borderBottomColor: '#F9F9F9', borderBottomWidth: 1}: {};
-        var time  = moment.utc(rowData.DateOfMeeting).format('h:mmA');
-        var photo =(<Image source={{uri: 'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg' }} style={styles.profileImage} />);
-        if(rowData.Clients && rowData.Clients.Photo) {
-            photo =(<Image source={{uri: rowData.Clients.Photo }} style={styles.profileImage} />);
-        }
+        
+        var showSeparator = this.props.showSeparator ? { borderBottomColor: '#F9F9F9', borderBottomWidth: 1 }: {};
+        var time  = Moment.utc(rowData.DateOfMeeting).format('h:mmA');
+        var photo =(
+            <Image source={{uri: 'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg' }} style={styles.profileImage} />
+        );
+        
+        if(rowData.Clients && rowData.Clients.Photo) 
+            photo =(<Image source={{uri: rowData.Clients.Photo }} style={styles.profileImage} />);   
         else {
             photo =(
                 <View style={[styles.profileImage, {backgroundColor: getRandomColor()}]}>
@@ -32,6 +70,7 @@ class ScheduleList extends Component {
                 </View>
             );
         }
+
         return (
             <TouchableHighlight underlayColor="#C6C7EA" onPress={() => this.props.onSchedulePress(rowData) }>
                 <View style={[styles.listItem, showSeparator ]}>
@@ -49,7 +88,10 @@ class ScheduleList extends Component {
     }
 }
 
-var styles = StyleSheet.create({
+/**
+ * @style
+ */
+const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingBottom: 10
@@ -92,5 +134,3 @@ var styles = StyleSheet.create({
         fontSize: 25
     }
 });
-
-module.exports = ScheduleList;

@@ -8,6 +8,7 @@ import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
 import com.smartreception.module.MediaModule;
+import com.smartreception.module.PenSurfaceModule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,9 +21,13 @@ import java.util.List;
 public class AndroidWidgetPackage implements ReactPackage {
 
     private Activity mActivity;
+    private PenSurfaceManager mPenSurfaceManager;
+
     public AndroidWidgetPackage(Activity activity) {
         mActivity = activity;
+        mPenSurfaceManager = new PenSurfaceManager();
     }
+
 
     @Override
     public List<Class<? extends JavaScriptModule>> createJSModules() {
@@ -32,7 +37,8 @@ public class AndroidWidgetPackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactApplicationContext) {
         return Arrays.<ViewManager>asList(
-                new ReactCalendarManager()
+                new ReactCalendarManager(),
+                mPenSurfaceManager
         );
     }
 
@@ -40,7 +46,8 @@ public class AndroidWidgetPackage implements ReactPackage {
     public List<NativeModule> createNativeModules(ReactApplicationContext reactApplicationContext) {
         return Arrays.<NativeModule>asList(
                 new SmartReceptionModule(reactApplicationContext),
-                new MediaModule(reactApplicationContext, mActivity)
+                new MediaModule(reactApplicationContext, mActivity),
+                new PenSurfaceModule(reactApplicationContext, mPenSurfaceManager)
         );
     }
 }

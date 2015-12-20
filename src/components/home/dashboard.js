@@ -1,45 +1,76 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @author Jasim
- */
 'use strict';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ */
 
+// Importing React Native
 import React, { StyleSheet, Text, View, Image,
     TouchableHighlight, TextInput, NativeModules } from 'react-native';
+    
+//Custom npm dependencies
 import Icon from 'react-native-vector-icons/FontAwesome';
+
+// Custom components
 import Tile from './tileBlock';
 import Meeting from '../meeting/meeting';
 import Schedule from '../schedule/schedule';
 import SplashScreen from '../app/splashScreen';
-import UserStore from '../../stores/userStore';
-import NextMeeting from './nextMeeting';
+import UpcomingMeeting from './upcomingMeeting';
 import ClientHome from '../client/ClientHome';
 import ClientSearch from '../client/clientSearch';
 import Feedback from '../feedback/feedback';
+import Notifications from './notifications';
 
-import { NotificationBar, } from './notificationBar';
-import { getRandomColor, } from '../../utils/util';
+//Stores
+import UserStore from '../../stores/userStore';
+import RouteStore from '../../stores/routeStore';
 
-var routes = {
-    meeting: { title: 'Meeting', id: 'meeting', component: Meeting },
-    calendar: { title: 'Meeting', id: 'schedule', component: Schedule },
-    splashScreen: { title: 'Meeting', id: 'schedule', component: SplashScreen },
-    client: { title: 'Clients', id: 'clients', component: ClientHome, props: { isClientModule: true }},
-    clientSearch: { title: 'Clients', id: 'clients', component: ClientSearch },
-    feedback: { title: 'Feedback', id: 'feedback', component: Feedback },
-};
+/**
+ * Adds routes to the route store
+ */
+RouteStore.add('meeting', { title: 'Meeting', component: Meeting });
+RouteStore.add('calendar', { title: 'Calendar', component: Schedule });
+RouteStore.add('splash', { title: 'Splash Screen', component: SplashScreen });
+RouteStore.add('client', { title: 'Client', component: ClientHome, props: { isClientModule: true }});
+RouteStore.add('client search', { title: 'Clients', component: ClientSearch });
+RouteStore.add('feedback', { title: 'Feedback', component: Feedback });
 
-class Dashboard extends React.Component{
+/**
+ * @class Dashboard
+ * @extend React.Component
+ * 
+ * @props {Navigator} navigator
+ * Home screen for the DA. This contains metro style tile designs
+ */
+export default class Dashboard extends React.Component{
+    
+    /**
+     * @constructor
+     */
     constructor(args){
         super(args);
-        this.state = {
-            meeting: { }
-        };
+        this.state = { meeting: {} };
     }
+    
+    /**
+     * Handles the user press event on tile, and shows the new screen by changing the navigation
+     * 
+     * @eventhandler
+     * @param {String} route
+     * @return {Void} undefined
+     * */
     onTilePress(route) {
-        this.props.navigator.push(route);
+        this.props.navigator.push(RouteStore.get(route));
     }
+    
+    /**
+     * Renders the scene. [See Rect Js Render Method for more details]
+     * 
+     * @render
+     * @return {Void} undefined
+     */
     render() {
         return (
             <View style={styles.dashboardContainer}>
@@ -47,59 +78,104 @@ class Dashboard extends React.Component{
                     <View style={[styles.horizontal, { marginTop: 25 }]}>
                         <View>
                             <View style={styles.horizontal}>
-                                <Tile onPress={() => this.onTilePress(routes.meeting)} icon="calendar-check-o" text="Meeting" scale="small"  />
-                                <Tile onPress={() => this.onTilePress(routes.calendar)} icon="calendar" text="Calendar" />
+                                <Tile onPress={() => this.onTilePress('meeting')} icon="calendar-check-o" text="Meeting" scale="small"  />
+                                <Tile onPress={() => this.onTilePress('calendar')} icon="calendar" text="Calendar" />
                             </View>
-                            <NextMeeting />
+                            <UpcomingMeeting />
                             <View style={styles.horizontal}>
-                                <Tile onPress={() => this.onTilePress(routes.splashScreen)} icon="cog" text="Settings" />
-                                <Tile onPress={() => this.onTilePress(routes.clientSearch)} icon="user" text="Clients" />
+                                <Tile onPress={() => this.onTilePress('splash')} icon="cog" text="Settings" />
+                                <Tile onPress={() => this.onTilePress('client search')} icon="user" text="Clients" />
                             </View>
                             <View style={styles.horizontal}>
-                                <Tile icon="comments-o" text="Feedback" onPress={() => this.onTilePress(routes.feedback)} />
+                                <Tile icon="comments-o" text="Feedback" onPress={() => this.onTilePress('feedback')} />
                                 <Tile icon="check-square-o" text="Survey" />
                             </View>
                         </View>
                         <View>
                             <Tile scale="extraLarge">
-                                <Image source={require('../../../resources/images/chart.png')} style={{flex: 1, width: 240, height: 100}}>
+                                <Image source={require('../../../resources/images/chart.png')} style={{ flex: 1, width: 240, height: 100 }}>
                                 </Image>
                             </Tile>
                             <View style={styles.horizontal}>
                                 <Tile icon="list-alt" text="Questionaire" />
-                                <Tile  onPress={() => this.onTilePress(routes.client)}>
-                                    <Text>Wednsday, 11:19:05</Text>
-                                    <Text style={{fontSize: 20, marginTop: 4}}>October</Text>
-                                    <Text style={{fontSize: 35}}>28</Text>
-                                    <Text style={{fontSize: 20}}>2015</Text>
-                                </Tile>
+                                { this.renderDateTile() }
                             </View>
-                            <View style={styles.horizontal}>
-                                <Tile scale="large">
-                                    <View style={styles.searchTileWrapper}>
-                                        <Icon name="search" size={65} color="#F03552" style={{marginLeft: 10}}/>
-                                        <View style={{flexDirection: 'column'}}>
-                                            <Text style={{fontSize: 18}}>Search</Text>
-                                            <Text>Search people or meeting here...</Text>
-                                        </View>
-                                    </View>
-                                </Tile>
-                            </View>
+                            { this.renderSearchTile() }
                         </View>
-                        <Tile scale="fullColumn" style={{alignItems:'stretch'}}>
-                            <NotificationBar {...this.props} navigator={this.props.navigator}/>
-                        </Tile>
+                        { this.renderScheduleTile() }
                     </View>
                 </View>
-                <View style={styles.copyrightBanner}>
-                    <Text>Powered By - e-Gov LLC </Text>
-                </View>
+                { this.renderCopyrightBanner() }
+            </View>
+        );
+    }
+    
+    /**
+     * Renders the date tile on dashboard
+     * @return {Tile} tile 
+     */
+    renderDateTile() {
+        return (
+            <Tile  onPress={() => this.onTilePress('client')}>
+                <Text>Wednsday, 11:19:05</Text>
+                <Text style={{fontSize: 20, marginTop: 4}}>October</Text>
+                <Text style={{fontSize: 35}}>28</Text>
+                <Text style={{fontSize: 20}}>2015</Text>
+            </Tile>
+        );
+    }
+    
+    /**
+     * Renders the search tile on dashboard
+     * @return {View} tile 
+     */
+    renderSearchTile() {
+        return (
+            <View style={styles.horizontal}>
+                <Tile scale="large">
+                    <View style={styles.searchTileWrapper}>
+                        <Icon name="search" size={65} color="#F03552" style={{marginLeft: 10}}/>
+                        <View style={{flexDirection: 'column'}}>
+                            <Text style={{fontSize: 18}}>Search</Text>
+                            <Text>Search people or meeting here...</Text>
+                        </View>
+                    </View>
+                </Tile>
+              </View>
+        );
+    }
+    
+    /**
+     * Renders the right most big schedule tile on dashboard
+     * @return {Tile} tile 
+     */
+    renderScheduleTile() {
+        let alignment = { alignItems: 'stretch' };
+        
+        return (
+            <Tile scale="fullColumn" style={alignment}>
+                <Notifications {...this.props} navigator={this.props.navigator}/>
+            </Tile>
+        );
+    }
+    
+    /**
+     * Render the copyright banner on bottom right corner of  dashboard
+     * @return {View} component
+     */
+    renderCopyrightBanner() {
+        return (
+            <View style={styles.copyrightBanner}>
+                <Text>Powered By - e-Gov LLC </Text>
             </View>
         );
     }
 }
 
-var styles = StyleSheet.create({
+/**
+ * @style
+ */
+const styles = StyleSheet.create({
     dashboardContainer: {
         backgroundColor: '#d3d3d3',
         flex: 1,
@@ -158,5 +234,3 @@ var styles = StyleSheet.create({
         backgroundColor: '#EAEEF5'
     },
 });
-
-module.exports = Dashboard;

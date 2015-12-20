@@ -3,6 +3,7 @@ import DialogAndroid from 'react-native-dialogs';
 var RequestManager = {
 	endpointBase: 'http://192.168.4.77/SmartReception.Service/api/',
     //endpointBase: 'http://smartreception.egovservice.com/services/api/',
+
 	get: function(action, params) {
 		let url = this.endpointBase + action;
         if(params) {
