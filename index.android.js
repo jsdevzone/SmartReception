@@ -30,6 +30,7 @@ import SplashScreen from './src/components/app/splashScreen';
 import ConnectionError from './src/components/app/connectionError';
 import AppStore from './src/stores/appStore';
 
+import DrawingSurface from './src/components/drawing/drawingSurface';
 
 var _navigator  =  null;
 var _initialRoute =  null;
@@ -175,7 +176,7 @@ class SmartReception extends React.Component {
         else {
             // If a previous authentication found, then load the Dashboard screen
             newState.hasCurrentMeeting = _settings.currentMeeting != undefined;
-            route = { component: Dashboard, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
+            route = { component: DrawingSurface, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
         }
         // Set the component state to change load the settings loaded from local storage
         this.setState(newState);

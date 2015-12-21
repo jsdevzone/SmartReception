@@ -77,5 +77,21 @@ var ScheduleStore = module.exports = Object.assign({}, EventEmitter.prototype, {
         promise.then( json => this.emit('meetingstarted', json ));
         
         return promise;
-     }
+     },
+
+     /**
+      * Get the list of attachment for this schedule
+      *
+      * @url - http://[server]/[service]/api/meeting/attachments
+      * 
+      * @param {Number} meetingId
+      * @return {Promise} promise
+      */
+      getAttachments: function(meetingId) {
+
+        let promise = RequestManager.get('meeting/attachments', { meetingId: meetingId});
+        promise.then( json => this.emit('attachmentsloaded', json ));
+
+        return promise;
+      }
 });

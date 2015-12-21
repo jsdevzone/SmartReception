@@ -1,49 +1,177 @@
+'use strict';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ */
 
-import React, {View, Text, Component, StyleSheet,TextInput, TouchableHighlight,} from 'react-native';
+import React, { View, Text, StyleSheet,TextInput, TouchableHighlight, NativeModules, ScrollView, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import AppStore from '../../stores/appStore';
+import DialogAndroid from 'react-native-dialogs';
 import Button from '../meeting/button';
+
+// Store
+import AppStore from '../../stores/appStore';
 
 const modes = { EDIT: 1, READ: 2 };
 
-class Notes extends Component {
+/**
+ * @class Notes
+ * @extends React.Component 
+ * 
+ * Notes editor
+ *
+ * @props {Function} onMeetingUpdate
+ * @props {Meeting} meeting
+ * @props {Navigator} navigator
+ */
+export default class Notes extends React.Component {
+
+    /** 
+     * @constructor
+     */
     constructor(args) {
         super(args);
+
+        /**
+         * @state
+         */
         this.state = {
             notes: "",
             mode: modes.READ
         };
+
+        /**
+         * If the meeting has actual meeting in object set the notes 
+         */
         if(this.hasActualMeeting())
             this.state.notes = this.props.meeting.ActualMeetings[0].Notes;
+
+        /**
+         * Add handler for meeing updated event
+         */
         AppStore.addEventListener('actualMeetingupdated', this.onMeetingUpdated.bind(this));
     }
+    
+    /**
+     * Checks the meeting has ActualMeeting. 
+     * @return {Boolean} hasActualMeeting
+     */
     hasActualMeeting() {
         return this.props.meeting && this.props.meeting.ActualMeetings.length > 0;
     }
+
+    /**
+     * Update meeting triggered
+     * @eventhandler
+     * @param {Meeting} meeting
+     * @return {Void} undefined
+     */
     onMeetingUpdated(meeting) {
+        //Hide progress dialog
+        NativeModules.DialogAndroid.hideProgressDialog();
+
+        //change state
         this.setState({ mode: modes.READ });
     }
+
+    /**
+     * Save notes 
+     *
+     * @eventhandler
+     * @return {Void} undefined
+     */
     onNoteSave() {
         if(this.hasActualMeeting()) {
+             
+            // Show waiting dialog
+            NativeModules.DialogAndroid.showProgressDialog();
+
             this.props.meeting.ActualMeetings[0].Notes = this.state.notes;
             if(this.props.onMeetingUpdate) {
                 this.props.onMeetingUpdate(this.props.meeting);
             }
         }
     }
+
+    /**
+     * Change Text 
+     *
+     * @eventhandler
+     * @param {String} text
+     * @return {Void} undefined
+     */
     onChangeText(text) {
         this.setState({ notes: text });
     }
+
+    /**
+     * checks meeting in props is current meeting
+     *
+     * @eventhandler
+     * @return {Boolean} isCurrentMeeting
+     */
     isCurrentMeeting() {
         return (AppStore.currentMeeting && AppStore.currentMeeting.BookedMeetingId == this.props.meeting.BookedMeetingId);
     }
+
+    /**
+     * Change mode to edit 
+     *
+     * @eventhandler
+     * @return {Boolean} isCurrentMeeting
+     */
     onEdit() {
         this.setState({ mode: modes.EDIT });
     }
+    
+    /**
+     * Cancel changes. Change the mode to read.
+     *
+     * @eventhandler
+     * @return {Boolean} isCurrentMeeting
+     */
     onCancel() {
-        this.setState({ mode: modes.READ });
+        let dialog = new DialogAndroid();
+        let options = {
+            title: 'Confirm',
+            content: 'Are you sure ?',
+            positiveText: 'Yes',
+            negativeText: 'No',
+            onPositive: () => { 
+                this.setState({ mode: modes.READ, notes: this.props.meeting.ActualMeetings[0].Notes });
+            }
+        };
+        dialog.set(options);
+        dialog.show();
     }
+    
+    /**
+     * Renders the scene. [See Rect Js Render Method for more details]
+     * 
+     * @render
+     * @return {View} component
+     */
     render() {
+
+        var component = (
+            <View style={styles.notesArea}>
+                <TextInput style={[styles.input, {flex: 1}]}
+                    multiline={true}
+                    value={this.state.notes}
+                    onChangeText={this.onChangeText.bind(this)}
+                    placeholder="" 
+                    underlineColorAndroid="#FFFFFF" />
+            </View>
+        );
+
+        if(this.state.mode == modes.READ)
+            component = (
+                <ScrollView style={styles.notesArea}>
+                    <Text style={[styles.input, {flex: 1}]}>{this.state.notes}</Text>           
+                </ScrollView>
+            );
+
         return (
             <View style={styles.container}>
                 <View style={styles.containerInner}>
@@ -54,24 +182,7 @@ class Notes extends Component {
                         </View>
                     </View>
                     <View style={styles.content}>
-                        <View style={styles.notesArea}>
-                           {
-                            (() => {
-                                if(this.state.mode == modes.READ) {
-                                    return (<Text style={[styles.input, {flex: 1}]}>{this.state.notes}</Text>);
-                                }
-                                else
-                                {
-                                return (
-                                    <TextInput style={[styles.input, {flex: 1}]}
-                                        multiline={true}
-                                        value={this.state.notes}
-                                        onChangeText={this.onChangeText.bind(this)}
-                                        placeholder="" underlineColorAndroid="#FFFFFF" />);
-                                }
-                            })()
-                           }
-                        </View>
+                        { component }
                     </View>
                 </View>
                 <View style={styles.buttonBar}>
@@ -85,7 +196,10 @@ class Notes extends Component {
     }
 }
 
-var styles = StyleSheet.create({
+/**
+ * @style
+ */
+const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'row',
@@ -143,5 +257,3 @@ var styles = StyleSheet.create({
         alignItems: 'stretch'
     },
 });
-
-module.exports = Notes;

@@ -1,23 +1,62 @@
 'use strict';
-import React, {View, Text, Component, StyleSheet,TextInput, TouchableHighlight, ScrollView,} from 'react-native';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ */
+
+import React, {View, Text, Component, StyleSheet,TextInput, TouchableHighlight, ScrollView, NativeModules, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import AppStore from '../../stores/appStore';
 import DialogAndroid from 'react-native-dialogs';
 import Button from '../meeting/button';
 
+//Stores
+import AppStore from '../../stores/appStore';
+
 const modes = { EDIT: 1, READ: 2 };
 
+/**
+ * @class MinutesOfMeeting
+ * @extends React.Component 
+ * 
+ * Summary Editor
+ *
+ * @props {Function} onMeetingUpdate
+ * @props {Meeting} meeting
+ * @props {Navigator} navigator
+ */
 export default class MinutesOfMeeting extends React.Component {
+
+    /** 
+     * @constructor
+     */
 	constructor(args) {
 		super(args);
+
+        /**
+         * @state
+         */
 		this.state = {
 			minutes: null,
 			mode: modes.READ
 		};
+
+        /**
+         * If the meeting has actual meeting in object set the summary 
+         */
 		if(this.props.meeting && this.props.meeting.ActualMeetings.length > 0)
 			this.state.minutes = this.props.meeting.ActualMeetings[0].MinutesOfMeeting;
+
+        /**
+         * Add handler for meeing updated event
+         */
 		AppStore.addEventListener('actualMeetingupdated', this.onMeetingUpdated.bind(this));
 	}
+
+    /**
+     * Copy notes from the notes component
+     * @return {Void} undefined
+     */
 	copyNotes() {
 		let options = { title: 'Select an option', positiveText: 'Select', items: AppStore.copyOptions };
         options.itemsCallback = (selectedOption) => {
@@ -39,6 +78,11 @@ export default class MinutesOfMeeting extends React.Component {
         dialog.set(options);
         dialog.show();
 	}
+
+    /**
+     * Copy summary from the summary component
+     * @return {Void} undefined
+     */
 	copySummary() {
 		let options = { title: 'Select an option', positiveText: 'Select', items: AppStore.copyOptions };
         options.itemsCallback = (selectedOption) => {
@@ -60,25 +104,107 @@ export default class MinutesOfMeeting extends React.Component {
         dialog.set(options);
         dialog.show();
 	}
+
+    /**
+     * Change Text 
+     *
+     * @eventhandler
+     * @param {String} text
+     * @return {Void} undefined
+     */
 	onChangeText(text) {
 		this.setState({ minutes: text});
 	}
+
+    /**
+     * Change mode to edit 
+     *
+     * @eventhandler
+     * @return {Boolean} isCurrentMeeting
+     */
 	onEdit() {
 		this.setState({ mode: modes.EDIT });
 	}
+
+    /**
+     * Cancel changes. Change the mode to read.
+     *
+     * @eventhandler
+     * @return {Boolean} isCurrentMeeting
+     */
 	onCancel() {
-		this.setState({ mode: modes.READ, minutes: this.props.meeting.ActualMeetings[0].Summary });
+
+        let dialog = new DialogAndroid();
+        let options = {
+            title: 'Confirm',
+            content: 'Are you sure ?' ,
+            positiveText: 'Yes',
+            negativeText: 'No',
+            onPositive: () => { 
+                this.setState({ mode: modes.READ, minutes: this.props.meeting.ActualMeetings[0].MinutesOfMeeting });
+            }
+        };
+        dialog.set(options);
+        dialog.show();
 	}
-	onMeetingUpdated() {
-		this.setState({ mode: modes.READ });
-	}
-	onMeetingUpdate() {
+	
+    /**
+     * Update meeting upate triggered
+     * @eventhandler
+     * @param {Meeting} meeting
+     * @return {Void} undefined
+     */
+    onMeetingUpdated() {
+         //Hide progress dialog
+        NativeModules.DialogAndroid.hideProgressDialog();
+
+        //change state
+        this.setState({ mode: modes.READ });
+    }
+
+    /**
+     * Save minutes of meeting 
+     *
+     * @eventhandler
+     * @return {Void} undefined
+     */
+	onSave() {
+        // Show waiting dialog
+        NativeModules.DialogAndroid.showProgressDialog();
+
 		this.props.meeting.ActualMeetings[0].MinutesOfMeeting = this.state.minutes;
 		if(this.props.onMeetingUpdate) {
             this.props.onMeetingUpdate(this.props.meeting);
         }
 	}
+
+    /**
+     * Renders the scene. [See Rect Js Render Method for more details]
+     * 
+     * @render
+     * @return {View} component
+     */
 	render() {
+
+        var component = (
+            <View style={styles.notesArea}>
+                <TextInput style={[styles.input, {flex: 1}]}
+                    multiline={true}
+                    value={this.state.minutes}
+                    onChangeText={this.onChangeText.bind(this)}
+                    placeholder="" 
+                    underlineColorAndroid="#FFFFFF" />
+            </View>
+        );
+
+        if(this.state.mode == modes.READ) {
+            component = (
+                <ScrollView style={styles.notesArea}>
+                    <Text style={[styles.input, {flex: 1}]}>{this.state.minutes}</Text>           
+                </ScrollView>
+            );
+        }
+
 		return (
 			<View style={styles.container}>
                 <View style={styles.containerInner}>
@@ -89,41 +215,17 @@ export default class MinutesOfMeeting extends React.Component {
                         </View>
                     </View>
                     <View style={styles.content}>
-                        <View style={styles.notesArea}>
-                           {
-                            (() => {
-                                if(this.state.mode == modes.READ) {
-                                    return (<ScrollView style={{flex:1}}>
-                                    	<View style={{flex:1}}>
-                                    		<Text style={[styles.input, {flex: 1}]}>{this.state.minutes}</Text>
-                                    	</View>
-                                    	</ScrollView>);
-                                }
-                                else
-                                {
-                                return (
-                                    	<TextInput style={[styles.input, {flex: 1}]}
-                                        	multiline={true}
-                                        	value={this.state.minutes}
-                                        	onChangeText={this.onChangeText.bind(this)}
-                                        	placeholder="" underlineColorAndroid="#FFFFFF" />
-                                   );
-                                }
-                            })()
-                           }
-                        </View>
-
+                        { component }
                     </View>
                 </View>
                 <View style={styles.buttonBar}>
-                        <View style={[styles.button, {flex:1} ]}></View>
-                    <Button icon="clone" text="Copy Notes" borderPosition="bottom" onPress={this.copyNotes.bind(this)} />
-                    <Button icon="files-o" text="Copy Summary" borderPosition="bottom" onPress={this.copySummary.bind(this)} />
-                    <Button icon="pencil" text="Edit" borderPosition="bottom" onPress={this.onEdit.bind(this)} />
-                    <Button icon="ban" text="Cancel" borderPosition="bottom" onPress={this.onCancel.bind(this)} />
-                    <Button icon="floppy-o" text="Save" borderPosition="none" onPress={this.onMeetingUpdate.bind(this)} />
-
-                        </View>
+                    <View style={[styles.button, {flex:1} ]}></View>
+                        <Button icon="clone" text="Copy Notes" borderPosition="bottom" onPress={this.copyNotes.bind(this)} />
+                        <Button icon="files-o" text="Copy Summary" borderPosition="bottom" onPress={this.copySummary.bind(this)} />
+                        <Button icon="pencil" text="Edit" borderPosition="bottom" onPress={this.onEdit.bind(this)} />
+                        <Button icon="ban" text="Cancel" borderPosition="bottom" onPress={this.onCancel.bind(this)} />
+                        <Button icon="floppy-o" text="Save" borderPosition="none" onPress={this.onSave.bind(this)} />
+                    </View>
             </View>
 		);
 	}

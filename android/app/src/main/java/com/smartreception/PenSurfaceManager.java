@@ -43,7 +43,7 @@ public class PenSurfaceManager extends SimpleViewManager<PenSurface> {
         mPenSurface.setPenSettingInfo(penInfo);
 
         mSpenPageDoc = mSpenNoteDoc.appendPage();
-        mSpenPageDoc.setBackgroundColor(0xFFD6E6F5);
+        mSpenPageDoc.setBackgroundColor(0xFFFFFFFF);
         mSpenPageDoc.clearHistory();
 
 
@@ -58,5 +58,29 @@ public class PenSurfaceManager extends SimpleViewManager<PenSurface> {
 
     public SpenPageDoc getSpenPageDoc() {
         return mSpenPageDoc;
+    }
+
+    public SpenNoteDoc getSpenNoteDoc() {
+        return mSpenNoteDoc;
+    }
+
+    public void setSpenNoteDoc(SpenNoteDoc doc) throws Exception{
+
+        mSpenNoteDoc.close();
+        mSpenNoteDoc = doc;
+
+        if (mSpenNoteDoc.getPageCount() == 0) {
+            mSpenPageDoc = mSpenNoteDoc.appendPage();
+        } else {
+            mSpenPageDoc = mSpenNoteDoc.getPage(mSpenNoteDoc.getLastEditedPageIndex());
+        }
+        mPenSurface.setPageDoc(mSpenPageDoc, true);
+        mPenSurface.update();
+    }
+
+    public void addNewPage() {
+        mSpenPageDoc = mSpenNoteDoc.insertPage(mSpenNoteDoc.getPageIndexById(mSpenPageDoc.getId()) + 1);
+        mSpenPageDoc.setBackgroundColor(0xFFD6E6F5);
+        mSpenPageDoc.clearHistory();
     }
 }

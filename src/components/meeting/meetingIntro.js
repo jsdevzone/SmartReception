@@ -1,35 +1,92 @@
-/**
- * @class MeetingIntro
- * @author Jasim
- */
 'use strict';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ */
 
-import React, { StyleSheet, Text, View, Image, TouchableHighlight,
-  TextInput, TouchableWithoutFeedback, NativeModules, ToastAndroid,} from 'react-native';
+import React, { StyleSheet, Text, View, Image,TouchableWithoutFeedback, NativeModules,} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DialogAndroid from 'react-native-dialogs';
-import AppStore from '../../stores/appStore';
-import RequestManager from '../../core/requestManager';
 
-class MeetingIntro extends React.Component {
+// Store
+import AppStore from '../../stores/appStore';
+
+/**
+ * @class MeetingIntro
+ * @extends React.Component 
+ * 
+ * If the meeting is not started yet, this screen will be displayed and they can start meeting from this screen.
+ *
+ * @props {Meeting} meeting
+ */
+export default class MeetingIntro extends React.Component {
+
+    /**
+     * @constructor
+     */
     constructor(args) {
         super(args);
+        /**
+         * @state
+         */
         this.state = {};
     }
-    startMeeting(_roomNo) {
-        AppStore.startMeeting(this.props.meeting, _roomNo);
-    }
+
+    /**
+     * Event handler for start button press
+     * @eventhandler
+     * @return {Void} undefined
+     */
     onStartButtonPress() {
+
+        // Show waiting dialog
+        NativeModules.DialogAndroid.showProgressDialog();
+
         let dialog = new DialogAndroid();
         let options = {};
+
+        // If the passed meeting dont have actual
+        // meeting inside we shows the room selection screen
+
         if(!AppStore.hasActualMeeting()) {
-            options = { 
-                title: 'Select A Meeting Area', 
-                positiveText: 
-                'Select', items: AppStore.meetingAreas 
-            };
-            options.itemsCallback = this.startMeeting.bind(this);
+            // Get the availaable rooms
+            AppStore.getAvailableMeetingRooms().then(data => { 
+                
+                // Hide progress dialog
+                NativeModules.DialogAndroid.hideProgressDialog();
+
+                /**
+                 * Dialog only accepts string array
+                 * So transforms server data into string array and save the same locally in this class
+                 */
+                var rooms = new Array();
+                data.map(item  => rooms.push(item.Name));
+
+                options = { 
+                    title: 'Select A Meeting Area', 
+                    positiveText: 'Select', 
+                    items: rooms
+                };
+
+                /**
+                 * Callback for item select 
+                 */
+                options.itemsCallback = (index) => {
+                    AppStore.startMeeting(this.props.meeting, data[index].RoomId);
+                };
+
+                /**
+                 * Shows the dialog
+                 */
+                dialog.set(options);
+                dialog.show();
+            });
         }
+        /**
+         * Means that the current meeting has actual meeting.
+         * So the user can't start it again.
+         */
         else
         {
             options = { 
@@ -37,17 +94,24 @@ class MeetingIntro extends React.Component {
                 content: "Can't start start new meeting without stopping current one", 
                 positiveText: "OK"
             };
+            dialog.set(options);
+            dialog.show();
         }
-        dialog.set(options);
-        dialog.show();
     }
+
+    /**
+     * Renders the scene. [See Rect Js Render Method for more details]
+     * 
+     * @render
+     * @return {View} component
+     */
     render() {
         return (
             <View style={styles.container}>
                 <View style={styles.titleWrapper}>
                     <View style={styles.headerWrapper}>
                         <Image source={require('../../../resources/images/paperwithclip.png')} style={styles.headerIcon} />
-                        <Text style={styles.title}>Meeting - #25632</Text>
+                        <Text style={styles.title}>Meeting - #{this.props.meeting.BookedMeetingId}</Text>
                         <Text> an unknown printer took a galley of type and scrambled it to make</Text>
                         <Text>o popular belief, Lorem Ipsum is not simply random tex</Text>
                     </View>
@@ -75,7 +139,10 @@ class MeetingIntro extends React.Component {
     }
 }
 
-var styles = StyleSheet.create({
+/**
+ * @style
+ */
+const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
@@ -137,5 +204,3 @@ var styles = StyleSheet.create({
         fontSize: 22
     }
 });
-
-module.exports = MeetingIntro;

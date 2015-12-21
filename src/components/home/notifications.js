@@ -19,8 +19,6 @@ import ScheduleList from '../schedule/scheduleList';
 import RouteStore from '../../stores/routeStore';
 import ScheduleStore from '../../stores/scheduleStore';
 
-// ListView data source object
-const dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
 
 /**
  * @class ScheduleList
@@ -39,12 +37,17 @@ export default class Notifications extends React.Component {
     constructor(args) {
         super(args);
 
+        // ListView data source object
+        this.listDataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+
         this.state = {
             selectedTabIndex: 0,
-            dataSource: dataSource.cloneWithRows([]),
-            isLoading: true
+            dataSource: this.listDataSource.cloneWithRows([]),
+            isLoading: true,
+            text: 'Loaded'
         };
 
+        // Load today's schedule
         this.getSchedules(new Date());
     }
 
@@ -67,8 +70,7 @@ export default class Notifications extends React.Component {
      * @return {Void} undefined
      */
     onScheduleLoaded(data) {
-        //this.setState({dataSource: dataSource.cloneWithRows(data), isLoading:false});
-        this.setState({isLoading:false});
+        this.setState({ isLoading:false, dataSource: this.listDataSource.cloneWithRows(data) });
     }
 
 
@@ -83,7 +85,7 @@ export default class Notifications extends React.Component {
            let route = RouteStore.get('meeting');
             if(route) {
                 route.props = { meeting: meeting };
-                this.props.push(_route);
+                this.props.navigator.push(route);
             }
         }
     }
@@ -127,7 +129,7 @@ export default class Notifications extends React.Component {
     /**
      * Renders any notification counts to the top of tile
      * @return {View} component
-    */
+     */
     renderNotificationCounts() {
         return (
             <View style={styles.counterContainer}>
@@ -168,7 +170,7 @@ export default class Notifications extends React.Component {
      * Renders the scene. [See Rect Js Render Method for more details]
      * 
      * @render
-     * @return {Void} undefined
+     * @return {View} component
      */
     render() {
         
@@ -176,7 +178,7 @@ export default class Notifications extends React.Component {
         let _component = (<ScheduleList {...this.props}
                                 dataSource = {this.state.dataSource}                  
                                 onSchedulePress={this.onSchedulePress.bind(this)}/>);
-                                
+                  
          //If data is loading show loading screen inorder to block further interactions on componenr                      
          if(this.state.isLoading)
             _component = (<LoadMask />);

@@ -203,7 +203,6 @@ var styles = StyleSheet.create({
 
     tabWrapper: {
         backgroundColor: '#F0F1F3',
-        padding: 10,
         flexDirection: 'row',
         borderBottomColor: '#D8E0F1',
         borderBottomWidth: 1,
@@ -213,6 +212,7 @@ var styles = StyleSheet.create({
         borderRightColor: '#CCC',
         borderRightWidth: 1,
         flex: 1,
+        padding: 10,
         alignItems: 'center',
         justifyContent: 'center'
     },

@@ -5,7 +5,7 @@
  * @company E-Gov LLC
  */
 
-import React, { StyleSheet, Text, View, TouchableHighlight, ListView } from 'react-native';
+import React, { StyleSheet, Text, View, TouchableHighlight, ListView, Image, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Moment from 'moment';
 import { getRandomColor } from '../../utils/util';
@@ -57,13 +57,17 @@ export default class ScheduleList extends React.Component {
         
         var showSeparator = this.props.showSeparator ? { borderBottomColor: '#F9F9F9', borderBottomWidth: 1 }: {};
         var time  = Moment.utc(rowData.DateOfMeeting).format('h:mmA');
-        var photo =(
+        var photo = (
             <Image source={{uri: 'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg' }} style={styles.profileImage} />
         );
         
+        // If the client does have the photo use it
         if(rowData.Clients && rowData.Clients.Photo) 
             photo =(<Image source={{uri: rowData.Clients.Photo }} style={styles.profileImage} />);   
+        
         else {
+
+            // If the client does not have the photo use the first letter of name as profile picture
             photo =(
                 <View style={[styles.profileImage, {backgroundColor: getRandomColor()}]}>
                     <Text style={styles.profileText}>{rowData.Clients.FirstName.substr(0,1)}</Text>
@@ -84,7 +88,7 @@ export default class ScheduleList extends React.Component {
                     </View>
                 </View>
            </TouchableHighlight>
-       );
+       ); 
     }
 }
 
