@@ -77,7 +77,8 @@ export default class DrawingSurface extends React.Component {
  	 onPageSelect(page) {
  	 	this.data.forEach(item => item.selected = false);
  	  	page.selected = true
- 	  	this.setState({dataSource: this.listDataSource.cloneWithRows(this.data)})
+ 	  	this.setState({dataSource: this.listDataSource.cloneWithRows(this.data)});
+ 	  	NativeModules.PenSurface.loadImage(129, 263);
  	 }
 
 	/**
@@ -189,7 +190,7 @@ class PageExplorer extends React.Component {
  	 */
 
  	exportDrawings() {
-		NativeModules.PenSurface.saveDrawings();
+		NativeModules.PenSurface.saveDrawings(129, 264);
  	}
 
  	/**
@@ -208,7 +209,7 @@ class PageExplorer extends React.Component {
  	  * @return {Void} undefined
  	  */
  	 loadImage() {
-		NativeModules.PenSurface.loadImage();	
+		NativeModules.PenSurface.loadImage(129, 263);	
 		//NativeModules.PenSurface.downloadSketches();	
  	 }
 

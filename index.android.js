@@ -22,6 +22,8 @@
 import React, { AppRegistry, StyleSheet, Text, View, Image, Navigator, 
   BackAndroid, AsyncStorage, DeviceEventEmitter, NativeModules, } from 'react-native';
 
+import SignalR from 'react-native-signalr';
+
 import Dashboard from './src/components/home/dashboard';
 import UserLogin from './src/components/auth/userLogin';
 import Titlebar from './src/components/app/titleBar';
@@ -141,6 +143,14 @@ class SmartReception extends React.Component {
     componentDidMount() {
         NativeModules.SmartReception.startNetworkMonitoring();
     }
+
+    /**
+     * Configuring SignalR event for Real Time Communication
+     * @return {Void} undefined
+     */
+    configureSignalR() {
+
+    }
     
     /**
      * Event handler for meeting finished event. It just go back to the previous screen, ie. 
@@ -176,7 +186,7 @@ class SmartReception extends React.Component {
         else {
             // If a previous authentication found, then load the Dashboard screen
             newState.hasCurrentMeeting = _settings.currentMeeting != undefined;
-            route = { component: DrawingSurface, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
+            route = { component: Dashboard, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
         }
         // Set the component state to change load the settings loaded from local storage
         this.setState(newState);

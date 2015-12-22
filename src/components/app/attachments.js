@@ -1,111 +1,203 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @author Jasim
- */
 'use strict';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ */
 
-var React = require('react-native');
-var Icon = require('react-native-vector-icons/FontAwesome');
+import React, { StyleSheet, Text, View, Image, TouchableWithoutFeedback, 
+    ScrollView, ListView, NativeModules, DeviceEventEmitter,TextInput } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
+import DialogAndroid from 'react-native-dialogs';
 import Button from '../meeting/button';
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableWithoutFeedback,
-  ScrollView,
-  ListView,
-  NativeModules,
-  DeviceEventEmitter,
-  TextInput,
-Animated,
-  Easing,
-} = React;
-import Progressbar from '../ux/progressBar';
 
-/*var data = [
-    { id:1, name: 'Profile Image', type: 'image', },
-    { id:2, name: 'License Agreement', type: 'folder', },
-    { id:3, name: 'Profile Image', type: 'folder', },
-    { id:4, name: 'Profile Image', type: 'pdf', },
-    { id:5, name: 'Profile Image', type: 'doc', },
-    { id:7, name: 'Profile Image', type: 'image', },
-    { id:8, name: 'Profile Image', type: 'image', },
-];*/
-function splitData(data) {
-    var newData =[];
+/** 
+ * Split data into equal separate arrays. To display as horizontal folder view in list 
+ * @param {Array} data
+ * @return {Array} data
+ */
+function prepareData(data) {
+    let _data = new Array(),
+        index = 0,
+        lastIndex = 0;
 
-var i = 0, last=0; while(i<=data.length){
-    if(i%5==0){
-     if(last != i) {
-        var a = new Array();
-        console.log(i)
-        for(var j=last;j<i;j++){
-            a.push(data[j]);
+    while(index <= data.length) {
+        if(index % 5 == 0) {
+            if(lastIndex != index) {
+                let row = new Array();
+                for(let j = lastIndex; j < index; j++) {
+                    row.push(data[j])
+                }
+                _data.push(row);
+            }
+            lastIndex = index;
         }
-        newData.push(a)
-     }
-     last = i;
+        index = index + 1;
     }
-    i++;
-}
-if(last<data.length-1){
- var a = new Array();
-        for(var j=last;j<data.length;j++){
-            a.push(data[j]);
+
+    if(lastIndex < data.length - 1) {
+        let row = new Array();
+        for(let j = lastIndex; j < data.length; j++) {
+            row.push(data[j])
         }
-        newData.push(a)
-}
-return newData;
-}
-var dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+        _data.push(row);
+    }
+    return _data;
+ }
 
+const EDIT_MODE = 2;
+const READ_MODE = 1;
 
-var modes = {
-    READ: 1,
-    EDIT: 2
-};
+/**
+ * List of attachments
+ *
+ * @class Attachments
+ * @extends React.Component
+ */
 
-class Attachments extends React.Component{
+class Attachments extends React.Component {
+
+    /**
+     * @constructor
+     */
     constructor(args) {
         super(args);
+
+        //List data source
+        this.dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+
+        //Transformed data 
+        this.data = prepareData([]);
+
+        /**
+         * @state
+         */
         this.state = {
-            dataSource: dataSource.cloneWithRows(splitData([])),
+            dataSource: this.dataSource.cloneWithRows(this.data),
             selected: {},
-            mode: modes.READ,
+            mode: READ_MODE,
             currentFile: null
+        };
+
+
+        /**
+         * If the meeting has attachments in it create data source
+         */
+        if(this.hasAttachments()) {
+            this.data = prepareData(this.props.meeting.Attachments);
+            this.state.dataSource = this.dataSource.cloneWithRows(this.data);
         }
-        if(this.props.meeting.Attachments && this.props.meeting.Attachments.length > 0) {
-            this.state.dataSource = dataSource.cloneWithRows(splitData(this.props.meeting.Attachments));
-        }
+
+        /**
+         * Register event handler for image capture using camera
+         */
         DeviceEventEmitter.addListener('camerapicturereceived', this.onCameraImage.bind(this));
+
+        /**
+         * Register event handler gallery image receive
+         */
         DeviceEventEmitter.addListener('imagereceivedfromgallery', this.onGalleryImageReceived.bind(this))
     }
+
+    /**
+     * Checks the property meeting has attachment array in it
+     * @return {Boolean} hasAttachments
+     */
+     hasAttachments() {
+        return this.props.meeting.Attachments && this.props.meeting.Attachments.length > 0;
+     }
+
+    /**
+     * @eventhandler
+     * @return {Void} undefined
+     */
     onCameraImage() {
-        this.setState({ mode: modes.EDIT });
+        this.setState({ mode: EDIT_MODE });
     }
+
+    /**
+     * @eventhandler
+     * @return {Void} undefined
+     */
     onGalleryImageReceived(filename) {
-        this.setState({ mode: modes.EDIT, currentFile: filename });
+        this.setState({ mode: EDIT_MODE, currentFile: filename });
     }
+
+    /**
+     * @eventhandle
+     * @param {String} name
+     * @param {String} desc
+     * @return {Void} undefined
+     */
     onUpload(name, desc) {
-        this.props.meeting.Attachments.push({ id:this.props.meeting.Attachments.length + 1, name: name, des: desc, type:'image' });
-        this.setState({ dataSource: dataSource.cloneWithRows(splitData(this.props.meeting.Attachments)), mode: modes.READ });
-        NativeModules.MediaHelper.uploadFile(this.state.currentFile, this.props.meeting.BookedMeetingId.toString(), name, desc);
+
+        let attachment = {
+            AttachmentId: 0,
+            Name: name,
+            Description: desc,
+            AttachmentTypeId: 2
+        };
+
+        // Prepare data
+        this.props.meeting.Attachments.push(attachment);
+        this.data = prepareData(this.props.meeting.Attachments);
+
+        // Show waiting dialog
+        NativeModules.DialogAndroid.showProgressDialog();
+        
+        // Upload File and data to server 
+        NativeModules.MediaHelper.uploadFile(
+            this.state.currentFile, 
+            this.props.meeting.BookedMeetingId.toString(), 
+            name, 
+            desc,
+            () => { 
+                NativeModules.DialogAndroid.hideProgressDialog(); 
+                // Set state
+                this.setState({ 
+                    dataSource: this.dataSource.cloneWithRows(this.data), 
+                    mode: READ_MODE 
+                });
+            }
+        );
     }
+
+    /**
+     * @eventhandle
+     * @return {Void} undefined
+     */
     onCamera() {
         NativeModules.MediaHelper.showCamera();
     }
+
+    /**
+     * @eventhandle
+     * @return {Void} undefined
+     */
     onGallery() {
         NativeModules.MediaHelper.showGallery();
     }
+
+    /**
+     * @eventhandle
+     * @return {Void} undefined
+     */
     onIconPress(item) {
-        item.selected = true;
-        this.setState({ dataSource: dataSource.cloneWithRows(splitData()), selected: item });
+        this.setState({ selected: item });
     }
+
+    /**
+     * React Js  Render method. This is the main component rendering method.
+     * Check out React Js documentation for more about render method.
+     * @return {View} view
+     */
     render() {
+
+        // file list view
         let component = (<ListView dataSource={this.state.dataSource} renderRow={this.renderRow.bind(this)}  />);
+
+        // Right side toolbar 
         let toolbar = (
             <View style={styles.buttonBar}>
                 <Button icon="camera" onPress={this.onCamera.bind(this)} text="Take Picture" borderPosition="bottom" />
@@ -115,14 +207,16 @@ class Attachments extends React.Component{
                 <Button icon="download" text="Download Selected" borderPosition="none" />
             </View>
         );
-        if(this.props.showToolbar != undefined && this.props.showToolbar == false) {
+
+        // Show or hide toolbar on right side
+        if(this.props.showToolbar != undefined && this.props.showToolbar == false) 
             toolbar = null;
-        }
-
-        if(this.state.mode == modes.EDIT) {
+        
+        // if edit mode show editor instead of list view
+        if(this.state.mode == EDIT_MODE) 
             component = (<AttachmentEditor onSave={this.onUpload.bind(this)} />)
-        }
-
+        
+        // Displays the container
         return (
             <View style={styles.container}>
                 <ScrollView style={{flex:1, padding: 10}}>
@@ -132,24 +226,54 @@ class Attachments extends React.Component{
             </View>
         );
     }
-    renderRow(rowData, sectionID: number, rowID: number) {
 
+    /**
+     * Render row in the list
+     * @param {Object} rowData
+     * @param {Number} sectionId
+     * @param {Number} rowId
+     * @return {View} component
+     */
+    renderRow(rowData, sectionID: number, rowID: number) {
+        // create a row from grouped data
+        let items = new Array();
+        rowData.map((item, index) => {
+            let type = "image";
+            if(item.Path && item.Path != null) {
+                type = item.Path.substr(item.Path.lastIndexOf(".") + 1);
+            }
+            items.push(
+                <FileIcon name={item.Name} 
+                        isSelected={this.state.selected.AttachmentId == item.AttachmentId ? true: false} 
+                        onIconPress={()=>this.onIconPress(item)} icon={type} />
+            );
+        });
+
+        // Render row
         return (
             <View style={styles.row}>
-                {rowData.map((item,index)=>{
-                    var type = "image";
-                    if(item.Path && item.Path != null)
-                        type = item.Path.substr(item.Path.lastIndexOf(".") + 1);
-                    return(<FileIcon name={item.Name} isSelected={this.state.selected.AttachmentId == item.AttachmentId ? true: false} onIconPress={()=>this.onIconPress(item)} icon={type} />);
-                })}
+                {items}
             </View>
        );
     }
 }
 
+
+/**
+ * @class FileIcon
+ * @extends React.Component
+ ***/
 class FileIcon extends React.Component {
+    
+    /**
+     * @constructor
+     */
     constructor(args) {
         super(args);
+
+        /**
+         * #state
+         */
         this.state = {
         };
     }

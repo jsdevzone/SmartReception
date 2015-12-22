@@ -1,6 +1,7 @@
 package com.smartreception.module;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
@@ -8,6 +9,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -101,28 +103,115 @@ public class MediaModule extends ReactContextBaseJavaModule {
 
 
     @ReactMethod
-    public void uploadFile(String uri, String meetingId, String name, String desc) {
-        try {
-            File sourceFile = new File(uri);
-            OkHttpClient client = new OkHttpClient();
-            RequestBody requestBody = new MultipartBuilder()
-                    .type(MultipartBuilder.FORM)
-                    .addFormDataPart("BookedMeetingId", meetingId)
-                    .addFormDataPart("Name", name)
-                    .addFormDataPart("Description", desc)
-                    .addFormDataPart("file", sourceFile.getName(), RequestBody.create(MediaType.parse("image/jpg"), sourceFile))
-                    .build();
+    public void uploadFile(String uri, String meetingId, String name, String desc,Callback callback) {
+        Attachments attachments = new Attachments();
+        attachments.setName(name);
+        attachments.setDesc(desc);
+        attachments.setUri(uri);
+        attachments.setMeetingId(meetingId);
 
-            Request request = new Request.Builder()
-                    .url("http://192.168.4.77/SmartReception.Service/api/meeting/attachments/upload")
-                    .post(requestBody)
-                    .build();
+        UploadTask task = new UploadTask();
+        task.setCallback(callback);
 
-            Response response = client.newCall(request).execute();
-            JSONObject responseString = new JSONObject(response.body().string());
+        task.execute(attachments);
 
-        } catch (Exception ex) {
+    }
 
+    private ProgressDialog progressDialog;
+
+    private class UploadTask extends AsyncTask<Attachments, Void, Void> {
+
+        private  Callback callback;
+
+        public Callback getCallback() {
+            return callback;
+        }
+
+        public void setCallback(Callback callback) {
+            this.callback = callback;
+        }
+
+        @Override
+        protected Void doInBackground(Attachments... params) {
+            Attachments param = params[0];
+            try {
+                File sourceFile = new File(param.getUri());
+                OkHttpClient client = new OkHttpClient();
+                RequestBody requestBody = new MultipartBuilder()
+                        .type(MultipartBuilder.FORM)
+                        .addFormDataPart("AttachmentId", "0")
+                        .addFormDataPart("BookedMeetingId", param.getMeetingId())
+                        .addFormDataPart("Name", param.getName())
+                        .addFormDataPart("Description", param.getDesc())
+                        .addFormDataPart("AttachmentTypeId", "2")
+                        .addFormDataPart("file", sourceFile.getName(), RequestBody.create(MediaType.parse("image/jpg"), sourceFile))
+                        .build();
+
+                Request request = new Request.Builder()
+                        .url("http://192.168.4.77/SmartReception.Service/api/meeting/attachments/upload")
+                        .post(requestBody)
+                        .build();
+
+                Response response = client.newCall(request).execute();
+                //JSONObject responseString = new JSONObject(response.body().string());
+
+                this.callback.invoke();
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //progressDialog = ProgressDialog.show(mReactContext,"Uploading", "Uploading to server, please wait");
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            //progressDialog.dismiss();
+        }
+    }
+
+    private class Attachments {
+        private String uri;
+        private String meetingId;
+        private String name;
+        private String desc;
+
+        public String getUri() {
+            return uri;
+        }
+
+        public void setUri(String uri) {
+            this.uri = uri;
+        }
+
+        public String getMeetingId() {
+            return meetingId;
+        }
+
+        public void setMeetingId(String meetingId) {
+            this.meetingId = meetingId;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getDesc() {
+            return desc;
+        }
+
+        public void setDesc(String desc) {
+            this.desc = desc;
         }
     }
 }

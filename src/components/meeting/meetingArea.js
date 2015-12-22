@@ -17,6 +17,7 @@ import AppStore from '../../stores/appStore';
 import Attachments from '../app/attachments';
 import DialogAndroid from 'react-native-dialogs';
 import MeetingStatus from '../../constants/meetingStatus';
+import DrawingSurface from '../drawing/drawingSurface';
 
 class MeetingArea extends React.Component{
     constructor(args){
@@ -69,6 +70,12 @@ class MeetingArea extends React.Component{
         if(this.props.onAttachmentAdded) {
             this.props.onAttachmentAdded({ name: 'Voice Record', file: 'SmartReception/Record.3gp' });
         }
+    }
+    navigateToSketches() {
+        this.props.navigator.push({ id: 'drawingsurface', component: DrawingSurface, title: 'Sketches', props: {
+            navigator: this.props.navigator,
+            meeting: this.props.meeting
+        }});
     }
     render() {
         return (
@@ -126,9 +133,8 @@ class MeetingArea extends React.Component{
                                 }
                             })()}
 
-
+                            <Button icon="list-alt" text="Sketches" onPress={this.navigateToSketches.bind(this)} />
                             <Button icon="comments-o" text="Feedback" />
-                            <Button icon="list-alt" text="Questionaire" />
                             <Button icon="check-square-o" text="Survey" />
                             <Button icon="exchange" text="Transfer"  onPress={()=>{
                                     NativeModules.MediaHelper.uploadFile();
