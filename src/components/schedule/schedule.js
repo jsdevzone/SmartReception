@@ -5,11 +5,16 @@
  * @company E-Gov LLC
  */
 
+/**
+ * @npmdependencies
+ */
 import React, { StyleSheet, Text, View, Image, TouchableHighlight, ListView, TouchableWithoutFeedback } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Moment from 'moment';
 
-//Components
+/**
+ * @componentImports
+ */
 import Sidebar from '../app/sidebar';
 import ScheduleList from './scheduleList';
 import ScheduleSidebar from './scheduleSidebar';
@@ -24,9 +29,9 @@ import ScheduleStore from '../../stores/scheduleStore';
 const contentTypes =  ["Notes", "Summary", "Minutes Of Meeting"];
 
 /**
- * @class Scheule 
- * @extends React.Component 
- * 
+ * @class Scheule
+ * @extends React.Component
+ *
  * Schedule Search Screen With Calendar And Details
  *
  * @props {Navigator} navigator
@@ -51,7 +56,7 @@ export default class Schedule extends React.Component {
             schedule: {},
             dataSourceWithData: dataSource.cloneWithRows([]),
         };
-        
+
         /**
          * Loads today's schedules on load of the component
          */
@@ -105,20 +110,20 @@ export default class Schedule extends React.Component {
 
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {Void} undefined
      */
     render() {
-        
+
         // Default component is ScheduleContentArea
         let component = (<ScheduleContentArea schedule={this.state.schedule} />);
-        
-        // If the component state shedule is null, then don't render the default component 
+
+        // If the component state shedule is null, then don't render the default component
         // As there will be chance to error due to lack of the data
         if(this.state.schedule == null)
             component = null;
-        
+
 
         return (
             <View style={styles.container}>
@@ -137,22 +142,22 @@ export default class Schedule extends React.Component {
 
 
 /**
- * @class ScheduleContentArea 
- * @extends React.Component 
- * 
+ * @class ScheduleContentArea
+ * @extends React.Component
+ *
  * Schedule Details Screen. It's a wrapper for a schedule with client and attachment details
  *
  * @props {Schedule} schedule
  * @props {Navigator} navigator
  */
 class ScheduleContentArea extends React.Component {
-    
+
     /**
      * @constructor
      */
     constructor(args) {
         super(args);
-        
+
         /**
          * @state
          */
@@ -184,7 +189,7 @@ class ScheduleContentArea extends React.Component {
      *  Life cycle method
      *  This method will be called when the component property is updated either from inside or outside the component
      *  See React Js componentWillReceiveProps method.
-     * 
+     *
      *  @lifecycle
      *  @return {Void} undefined
      */
@@ -194,10 +199,10 @@ class ScheduleContentArea extends React.Component {
             this.setState({ content: this.props.schedule.ActualMeetings[0][types] });
         }
     }
-    
+
     /**
      * Event handler on tab press.
-     * 
+     *
      * @eventhandler
      * @param {Number} index index of the tab
      * @return {Void} undefined
@@ -210,21 +215,21 @@ class ScheduleContentArea extends React.Component {
         }
         this.setState({ selectedTabIndex: index, content: content });
     }
-    
+
 
     /**
      * Render the content based on the tab selected. Here content means the Notes, Summary or Minutes Of Meeting
      * @return {View} component
      */
     renderContent() {
-        
+
         /**
          * If there is no meeting user content found, display a status message
          */
         if(this.state.content == null) {
-            
+
             let message = "No " + contentTypes[this.state.selectedTabIndex - 1] + " Found."
-            
+
             return (
                 <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                     <Notification message={message} />
@@ -260,7 +265,7 @@ class ScheduleContentArea extends React.Component {
 
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {Void} undefined
      */
@@ -294,18 +299,18 @@ class ScheduleContentArea extends React.Component {
 
 
 /**
- * @class Notification 
- * @extends React.Component 
- * 
+ * @class Notification
+ * @extends React.Component
+ *
  * Small Notification Panel shows a meesage to user
  *
  * @props {String} message
  */
 class Notification extends React.Component {
-    
+
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {Void} undefined
      */
@@ -319,9 +324,9 @@ class Notification extends React.Component {
 }
 
 /**
- * @class Tab 
- * @extends React.Component 
- * 
+ * @class Tab
+ * @extends React.Component
+ *
  * Tab Stripe used internally in schedule content area.
  *
  * @props {Function} onPress
@@ -334,17 +339,17 @@ class Tab extends React.Component {
 
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {Void} undefined
      */
     render() {
         return (
             <TouchableWithoutFeedback onPress={this.props.onPress}>
-                
+
                 <View style={[
-                    styles.tabHeader, 
-                    this.props.selected == true ? { borderBottomColor:"rgb(82, 140, 214)" }: {}, 
+                    styles.tabHeader,
+                    this.props.selected == true ? { borderBottomColor:"rgb(82, 140, 214)" }: {},
                     this.props.style]}>
 
                     <Icon name={this.props.icon} size={16} style={{marginTop:1}}/>
@@ -357,15 +362,15 @@ class Tab extends React.Component {
 }
 
 /**
- * @class UserProfile 
- * @extends React.Component 
- * 
+ * @class UserProfile
+ * @extends React.Component
+ *
  * Client details on right side panel
  *
  * @props {Client} user
  */
 class UserProfile extends React.Component {
-    
+
      /**
      * @constructor
      */
@@ -384,16 +389,16 @@ class UserProfile extends React.Component {
      * Event handler - on tab item press
      *
      * @eventhandler
-     * @param {Number} index 
+     * @param {Number} index
      * @return {Void} undefined
-     */    
+     */
     onTabPress(index) {
         this.setState({ selectedTabIndex: index });
     }
 
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {Void} undefined
      */

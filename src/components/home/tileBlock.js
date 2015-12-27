@@ -44,7 +44,7 @@ export default class Tile extends React.Component {
          */
         let content = (
             <View style={styles.tileInner}>
-                <Icon name={this.props.icon} size={65} color={iconColor} style={{ marginLeft: 10, flex: 1 }}/>
+                <Icon name={this.props.icon || "table"} size={65} color={iconColor} style={{ marginLeft: 10, flex: 1 }}/>
                 <Text style={{opacity:1}}>{this.props.text}</Text>
             </View>
         );

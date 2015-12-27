@@ -41,10 +41,6 @@ class UserProfile extends React.Component{
         if(true) {
             _component =(
                 <View style={styles.container}>
-                    <View style={styles.titleBar}>
-                        <Icon name="user" color="#BCCFE7" size={16} />
-                        <Text style={styles.titleText}>User Profile</Text>
-                    </View>
                     <View style={styles.userProfileWrapper}>
                         <Image source={{uri:'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg'}} style={styles.profileImage} />
                         <View style={styles.profileInfoWrapper}>

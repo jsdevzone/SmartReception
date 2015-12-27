@@ -1,7 +1,18 @@
 'use strict';
 import DialogAndroid from 'react-native-dialogs';
+
+/**
+ * @class RequestManager
+ * @singleton
+ *
+ */
+
 var RequestManager = {
+
+	// local address
 	endpointBase: 'http://192.168.4.77/SmartReception.Service/api/',
+
+	// remote server address
     //endpointBase: 'http://smartreception.egovservice.com/services/api/',
 
 	get: function(action, params) {

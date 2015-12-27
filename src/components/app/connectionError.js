@@ -1,10 +1,28 @@
 'use strict';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ */
+
 import React, { View, Text, StyleSheet, } from 'react-native';
 
-class ConnectionError extends React.Component {
+/**
+ * Displays a banner when the internet connection lost
+ * @class ConnectionError
+ * @extends React.Component
+ */
+export default class ConnectionError extends React.Component {
+    /**
+     * @constructor
+     */
     constructor(args) {
         super(args);
     }
+    /**
+     * @render
+     * @return {View} component
+     */
     render() {
         return (
             <View style={styles.container}>
@@ -14,7 +32,10 @@ class ConnectionError extends React.Component {
     }
 };
 
-var styles = StyleSheet.create({
+/**
+ * @styles
+ */
+const styles = StyleSheet.create({
     container: {
         padding: 15,
         backgroundColor: '#D68989',
@@ -25,5 +46,3 @@ var styles = StyleSheet.create({
         color: '#FFF'
     }
 });
-
-module.exports = ConnectionError;

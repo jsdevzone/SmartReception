@@ -38,7 +38,7 @@ class BreadCrumb extends React.Component {
     		this.state.stack.map((route, index) => {
     				let _separator =  (index < this.state.stack.length - 1) ? ' > ': '';
     				let _breadCrumbItem = (
-    						<TouchableHighlight onPress={this.onBreadCrumbPress.bind(this, index)}>
+    						<TouchableHighlight key={index} onPress={this.onBreadCrumbPress.bind(this, index)}>
     								<Text style={styles.breadCrumbItem}>{route.title}{_separator}</Text>
     						</TouchableHighlight>
     				);
