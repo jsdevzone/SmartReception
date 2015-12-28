@@ -34,5 +34,12 @@ export function getDateFromISOFormat(dateStr) {
     date.setMinutes(timeParts[1]);
     date.setSeconds(timeParts[2]);
     return date;
+}
 
+export function getDays() {
+    let array = new Array();
+    for(var i = 0; i < 31; i++) {
+        array.push(i + 1);
+    }
+    return array;
 }

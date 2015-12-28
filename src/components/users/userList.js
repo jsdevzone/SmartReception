@@ -80,6 +80,7 @@ export class UserList extends React.Component {
     }
 }
 
+
 var styles = StyleSheet.create({
     container: {
         flex :1
