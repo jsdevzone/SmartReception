@@ -5,13 +5,13 @@
  * @company E-Gov LLC
  */
 
- import React, { View, StyleSheet, Text, TextInput, Image, } from 'react-native';
+ import React, { View, StyleSheet, Text, TextInput, Image, TouchableNativeFeedback, ToastAndroid, } from 'react-native';
  import Icon from 'react-native-vector-icons/FontAwesome';
  import Moment from 'moment';
  import TextField from '../ux/textField';
  import ComboBox from '../ux/comboBox';
 
- import { getDays } from '../../utils/util';
+ import { getDays, Months } from '../../utils/util';
 
  /**
   * Register New Clients from the tablet itself
@@ -26,11 +26,29 @@
           super(args);
 
           /**
+           * @test
+           * Initial Dummy Data for user
+           */
+          let initialUser = {
+              FirstName: 'Muhammed',
+              LastName: 'Jasim',
+              FirstNameArabic: 'محمد',
+              LastNameArabic: 'جاسم',
+              Nationality: 'Male',
+              Gender: 'Male',
+              Month: 'February',
+              Day: 25
+
+          };
+
+          /**
            * @state
            */
            this.state = {
-               user: {},
-               selectedIndex: 2
+               user: initialUser,
+               selectedIndex: 1,
+               title: 'Personal Information',
+               icon: 'user'
            };
 
           this.forms = {
@@ -41,29 +59,91 @@
      }
 
      /**
+      * Change the tab by changing the selected index state.
+      *
+      * @param {Number} index
+      * @return {Void} undefined
+      */
+     onTabPressed(index) {
+         this.setState({ selectedIndex: index });
+     }
+
+     /**
+      * Generic function to handle the text field value property change event
+      *
+      * @eventhandler
+      * @param {String} property - key in the state user
+      * @param {String} value - value to be changed
+      * @return {Void} undefined
+      */
+     onTextfieldValueChanged(property, value) {
+         let user = this.state.user;
+         user[property] = value;
+         this.setState({ user: user, title: value });
+     }
+
+     /**
       * @render
       * @return {View} view
       */
      render() {
-         let component = <PersonalInformation />;
+         let component = <PersonalInformation user={this.state.user} onFieldEdit={this.onTextfieldValueChanged.bind(this)} />;
 
         /**
          * Checking current @state selectedState value then renders appropriate Component
          **/
-        switch(this.state.selectedState) {
+        switch(this.state.selectedIndex) {
             case this.forms.CONTACT_INFORMATION:
-                component = <ContactInformation />;
+                component = <ContactInformation user={this.state.user} onFieldEdit={this.onTextfieldValueChanged.bind(this)} />;
                 break;
             case this.forms.EMPLOYMENT_INFORMATION:
-                component = <EmploymentInformation />;
+                component = <EmploymentInformation user={this.state.user} onFieldEdit={this.onTextfieldValueChanged.bind(this)} />;
                 break;
         }
 
          return (
              <View style={styles.container}>
-                <RegisterSidebar />
+                <RegisterSidebar onTabPressed={this.onTabPressed.bind(this)} selectedIndex={this.state.selectedIndex} />
                 <View style={{ flex: 1, padding: 10 }}>
-                    { component }
+                <View style={[styles.widget, { flex: 1 }]}>
+                    <View style={styles.widgetHeader}>
+                        <Icon name={this.state.icon} size={20} color="#C03C3D" />
+                        <Text style={styles.widgetHeaderText}>{this.state.title}</Text>
+                    </View>
+                    <View style={styles.widgetBody}>
+                        { component }
+                    </View>
+                    <View style={styles.widgetFooter}>
+                        <TouchableNativeFeedback
+                            background={TouchableNativeFeedback.Ripple('#CCC', false)}>
+                            <View style={styles.button}>
+                                <Icon name="pencil" size={20}/>
+                                <Text> Register New User</Text>
+                        </View>
+                        </TouchableNativeFeedback>
+                        <TouchableNativeFeedback
+                            background={TouchableNativeFeedback.Ripple('#CCC', false)}>
+                            <View style={styles.button}>
+                                <Icon name="save" size={20}/>
+                                <Text>Save User</Text>
+                            </View>
+                        </TouchableNativeFeedback>
+                        <TouchableNativeFeedback
+                            background={TouchableNativeFeedback.Ripple('#CCC', false)}>
+                            <View style={styles.button}>
+                                <Icon name="times" size={20}/>
+                                <Text>Cancel Edit</Text>
+                            </View>
+                        </TouchableNativeFeedback>
+                        <TouchableNativeFeedback
+                            background={TouchableNativeFeedback.Ripple('#CCC', false)}>
+                            <View style={styles.button}>
+                                <Icon name="trash" size={20}/>
+                                <Text>Delete User</Text>
+                            </View>
+                        </TouchableNativeFeedback>
+                    </View>
+                </View>
                 </View>
              </View>
          );
@@ -93,32 +173,35 @@ class RegisterSidebar extends React.Component {
                     <Text style={styles.profileProfession}>dfghdfhdfhdfh</Text>
                 </View>
                 <View style={styles.profileLinks}>
-                    <View style={[styles.link, styles.linkActive]}>
-                        <Icon name="user" size={14} style={styles.linkIcon} />
-                        <Text>Personal Information</Text>
-                    </View>
-                    <View style={[styles.link, { borderBottomWidth:0 }]}>
-                        <Icon name="calendar" size={14} style={styles.linkIcon} />
-                        <Text>Contact Information</Text>
-                    </View>
-                    <View style={[styles.link, { borderBottomWidth:0 }]}>
-                        <Icon name="calendar" size={14} style={styles.linkIcon} />
-                        <Text>Employment Information</Text>
-                    </View>
+                    <TouchableNativeFeedback
+                        background={TouchableNativeFeedback.Ripple('#CCC', false)}
+                        onPress={() => this.props.onTabPressed(1) }>
+                        <View style={[styles.link, this.props.selectedIndex == 1 ? styles.linkActive: null]}>
+                            <Icon name="user" size={14}
+                                style={[styles.linkIcon, this.props.selectedIndex == 1 ? { color: '#FFF'}: null ]} />
+                             <Text style={this.props.selectedIndex == 1 ? { color: '#FFF'}: null}>Personal Information</Text>
+                        </View>
+                    </TouchableNativeFeedback>
+                    <TouchableNativeFeedback
+                        background={TouchableNativeFeedback.Ripple('#CCC', false)}
+                        onPress={() => this.props.onTabPressed(2) }>
+                        <View style={[styles.link, this.props.selectedIndex == 2 ? styles.linkActive: null]}>
+                            <Icon name="envelope" size={14}
+                                style={[styles.linkIcon, this.props.selectedIndex == 2 ? { color: '#FFF'}: null ]} />
+                            <Text style={this.props.selectedIndex == 2 ? { color: '#FFF'}: null}>Contact Information</Text>
+                        </View>
+                    </TouchableNativeFeedback>
+                    <TouchableNativeFeedback
+                        background={TouchableNativeFeedback.Ripple('#CCC', false)}
+                        onPress={() => this.props.onTabPressed(3) }>
+                        <View style={[styles.link, this.props.selectedIndex == 3 ? styles.linkActive: null]}>
+                            <Icon name="briefcase" size={14}
+                                  style={[styles.linkIcon, this.props.selectedIndex == 3 ? { color: '#FFF'}: null ]} />
+                            <Text style={this.props.selectedIndex == 3 ? { color: '#FFF'}: null}>Employment Information</Text>
+                        </View>
+                    </TouchableNativeFeedback>
                 </View>
                 <View style={{flex:1}}></View>
-                <View style={styles.registerButton}>
-                    <Text style={{ color: '#FFF' }}> Register New User</Text>
-                </View>
-                <View style={styles.saveButton}>
-                    <Text style={{ color: '#FFF' }}>Save User</Text>
-                </View>
-                <View style={styles.cancelButton}>
-                    <Text style={{ color: '#FFF' }}>Cancel Edit</Text>
-                </View>
-                <View style={styles.deleteButton}>
-                    <Text style={{ color: '#FFF' }}>Delete User</Text>
-                </View>
             </View>
         );
     }
@@ -137,67 +220,81 @@ class PersonalInformation extends React.Component {
      */
     render() {
         return (
-            <View style={[styles.widget, { flex: 1 }]}>
-                <View style={styles.widgetHeader}>
-                    <Text style={styles.widgetHeaderText}>Personal Information</Text>
+            <View style={[styles.sectionBody, { flex: 1}]}>
+                <View style={styles.row}>
+                    <View style={[styles.formGroup, {flex:1}]}>
+                        <Text style={styles.label}>Arabic First Name</Text>
+                        <TextField icon="file-code-o"
+                                onChangeText={(text) => this.props.onFieldEdit('FirstNameArabic', text)}
+                                value={this.props.user.FirstNameArabic}  />
+                    </View>
+                    <View style={[styles.formGroup, {flex:1}]}>
+                        <Text style={styles.label}>Arabic Last Name</Text>
+                        <TextField  icon="file-code-o"
+                                    onChangeText={(text) => this.props.onFieldEdit('LastNameArabic', text)}
+                                    value={this.props.user.LastNameArabic}  />
+                    </View>
                 </View>
-                <View style={styles.widgetBody}>
-                    <View style={styles.sectionBody}>
-                        <View style={styles.row}>
-                            <View style={[styles.formGroup, {flex:1}]}>
-                                <Text style={styles.label}>Arabic First Name</Text>
-                                <TextField icon="user" />
-                            </View>
-                            <View style={[styles.formGroup, {flex:1}]}>
-                                <Text style={styles.label}>Arabic Last Name</Text>
-                                <TextField  icon="user" />
-                            </View>
+                <View style={styles.row}>
+                    <View style={[styles.formGroup, {flex:1}]}>
+                        <Text style={styles.label}>First Name</Text>
+                        <TextField  icon="pencil-square-o"
+                                    onChangeText={(text) => this.props.onFieldEdit('FirstName', text)}
+                                    value={this.props.user.FirstName}  />
+                    </View>
+                    <View style={[styles.formGroup, {flex:1}]}>
+                        <Text style={styles.label}>Last Name</Text>
+                        <TextField  icon="pencil-square-o"
+                                    onChangeText={(text) => this.props.onFieldEdit('LastName', text)}
+                                    value={this.props.user.LastName}  />
+                    </View>
+                </View>
+                <View style={[styles.row, { alignItems: 'center', justifyContent: 'center', paddingTop: 10 }]}>
+                    <Text style={styles.label}>
+                        Note: The name must match the name exists in the Passport Or Emirates's ID
+                    </Text>
+                </View>
+                <View style={styles.row}>
+                    <View style={[styles.formGroup, {flex:1}]}>
+                        <Text style={styles.label}>Nationality</Text>
+                        <ComboBox data={['Male', 'Female']}
+                                icon="flag"
+                                value={this.props.user.Nationality}
+                                onSelect={(data) => this.props.onFieldEdit('Nationality', data)} />
+                    </View>
+                    <View style={[styles.formGroup, {flex:1}]}>
+                        <Text style={styles.label}>Gender</Text>
+                        <ComboBox data={['Male', 'Female']}
+                                onSelect={(data) => this.props.onFieldEdit('Gender', data)}
+                                value={this.props.user.Gender}/>
+                    </View>
+                </View>
+                <View style={styles.row}>
+                    <View style={[styles.formGroup, {flex:1}]}>
+                        <Text style={styles.label}>Birth Day</Text>
+                        <View style={{flexDirection: 'row'}}>
+                            <ComboBox data={getDays()}
+                                style={{width: 60}}
+                                onSelect={(data) => this.props.onFieldEdit('Day', data)}
+                                value={this.props.user.Day}/>
+                            <ComboBox data={Months}
+                                style={{flex: 1, marginLeft: 10, marginRight: 10}}
+                                onSelect={(data) => this.props.onFieldEdit('Month', data)}
+                                value={this.props.user.Month}/>
+                            <TextField value="2015" keyboardType="numeric" maxLength={4} style={{width: 70}}  icon="calendar" />
                         </View>
-                        <View style={styles.row}>
-                            <View style={[styles.formGroup, {flex:1}]}>
-                                <Text style={styles.label}>First Name</Text>
-                                <TextField  icon="user" />
-                            </View>
-                            <View style={[styles.formGroup, {flex:1}]}>
-                                <Text style={styles.label}>Last Name</Text>
-                                <TextField  icon="user" />
-                            </View>
-                        </View>
-                        <View style={[styles.row, { alignItems: 'center', justifyContent: 'center', paddingTop: 10 }]}>
-                            <Text style={styles.label}>
-                                Note: The name must match the name exists in the Passport Or Emirates's ID
-                            </Text>
-                        </View>
-                        <View style={styles.row}>
-                            <View style={[styles.formGroup, {flex:1}]}>
-                                <Text style={styles.label}>Nationality</Text>
-                                <ComboBox data={['Male', 'Female']} />
-                            </View>
-                            <View style={[styles.formGroup, {flex:1}]}>
-                                <Text style={styles.label}>Gender</Text>
-                                <ComboBox data={['Male', 'Female']} />
-                            </View>
-                        </View>
-                        <View style={styles.row}>
-                            <View style={[styles.formGroup, {flex:1}]}>
-                                <Text style={styles.label}>Birth Day</Text>
-                                <View style={{flexDirection: 'row'}}>
-                                    <ComboBox data={getDays()}  style={{width: 60}}  />
-                                    <TextField palceholder="Month" style={{flex: 1, marginLeft: 10, marginRight: 10}}  icon="angle-down" />
-                                    <TextField palceholder="Year" style={{width: 120}}  icon="angle-down" />
-                                </View>
-                            </View>
-                            <View style={[styles.formGroup, {flex:1}]}>
-                                <Text style={styles.label}>Education Level</Text>
-                            <TextField  icon="angle-down" />
-                            </View>
-                        </View>
-                        <View style={styles.row}>
-                            <View style={[styles.formGroup, {flex:1}]}>
-                                <Text style={styles.label}>Graduation Year</Text>
-                            <TextField icon="angle-down" />
-                            </View>
-                        </View>
+                    </View>
+                    <View style={[styles.formGroup, {flex:1}]}>
+                        <Text style={styles.label}>Education Level</Text>
+                    <TextField  icon="angle-down" />
+                    </View>
+                </View>
+                <View style={styles.row}>
+                    <View style={[styles.formGroup, {flex:1}]}>
+                        <Text style={styles.label}>Graduation Year</Text>
+                        <TextField icon="calendar" keyboardType="numeric" maxLength={4} />
+                    </View>
+                    <View style={[styles.formGroup, {flex:1}]}>
                     </View>
                 </View>
             </View>
@@ -217,67 +314,60 @@ class ContactInformation extends React.Component {
      */
      render() {
          return (
-             <View style={[styles.widget, { flex: 1 }]}>
-                 <View style={styles.widgetHeader}>
-                     <Text style={styles.widgetHeaderText}>Contact Information</Text>
+             <View style={[styles.sectionBody, { flex: 1}]}>
+                 <View style={styles.row}>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Arabic First Name</Text>
+                         <TextField icon="user" />
+                     </View>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Arabic Last Name</Text>
+                         <TextField  icon="user" />
+                     </View>
                  </View>
-                 <View style={styles.widgetBody}>
-                     <View style={styles.sectionBody}>
-                         <View style={styles.row}>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Arabic First Name</Text>
-                                 <TextField icon="user" />
-                             </View>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Arabic Last Name</Text>
-                                 <TextField  icon="user" />
-                             </View>
+                 <View style={styles.row}>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>First Name</Text>
+                         <TextField  icon="user" />
+                     </View>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Last Name</Text>
+                         <TextField  icon="user" />
+                     </View>
+                 </View>
+                 <View style={[styles.row, { alignItems: 'center', justifyContent: 'center', paddingTop: 10 }]}>
+                     <Text style={styles.label}>
+                         Note: The name must match the name exists in the Passport Or Emirates's ID
+                     </Text>
+                 </View>
+                 <View style={styles.row}>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Nationality</Text>
+                         <TextField  icon="angle-down" />
+                     </View>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Gender</Text>
+                         <TextField  icon="angle-down" />
+                     </View>
+                 </View>
+                 <View style={styles.row}>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Birth Day</Text>
+                         <View style={{flexDirection: 'row'}}>
+                             <TextField palceholder="Day" style={{width: 60}}  icon="angle-down" />
+                             <TextField palceholder="Month" style={{flex: 1, marginLeft: 10, marginRight: 10}}  icon="angle-down" />
+                             <TextField palceholder="Year" style={{width: 120}}  icon="angle-down" />
                          </View>
-                         <View style={styles.row}>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>First Name</Text>
-                                 <TextField  icon="user" />
-                             </View>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Last Name</Text>
-                                 <TextField  icon="user" />
-                             </View>
-                         </View>
-                         <View style={[styles.row, { alignItems: 'center', justifyContent: 'center', paddingTop: 10 }]}>
-                             <Text style={styles.label}>
-                                 Note: The name must match the name exists in the Passport Or Emirates's ID
-                             </Text>
-                         </View>
-                         <View style={styles.row}>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Nationality</Text>
-                                 <TextField  icon="angle-down" />
-                             </View>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Gender</Text>
-                                 <TextField  icon="angle-down" />
-                             </View>
-                         </View>
-                         <View style={styles.row}>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Birth Day</Text>
-                                 <View style={{flexDirection: 'row'}}>
-                                     <TextField palceholder="Day" style={{width: 60}}  icon="angle-down" />
-                                     <TextField palceholder="Month" style={{flex: 1, marginLeft: 10, marginRight: 10}}  icon="angle-down" />
-                                     <TextField palceholder="Year" style={{width: 120}}  icon="angle-down" />
-                                 </View>
-                             </View>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Education Level</Text>
-                             <TextField  icon="angle-down" />
-                             </View>
-                         </View>
-                         <View style={styles.row}>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Graduation Year</Text>
-                             <TextField icon="angle-down" />
-                             </View>
-                         </View>
+                     </View>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Education Level</Text>
+                     <TextField  icon="angle-down" />
+                     </View>
+                 </View>
+                 <View style={styles.row}>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Graduation Year</Text>
+                     <TextField icon="angle-down" />
                      </View>
                  </View>
              </View>
@@ -290,74 +380,67 @@ class ContactInformation extends React.Component {
  * @class ContactInformation
  * @extends React.Component
  */
-class Employment extends React.Component {
+class EmploymentInformation extends React.Component {
     /**
      * @render
      * React Js render method - See React Js For more details
      */
      render() {
          return (
-             <View style={[styles.widget, { flex: 1 }]}>
-                 <View style={styles.widgetHeader}>
-                     <Text style={styles.widgetHeaderText}>Employment Information</Text>
+             <View style={[styles.sectionBody, { flex: 1}]}>
+                 <View style={styles.row}>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Arabic First Name</Text>
+                         <TextField icon="user" />
+                     </View>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Arabic Last Name</Text>
+                         <TextField  icon="user" />
+                     </View>
                  </View>
-                 <View style={styles.widgetBody}>
-                     <View style={styles.sectionBody}>
-                         <View style={styles.row}>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Arabic First Name</Text>
-                                 <TextField icon="user" />
-                             </View>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Arabic Last Name</Text>
-                                 <TextField  icon="user" />
-                             </View>
+                 <View style={styles.row}>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>First Name</Text>
+                         <TextField  icon="user" />
+                     </View>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Last Name</Text>
+                         <TextField  icon="user" />
+                     </View>
+                 </View>
+                 <View style={[styles.row, { alignItems: 'center', justifyContent: 'center', paddingTop: 10 }]}>
+                     <Text style={styles.label}>
+                         Note: The name must match the name exists in the Passport Or Emirates's ID
+                     </Text>
+                 </View>
+                 <View style={styles.row}>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Nationality</Text>
+                         <TextField  icon="angle-down" />
+                     </View>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Gender</Text>
+                         <TextField  icon="angle-down" />
+                     </View>
+                 </View>
+                 <View style={styles.row}>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Birth Day</Text>
+                         <View style={{flexDirection: 'row'}}>
+                             <TextField palceholder="Day" style={{width: 60}}  icon="angle-down" />
+                             <TextField palceholder="Month" style={{flex: 1, marginLeft: 10, marginRight: 10}}  icon="angle-down" />
+                             <TextField palceholder="Year" style={{width: 120}}  icon="angle-down" />
                          </View>
-                         <View style={styles.row}>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>First Name</Text>
-                                 <TextField  icon="user" />
-                             </View>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Last Name</Text>
-                                 <TextField  icon="user" />
-                             </View>
-                         </View>
-                         <View style={[styles.row, { alignItems: 'center', justifyContent: 'center', paddingTop: 10 }]}>
-                             <Text style={styles.label}>
-                                 Note: The name must match the name exists in the Passport Or Emirates's ID
-                             </Text>
-                         </View>
-                         <View style={styles.row}>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Nationality</Text>
-                                 <TextField  icon="angle-down" />
-                             </View>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Gender</Text>
-                                 <TextField  icon="angle-down" />
-                             </View>
-                         </View>
-                         <View style={styles.row}>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Birth Day</Text>
-                                 <View style={{flexDirection: 'row'}}>
-                                     <TextField palceholder="Day" style={{width: 60}}  icon="angle-down" />
-                                     <TextField palceholder="Month" style={{flex: 1, marginLeft: 10, marginRight: 10}}  icon="angle-down" />
-                                     <TextField palceholder="Year" style={{width: 120}}  icon="angle-down" />
-                                 </View>
-                             </View>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Education Level</Text>
-                             <TextField  icon="angle-down" />
-                             </View>
-                         </View>
-                         <View style={styles.row}>
-                             <View style={[styles.formGroup, {flex:1}]}>
-                                 <Text style={styles.label}>Graduation Year</Text>
-                             <TextField icon="angle-down" />
-                             </View>
-                         </View>
+                     </View>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Education Level</Text>
+                     <TextField  icon="angle-down" />
+                     </View>
+                 </View>
+                 <View style={styles.row}>
+                     <View style={[styles.formGroup, {flex:1}]}>
+                         <Text style={styles.label}>Graduation Year</Text>
+                     <TextField icon="angle-down" />
                      </View>
                  </View>
              </View>
@@ -378,14 +461,20 @@ class Employment extends React.Component {
       widget: {
           backgroundColor: "#FFF",
           alignItems: 'stretch',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          borderWidth: 1,
+          borderColor: '#C03C3D'
       },
       widgetHeader: {
-          backgroundColor: '#5db2ff',
-          padding: 10
+          backgroundColor: '#FFF',
+          padding: 10,
+          borderBottomWidth: 5,
+          borderBottomColor: '#C03C3D',
+          flexDirection: 'row'
       },
       widgetHeaderText: {
-          color: '#FFF'
+          color: '#262626',
+          marginLeft: 2
       },
       widgetBody: {
           backgroundColor: '#FFF',
@@ -419,8 +508,6 @@ class Employment extends React.Component {
           marginRight: 10
       },
       label: {
-          fontWeight: 'bold',
-          fontStyle: 'bold',
           fontSize: 15,
           marginBottom: 5,
           marginTop: 5
@@ -472,10 +559,10 @@ class Employment extends React.Component {
   		marginTop: 2
   	},
   	linkActive: {
-  		backgroundColor: '#fafafa',
+  		backgroundColor: '#B52216',
   	},
     registerButton: {
-        backgroundColor: '#a0d468',
+        backgroundColor: '#B52216',
         padding: 10,
         alignItems: 'center',
         justifyContent: 'center',
@@ -486,33 +573,52 @@ class Employment extends React.Component {
     },
 
     saveButton: {
-        backgroundColor: '#427fed',
+        backgroundColor: '#B52216',
         padding: 10,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 10,
         borderRadius: 0,
-        borderColor: '#427fed',
+        borderColor: '#B52216',
         borderWidth: 1
     },
     cancelButton: {
-        backgroundColor: '#f4b400',
+        backgroundColor: '#B52216',
         padding: 10,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 10,
         borderRadius: 0,
-        borderColor: '#f4b400',
+        borderColor: '#B52216',
         borderWidth: 1
     },
     deleteButton: {
-        backgroundColor: '#d73d32',
+        backgroundColor: '#B52216',
         padding: 10,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 10,
         borderRadius: 0,
-        borderColor: '#d73d32',
+        borderColor: '#B52216',
         borderWidth: 1
+    },
+    button: {
+        backgroundColor: '#FFF',
+        padding: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 10,
+        borderRadius: 0,
+        borderColor: '#F4F4F4',
+        borderWidth: 1,
+        marginLeft: 10,
+    },
+    widgetFooter: {
+        flexDirection: 'row',
+        padding: 10,
+        borderTopWidth: 1,
+        borderTopColor:'#F4F4F4',
+        alignItems: 'flex-end',
+        justifyContent: 'center'
     }
   });

@@ -31,9 +31,6 @@ import SplashScreen from './src/components/app/splashScreen';
 import ConnectionError from './src/components/app/connectionError';
 import AppStore from './src/stores/appStore';
 
-import DrawingSurface from './src/components/drawing/drawingSurface';
-import ClientRegister from './src/components/client/clientRegister';
-
 var _navigator  =  null;
 var _initialRoute =  null;
 var _isLoggedIn = false;
@@ -86,7 +83,7 @@ class SmartReception extends React.Component {
             // current user[advisor] logged in to this application
             user: {},
             // for testing purpose only
-            data: '',
+            data: 'sdfklgjios klfksdfj gkl',
             // status for currently any meeting is going on
             hasCurrentMeeting: false
         };
@@ -183,15 +180,16 @@ class SmartReception extends React.Component {
         else {
             // If a previous authentication found, then load the Dashboard screen
             newState.hasCurrentMeeting = _settings.currentMeeting != undefined;
-            route = { component: ClientRegister, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
+            route = { component: Dashboard, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
         }
-        // Set the component state to change load the settings loaded from local storage
-        this.setState(newState);
 
         // Currently navigator is showing loading screen. So replace it with route object assigned
         // on above line then show it on the screen.
         _navigator.replaceAtIndex(route, 0);
         _navigator.popToTop();
+
+        // Set the component state to change load the settings loaded from local storage
+        this.setState(newState);
     }
 
     /**

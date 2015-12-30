@@ -43,3 +43,5 @@ export function getDays() {
     }
     return array;
 }
+
+export var Months = months;

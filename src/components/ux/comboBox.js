@@ -5,7 +5,7 @@
  * @company E-Gov LLC
  */
 
- import React, { View, StyleSheet, Text, TextInput, TouchableWithoutFeedback, } from 'react-native';
+ import React, { View, StyleSheet, Text, TextInput, TouchableWithoutFeedback, ToastAndroid, } from 'react-native';
  import Icon from 'react-native-vector-icons/FontAwesome';
  import DialogAndroid from 'react-native-dialogs';
 
@@ -73,13 +73,43 @@ export default class ComboBox extends React.Component {
                 });
             }
         }
-        /**
-         * Else case assumes that passed array is just a plain array and no need to transform
-         */
+         //Else case assumes that passed array is just a plain array and no need to transform
          else
             this.dataTransformed = this.props.data.map(item => item.toString());
-        
+
         return this.dataTransformed;
+    }
+
+    /**
+     *  Life cycle method
+     *  This method will be called when the component is mounted to the application
+     *  See React Js componentDidMount method.
+     *
+     *  @lifecycle
+     *  @return {Void} undefined
+     */
+    componentDidMount() {
+        /**
+         * If the value is passed from the parent component. Then iterate over the data, find the corresponding data item.
+         * Then set the value
+         */
+        if(this.props.value) {
+            /**
+             * Means passed property data is arrat of object. Transform it.
+             */
+            if(this.props.valueField && this.props.displayField) {
+                this.data.forEach((item, index) => {
+                    if(item[this.props.valueField] == this.props.value)
+                        this.setState({ displayValue: item[this.props.displayField] });
+                });
+            }
+            else {
+                this.dataTransformed.forEach((item, index) => {
+                    if(item.toLowerCase() == this.props.value.toString().toLowerCase())
+                        this.setState({ displayValue: item });
+                });
+            }
+        }
     }
 
     /**
@@ -146,9 +176,9 @@ export default class ComboBox extends React.Component {
             <TouchableWithoutFeedback onPress={this.onComboViewPress.bind(this)}>
                 <View style={[styles.textFieldWrapper, this.props.style]}>
                     <View style={styles.textField}>
-                        <Text>{this.state.displayValue}</Text>
+                        <Text style={{ color: '#000' }}>{this.state.displayValue}</Text>
                     </View>
-                    <Icon name="angle-down" color={this.props.iconColor || "#5db2ff" } size={20} />
+                    <Icon name={this.props.icon || "angle-down"} color={this.props.iconColor || "#B52216" } size={20} />
                 </View>
             </TouchableWithoutFeedback>
         );

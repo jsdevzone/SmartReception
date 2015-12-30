@@ -20,6 +20,8 @@
   * @props {String} iconColor - Hex color for icon color
   * @props {Function} onChangeText - Handler function on text change event
   * @props {String|Object|Number} value -The text field value. It should be attached with some state
+  * @props {String} keyboardType  - The type of keyboard
+  * @props {Number}  maxLength - Maximum allowed charecter
   */
 export default class TextField extends React.Component {
     /**
@@ -34,6 +36,9 @@ export default class TextField extends React.Component {
      * @return {View} view
      */
     render() {
+        let icon = null;
+        if(this.props.icon)
+            icon = (<Icon name={this.props.icon} color={this.props.iconColor || "#B52216" } size={20} />);
         return (
             <View style={[styles.textFieldWrapper, this.props.style]}>
                 <TextInput style={styles.textField}
@@ -41,8 +46,9 @@ export default class TextField extends React.Component {
                     placeholder={this.props.placeholder}
                     onChangeText={this.props.onChangeText}
                     value={this.props.value}
-                />
-                <Icon name={this.props.icon} color={this.props.iconColor || "#5db2ff" } size={20} />
+                    maxLength={this.props.maxLength}
+                    keyboardType={this.props.keyboardType || "default"} />
+                {icon}
             </View>
         );
     }
@@ -61,7 +67,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     textField: {
-        color: '#858585',
+        color: '#000',
         flex: 1
     },
 });

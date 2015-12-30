@@ -4,7 +4,7 @@ import React, { StyleSheet, Text, View, Image, } from 'react-native';
 
 class SplashScreen extends React.Component {
     render() {
-        
+
         let _status = "Loading...";
         let _url ="http://i1.pepperfry.com/img/grey.gif";
 
@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     loadingImage: {
         width: 300,
         height: 300
-    }, 
+    },
     status: {
 
     }
