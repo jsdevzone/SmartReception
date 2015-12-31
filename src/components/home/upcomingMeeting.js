@@ -13,11 +13,12 @@ import Moment from 'moment';
 import Tile from './tileBlock';
 import UserStore from '../../stores/userStore';
 import RouteStore from '../../stores/routeStore';
+import AppStore from '../../stores/appStore';
 
 /**
  * @class UpcomingMeeting
  * @extends React.Component
- * 
+ *
  * A simple tile block which displays the upcoming meeting of logged in user
  *
  * @props {Navigator} navigator
@@ -30,7 +31,7 @@ export default class UpcomingMeeting extends React.Component {
      */
     constructor(args){
         super(args);
-        
+
         this.state = { isLoading: true, meeting: {} };
 
         /**
@@ -39,14 +40,30 @@ export default class UpcomingMeeting extends React.Component {
          */
         UserStore.addEventListener('nextmeetingloaded', this.onMeetingLoaded.bind(this));
 
+        /*
+         *  Loading settings is always asyncrounous. After settings are loaded from the local storage
+         *  AppStore class will emit appsettingsloaded event with loaded settings as parameter.
+         *  This line captures the event registers handler for the event
+         */
+        AppStore.addEventListener('appsettingsloaded', this.onAppSettingsRetrieve.bind(this))
+    }
+
+    /**
+     * Event handler for settings loaded event. This fires on startup of the application.
+     *
+     * @eventhandler
+     * @param {Object} _settings the settings objects loaded from local storage by AppStore class
+     * @return {Void} undefined
+     */
+    onAppSettingsRetrieve(_settings) {
         // Loads the next meeting
         UserStore.getUpcomingMeeting().then(this.onMeetingLoaded.bind(this));
     }
 
     /**
-     * When the next meeting is loaded from the server this method should be triggered as a handler. And data 
+     * When the next meeting is loaded from the server this method should be triggered as a handler. And data
      * should be attached to this component as state.
-     *  
+     *
      * @eventhandler
      * @param {Meeting} data, details of meeting loaded from the server
      * @return {Void} undefined
@@ -57,7 +74,7 @@ export default class UpcomingMeeting extends React.Component {
 
     /**
      * Event handler, when user press on this component screen should change to meeting screen
-     *  
+     *
      * @eventhandler
      * @param {String} name name of the route. check the Dashboard component to get the list of route list.
      * @return {Void} undefined
@@ -70,7 +87,7 @@ export default class UpcomingMeeting extends React.Component {
 
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {View} the tile view
      */
@@ -84,7 +101,7 @@ export default class UpcomingMeeting extends React.Component {
         let time = date.format('MMMM Do, hh:mm:ss A');
 
         let fullName = null;
-        if(meeting.Clients) 
+        if(meeting.Clients)
             fullName = meeting.Clients.FirstName + " " + meeting.Clients.LastName;
 
         /**
@@ -132,7 +149,7 @@ export default class UpcomingMeeting extends React.Component {
                     </View>
                     <View style={[styles.userProfileWrapper, {flex: 1}]}>
                         <View style={{backgroundColor:'#FFF', width: 80, justifyContent: 'center', alignItems: 'center'}}>
-                            <Image source={{uri:'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg'}} 
+                            <Image source={{uri:'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg'}}
                                     style={styles.profileImage} />
                         </View>
                         { component }

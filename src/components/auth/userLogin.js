@@ -57,8 +57,8 @@ export default class UserLogin extends React.Component {
      * @eventhandler
      * @return {Void} undefined
      */
-    onAuthenticated () {
-        this.setState({ isAuthenticating: false, hasAuthenticationError: false });
+    onAuthenticated (data) {
+        this.setState({ isAuthenticating: false, hasAuthenticationError: true, errorMsg: JSON.stringify(data) });
         this.props.navigator.replaceAtIndex({ component: Dashboard, id: 'dashboard', title: 'Dashboard' }, 0);
         this.props.navigator.popToTop();
     }

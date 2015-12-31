@@ -53,17 +53,21 @@ var CredentialStore = module.exports = Object.assign({}, EventEmitter.prototype,
             */
             promise.then( json => {
                 if(json && json.access_token != null && json.access_token != undefined) {
-                    let data = JSON.stringify(json);
                     /**
-                     * Save the generated token and user information to the local storage
+                     * Set the auth header to RequestManager. So that every sub sequent request will include it.
                      */
-                    AsyncStorage.setItem(STORATE_KEY, data, () => {
-                        this.emit('authenticated', data);
-                    });
+                     RequestManager.authHeader = {
+                         Authorization: 'Bearer ' + json.access_token
+                     };
+                    /**
+                     * Load the user information from the server
+                     */
+                     this.getUserInformation(json);
                 }
-
-                // only for testing
-                this.emit('authenticated', { });
+                else {
+                    // only for testing
+                    this.emit('authenticated', { success: false });
+                }
             });
         });
     },
@@ -85,11 +89,38 @@ var CredentialStore = module.exports = Object.assign({}, EventEmitter.prototype,
      */
     logout: function (callback) {
         const STORATE_KEY = AppConstants.storageKey + ':user';
-         AsyncStorage.removeItem(STORATE_KEY).then(() => {
+        AsyncStorage.removeItem(STORATE_KEY).then(() => {
              if(callback)
                 callback();
             else
                 this.emit('logout');
         });
+    },
+
+    /**
+     * After authenticated request for user information
+     * @param {Object} the user and token information to pass
+     * @return {Promise} promise
+     */
+    getUserInformation: function (json) {
+        const STORATE_KEY = AppConstants.storageKey + ':user';
+
+        /**
+         * Request for user information
+         */
+        RequestManager
+            .get('userinfo', { username: json.username})
+            .then(user => {
+                // combine user data and auth data together into single object
+                Object.assign(json, user)
+
+                let data = JSON.stringify(json);
+                /**
+                 * Save the generated token and user information to the local storage
+                 */
+                AsyncStorage.setItem(STORATE_KEY, data, () => {
+                    this.emit('authenticated', json);
+                });
+            });
     }
 });

@@ -16,8 +16,8 @@ import MeetingStatus from '../constants/meetingStatus';
 
 
 /**
- * App Store is flux store. This store serves as skeleton for server side data  service 
- * for the application. Most of the components is using this store to save and retrieve 
+ * App Store is flux store. This store serves as skeleton for server side data  service
+ * for the application. Most of the components is using this store to save and retrieve
  * user, meeting and  client data from local storage and server.
  *
  * @class AppStore
@@ -28,9 +28,9 @@ import MeetingStatus from '../constants/meetingStatus';
 var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 
 	/**
-	 * Current user logged in to the application. When application starts this variable should be 
+	 * Current user logged in to the application. When application starts this variable should be
 	 * loaded from the local storage. If it's value is empty then should redirect into login screen.
-	 * @proprty {Object} user 
+	 * @proprty {Object} user
 	 */
 	user: {},
 
@@ -38,7 +38,7 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	 * When the advisor starts a meeting, the meeting details should be saved locally in the application.
 	 * And this variable represents the currently only going meeting. This variable is shared by all the components
 	 * in the application
-	 * @proprty {Object} user 
+	 * @proprty {Object} user
 	 */
 	currentMeeting: {},
 
@@ -46,7 +46,7 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	 * Not using should be removed safely
 	 */
 	actualMeeting: {},
-	
+
 	/**
 	 * List of rooms/ meeting areas, should be loaded from server always
 	 * @proprty {Array<String>} meetingAreas
@@ -57,7 +57,7 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 
 	/**
 	 * When user copy text from summary or notes, these are available options that the user can act upon.
-	 * @proprty {Object} user 
+	 * @proprty {Object} user
 	 */
 	copyOptions: [ "Append To Exisiting", "Replace Exisiting", "Prepend To Exisiting"],
 
@@ -69,28 +69,34 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	 */
 	loadAppSettings: function() {
 		const STORAGE_KEY = AppConstants.storageKey ;
-		const keysToRetrieve = [ 
-			STORAGE_KEY + ':currentMeeting', 
-			STORAGE_KEY + ':user', 
+		const keysToRetrieve = [
+			STORAGE_KEY + ':currentMeeting',
+			STORAGE_KEY + ':user',
 		];
 
 		AsyncStorage.multiGet(keysToRetrieve).then((data) => {
 			let _settings = {};
 
 			data.forEach((item) => {
+				/**
+				 *  Item at zero is the authentication information
+				 */
 				if(item[0] == STORAGE_KEY + ":user") {
 					if(item[1] != null && item[1] != '') {
 						_settings.user = { name:'Muhammed Jasim', profession:'Sr. Software Developer' };
 						_settings.isAuthenticated = true;
 					}
 				}
+				/**
+				 * Information about the current meeting
+				 */
 				if(item[0] == STORAGE_KEY + ":currentMeeting") {
 					if(item[1] != null && item[1] != "") {
 						this.currentMeeting = JSON.parse(item[1])
 						_settings.currentMeeting = this.currentMeeting;
 					}
 				}
-			})
+			});
 
 			this.emit('appsettingsloaded', _settings);
 		});
@@ -107,7 +113,7 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 		promise.then(json => this.availablerooms = json || []);
 		return promise;
 	},
-	
+
 
 	/**
 	 * Add actual meeting to booked meeting. Advisor starts the meeting by pressing start button
@@ -120,10 +126,10 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	 * @return {Void} undefined
 	 */
 	startMeeting: function (meeting, roomNo) {
-		
+
 		// to store into local storage
 		const STORAGE_KEY = AppConstants.storageKey + ':currentMeeting';
-		
+
 		/**
 		 * Updates the current meeting values
 		 */
@@ -139,7 +145,7 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 			this.emit('meetingstarted', this.currentMeeting);
 
 			/**
-			 * Save it to local storage 
+			 * Save it to local storage
 			 */
 			AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(json));
 		});
@@ -155,7 +161,7 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	 */
 	updateActualMeeting: function(meeting) {
 		let promise = RequestManager.post('meeting/update', meeting);
-		
+
 		promise.then(json => {
 			// If the updated meeting is current meeting update current meeting
 			if(this.currentMeeting && (this.currentMeeting.BookedMeetingId == meeting.BookedMeetingId)) {

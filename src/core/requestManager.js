@@ -20,6 +20,11 @@ var RequestManager = {
     //endpointBase: 'http://smartreception.egovservice.com/services/api/',
 
 	/**
+	 * Authentication header, should sent for each request.
+	 */
+	authHeader: {},
+
+	/**
 	 * Send request to server to generate the token
 	 * @param {User} user - object with username and password
 	 * @return {Promise} promise
@@ -36,10 +41,10 @@ var RequestManager = {
         return new Promise((resolve, reject) => {
             fetch(url, {
                 method: 'GET',
-                headers: {
+                headers: Object.assign({
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
-                }
+                }, this.authHeader)
             })
             .then((response) => {
                 resolve(response.json());
@@ -61,10 +66,10 @@ var RequestManager = {
         return new Promise((resolve, reject) => {
             fetch(url, {
                 method: 'POST',
-                headers: {
+				headers: Object.assign({
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
-                },
+                }, this.authHeader)	,
                 body: JSON.stringify(params)
             })
             .then((response) => resolve(response.json()))
@@ -86,6 +91,14 @@ var RequestManager = {
 		// add grant type to the parameter object
 		user.grant_type = 'password';
 
+
+		let querystring = "";
+		if(user) {
+            querystring = Object.keys(user)
+                .map(key => key + '=' + encodeURIComponent(user[key]))
+                .join('&');
+        }
+
 		// Create a new promise
         return new Promise((resolve, reject) => {
             fetch(url, {
@@ -95,7 +108,7 @@ var RequestManager = {
 					'Accept': 'application/json, application/xml, text/plain, text/html, *.*',
 				    'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
                 },
-                body: JSON.stringify(user)
+                body: querystring
             })
             .then(response => resolve(response.json()));
         });
