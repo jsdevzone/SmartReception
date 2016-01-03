@@ -5,7 +5,7 @@
  * @company E-Gov LLC
  */
 
-import React, {StyleSheet, Text, View, Image, TouchableHighlight } from 'react-native';
+import React, {StyleSheet, Text, View, Image, TouchableHighlight, ToastAndroid } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Moment from 'moment';
 
@@ -39,24 +39,15 @@ export default class UpcomingMeeting extends React.Component {
          * Check UserStore.getNextMeeting() method for more details about loading the next meeting of the current user.
          */
         UserStore.addEventListener('nextmeetingloaded', this.onMeetingLoaded.bind(this));
-
-        /*
-         *  Loading settings is always asyncrounous. After settings are loaded from the local storage
-         *  AppStore class will emit appsettingsloaded event with loaded settings as parameter.
-         *  This line captures the event registers handler for the event
-         */
-        AppStore.addEventListener('appsettingsloaded', this.onAppSettingsRetrieve.bind(this))
     }
-
+    
     /**
-     * Event handler for settings loaded event. This fires on startup of the application.
+     * Lifecycle event of react js. Triggered just before the view is rendered to the screen
      *
-     * @eventhandler
-     * @param {Object} _settings the settings objects loaded from local storage by AppStore class
+     * @lifecycle
      * @return {Void} undefined
      */
-    onAppSettingsRetrieve(_settings) {
-        // Loads the next meeting
+    componentDidMount() {
         UserStore.getUpcomingMeeting().then(this.onMeetingLoaded.bind(this));
     }
 

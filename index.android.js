@@ -19,7 +19,7 @@
  * These are the technologies i have used in this application.
  */
 import React, { AppRegistry, StyleSheet, Text, View, Image, Navigator,
-  BackAndroid, AsyncStorage, DeviceEventEmitter, NativeModules, } from 'react-native';
+  BackAndroid, AsyncStorage, DeviceEventEmitter, NativeModules, ToastAndroid, } from 'react-native';
 
 import SignalR from 'react-native-signalr';
 
@@ -165,7 +165,7 @@ class SmartReception extends React.Component {
      * @return {Void} undefined
      */
     onAppSettingsRetrieve(_settings) {
-        this.setState({ data: JSON.stringify(_settings) });
+
         let route = null;
         let isAuthnticated = _settings.isAuthenticated;
         let newState = {

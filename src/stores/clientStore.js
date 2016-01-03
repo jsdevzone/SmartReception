@@ -11,9 +11,9 @@ import { EventEmitter } from 'events';
 import RequestManager from '../core/requestManager';
 
 /**
- * Client Store is flux store to load client related data from the server 
+ * Client Store is flux store to load client related data from the server
  * and serves the incoming data to the view components. This store is responsible for loading
- * all the client related data. 
+ * all the client related data.
  *
  * @class ClientStore
  * @extends EventEmitter
@@ -27,7 +27,7 @@ var ClientStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	 *
 	 * @url - http://[server]/[service]/api/meeting/byclient?clientIdentity={identity}
 	 *
-	 * @param {String} identity client identity 
+	 * @param {String} identity client identity
 	 * @return {Promise} data
 	 */
 	getClientMeeting: function(identity) {
@@ -51,7 +51,7 @@ var ClientStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	/**
 	 * Register new client to the server
 	 *
-	 * @url - http://[server]/[service]/api/client/registe?client={client}
+	 * @url - http://[server]/[service]/api/client/register?client={client}
 	 *
 	 * @param {Client} client
 	 * @return {Promise} data
@@ -62,7 +62,20 @@ var ClientStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	},
 
 	/**
-	 * Get the list of clients 
+	 * Register new client temporary to the server
+	 *
+	 * @url - http://[server]/[service]/api/client/register_temp?client={client}
+	 *
+	 * @param {Client} client
+	 * @return {Promise} data
+	 */
+	registerClientTemporary: function(client) {
+		let promise =  RequestManager.post('client/register_temp', client);
+		return promise;
+	},
+
+	/**
+	 * Get the list of clients
 	 *
 	 * @url - http://[server]/[service]/api/client/filter?filter={filter}
 	 *
@@ -74,9 +87,9 @@ var ClientStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 		promise.then(clients => { this.emit('clientlistloaded', clients); });
 		return promise;
 	},
-	
+
 	/**
-     * Add the event listener for this object 
+     * Add the event listener for this object
      * @param {String} evt the event name
      * @param {Function} callback, the callback function that should be triggered.
      * @return {Void} undefined

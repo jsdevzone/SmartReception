@@ -4,16 +4,13 @@
  * @author Jasim
  * @company E-Gov LLC
  */
-
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, ToastAndroid, } from 'react-native';
 import { EventEmitter } from 'events';
 
 import RequestManager from '../core/requestManager';
 import AppConstants from '../constants/appConstants';
 import CredentialStore from './credentialStore';
 import MeetingStatus from '../constants/meetingStatus';
-
-
 
 /**
  * App Store is flux store. This store serves as skeleton for server side data  service
@@ -85,6 +82,12 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 					if(item[1] != null && item[1] != '') {
 						_settings.user = { name:'Muhammed Jasim', profession:'Sr. Software Developer' };
 						_settings.isAuthenticated = true;
+
+						let authHeader = JSON.parse(item[1])
+
+						if(authHeader.access_token) {
+							RequestManager.authHeader = { 'Authorization': 'Bearer ' + authHeader.access_token };
+						}
 					}
 				}
 				/**

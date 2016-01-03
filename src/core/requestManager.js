@@ -11,13 +11,16 @@
  * @helper
  * @singleton
  */
-var RequestManager = {
+
+import { ToastAndroid } from 'react-native';
+
+var RequestManager = module.exports = {
 
 	// local address
 	endpointBase: 'http://192.168.4.77/SmartReception.Service/api/',
 
 	// remote server address
-    //endpointBase: 'http://smartreception.egovservice.com/services/api/',
+    // endpointBase: 'http://smartreception.egovservice.com/services/api/',
 
 	/**
 	 * Authentication header, should sent for each request.
@@ -30,30 +33,35 @@ var RequestManager = {
 	 * @return {Promise} promise
 	 */
 	get: function(action, params) {
-		let url = this.endpointBase + action;
-        if(params) {
-            var querystring = Object.keys(params)
-                .map(key => key + '=' + encodeURIComponent(params[key]))
-                .join('&');
+		if(!action)
+			throw new Error('The parameter action is mandatory');
 
-            url = url + '?' + querystring;
-        }
-        return new Promise((resolve, reject) => {
-            fetch(url, {
-                method: 'GET',
-                headers: Object.assign({
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }, this.authHeader)
-            })
-            .then((response) => {
-                resolve(response.json());
-            })
-            .catch((error) => {
-                if(reject)
-                    reject(error);
-            })
-        });
+		let url = this.endpointBase + action;
+
+		if(params) {
+			var querystring = Object.keys(params)
+				.map(key => key + '=' + encodeURIComponent(params[key]))
+				.join('&');
+
+			url = url + '?' + querystring;
+		}
+
+		let header = Object.assign({}, {
+			'Accept': 'application/json',
+			'Content-Type': 'application/json'
+		}, RequestManager.authHeader);
+
+		return new Promise((resolve, reject) => {
+			fetch(url, {
+				method: 'GET',
+				headers: header
+			})
+			.then((response) => resolve(response.json()))
+			.catch((error) => {
+				if(reject)
+					reject(error);
+			})
+		});
 	},
 
 	/**
@@ -69,7 +77,7 @@ var RequestManager = {
 				headers: Object.assign({
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
-                }, this.authHeader)	,
+                }, RequestManager.authHeader)	,
                 body: JSON.stringify(params)
             })
             .then((response) => resolve(response.json()))
@@ -114,5 +122,3 @@ var RequestManager = {
         });
 	}
 };
-
-module.exports = RequestManager;

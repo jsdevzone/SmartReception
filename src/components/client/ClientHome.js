@@ -1,29 +1,55 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @author Jasim
- */
 'use strict';
+/**
+ * Smart reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ */
 
-import React, { StyleSheet, Text, View, Image,
-  TouchableHighlight, TextInput, TouchableWithoutFeedback, NativeModules, } from 'react-native';
+import React, {
+    StyleSheet, Text, View, Image,
+    TouchableHighlight, TextInput, TouchableWithoutFeedback,
+    NativeModules,TouchableNativeFeedback
+} from 'react-native';
+
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Moment from 'moment';
+
+import TextField from '../ux/textField';
+import ComboBox from '../ux/comboBox';
+import Button from '../ux/button';
+
+// Stores
 import ClientStore from '../../stores/clientStore';
 
-export default class ClientHome extends React.Component{
-  constructor(props) {
-     super(props);
-     this.state = {
-       isLoading: false,
-       currentPhase: PHASES.WELCOME,
-       scheduled: true,
-       meeting: {}
-     };
-  }
+/**
+ * @class ClientHome
+ * @extends React.Component
+ */
+export default class ClientHome extends React.Component {
+
+    /**
+     * @constructor
+     */
+    constructor(props) {
+        super(props);
+
+        /**
+         * @state
+         */
+        this.state = {
+            isLoading: false,
+            currentPhase: PHASES.WELCOME,
+            scheduled: true,
+            meeting: {}
+        };
+    }
+
+
   onClientMeetingReceived(meeting) {
     this.setState({ isLoading: false });
   }
+
+
   onScanButtonPress(identity) {
       this.setState({ isLoading: true });
       ClientStore.getClientMeeting(identity).then(json => {
@@ -93,7 +119,7 @@ export default class ClientHome extends React.Component{
             <View style={{flex: 1, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center'}}>
                 <Image source={require('../../../resources/images/logo.png')} style={{width: 400, height: 160, marginBottom: 20}} />
             </View>
-            <View style={{ padding: 5, backgroundColor: '#F4F4F4', flex: 1 }}>
+            <View style={{ padding: 5, backgroundColor: '#FFF', flex: 1 }}>
                 { this.renderPhases() }
             </View>
         </View>
@@ -103,6 +129,7 @@ export default class ClientHome extends React.Component{
 
 /**
  * @class LoadMask
+ * @extends React.Component
  */
 class LoadMask extends React.Component {
     constructor(args) {
@@ -122,6 +149,7 @@ class LoadMask extends React.Component {
 
 /**
  * @class ScheduleConfirmation
+ * @extends React.Component
  */
 
 class ScheduleConfirmation extends React.Component {
@@ -291,48 +319,125 @@ class FinalConfirmation extends React.Component {
 
 /**
  * @class RegisterUser
+ * @extends React.Component
  */
-
 class RegisterUser extends React.Component {
+
+    /**
+     * @constructor
+     */
     constructor(args) {
         super(args);
-        this.state = {};
+        /**
+         * @state
+         */
+        this.state = {
+            user: {}
+        };
     }
+
+    /**
+     * on Field edit
+     * @eventhandler
+     * @param {String} field
+     * @param {String|Number|Boolean} value
+     * @return {Void} undefined
+     */
+    onFieldEdit(field, value) {
+        let user = this.state.user;
+        user[field] = value;
+        this.setState({ user: user });
+    }
+
+    /**
+     * Register new user with server
+     * @eventhandler
+     * @return {Void} undefined
+     */
+    registerNewUser() {
+        ClientStore.registerClientTemporary(this.state.user);
+    }
+
+    /**
+     * @render
+     * @return {View} component
+     */
     render() {
         return (
-            <View style={{alignItems: 'center', flex: 1}}>
-                <Text style={{margin:10,fontSize: 35, color:'#696868', marginTop: 0 }}>Please register your details </Text>
-                <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 5 }} >
-                    <Icon name="user" color="#696868" size={18} style={{marginTop: 4, marginLeft: 10}} />
-                    <TextInput underlineColorAndroid="#FFF" placeholder="First Name" style={{ flex: 1 }} />
-                </View>
-                <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 5 }} >
-                    <Icon name="user-plus" color="#696868" size={18} style={{marginTop: 4, marginLeft: 10}} />
-                    <TextInput underlineColorAndroid="#FFF" placeholder="Last Name" style={{ flex: 1 }} />
-                </View>
-
-                <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 5 }} >
-                    <Icon name="book" color="#696868" size={18} style={{marginTop: 4, marginLeft: 10}} />
-                    <TextInput underlineColorAndroid="#FFF" placeholder="Passport Number" style={{ flex: 1 }} />
-                </View>
-                <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 5 }} >
-                    <Icon name="flag" color="#696868" size={18} style={{marginTop: 4, marginLeft: 10}} />
-                    <TextInput underlineColorAndroid="#FFF" placeholder="Nationality" style={{ flex: 1 }} />
-                </View>
-                <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 5 }} >
-                    <Icon name="envelope" color="#696868" size={18} style={{marginTop: 4, marginLeft: 10}} />
-                    <TextInput underlineColorAndroid="#FFF" placeholder="Email" style={{ flex: 1 }} />
-                </View>
-                <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 5 }} >
-                    <Icon name="mobile" color="#696868" size={18} style={{marginTop: 4, marginLeft: 10}} />
-                    <TextInput underlineColorAndroid="#FFF" placeholder="Phone" style={{ flex: 1 }} />
-                </View>
-                <TouchableHighlight onPress={this.props.onRegister}>
-                    <View style={[styles.button, { marginTop: 25 }]}>
-                        <Text style={styles.buttonText}>Register</Text>
-                        <Icon name="arrow-right" color="#FFF" size={20} style={{marginTop: 4, marginLeft: 10}} />
+            <View style={[styles.widget, { flex: 1 }]}>
+                <View style={styles.widgetBody}>
+                    <View style={styles.row}>
+                        <View style={[styles.formGroup, {flex:1}]}>
+                            <Text style={styles.label}>First Name</Text>
+                            <TextField icon="user" value={this.state.user.FirstName} onChangeText={(text) => this.onFieldEdit('FirstName', text)} />
+                        </View>
+                        <View style={[styles.formGroup, {flex:1}]}>
+                            <Text style={styles.label}>Last Name</Text>
+                            <TextField  icon="user" value={this.state.user.LastName} onChangeText={(text) => this.onFieldEdit('LastName', text)} />
+                        </View>
                     </View>
-                </TouchableHighlight>
+                    <View style={[styles.row, { alignItems: 'center', justifyContent: 'center', paddingTop: 10 }]}>
+                        <Text style={styles.label}>
+                            Note: The name must match the name exists in the Passport Or Emirates's ID
+                        </Text>
+                    </View>
+                    <View style={styles.row}>
+                        <View style={[styles.formGroup, {flex:1}]}>
+                            <Text style={styles.label}>Emirates ID</Text>
+                            <TextField  icon="user"  value={this.state.user.EmiratesId} onChangeText={(text) => this.onFieldEdit('EmiratesIdNo', text)} />
+                        </View>
+                        <View style={[styles.formGroup, {flex:1}]}>
+                            <Text style={styles.label}>Passport Number</Text>
+                            <TextField  icon="user" value={this.state.user.PassportNo} onChangeText={(text) => this.onFieldEdit('PassportNo', text)} />
+                        </View>
+                    </View>
+                    <View style={styles.row}>
+                        <View style={[styles.formGroup, {flex:1}]}>
+                            <Text style={styles.label}>Nationality</Text>
+                            <TextField  icon="angle-down" />
+                        </View>
+                        <View style={[styles.formGroup, {flex:1}]}>
+                            <Text style={styles.label}>Gender</Text>
+                            <ComboBox data={['Male', 'Female']}  value={this.state.user.Gender} onChangeText={(text) => this.onFieldEdit('Gender', 'M')} />
+                        </View>
+                    </View>
+                    <View style={styles.row}>
+                        <View style={[styles.formGroup, {flex:1}]}>
+                            <Text style={styles.label}>Birth Day</Text>
+                            <View style={{flexDirection: 'row'}}>
+                                <ComboBox data={['Male', 'Female']} />
+                                <ComboBox data={['Male', 'Female']}
+                                    style={{flex: 1, marginLeft: 10, marginRight: 10}}/>
+                                <TextField value="2015" keyboardType="numeric" maxLength={4} style={{width: 70}}  icon="calendar" />
+                            </View>
+                        </View>
+                    </View>
+                    <View style={styles.row}>
+                        <View style={[styles.formGroup, {flex:1}]}>
+                            <Text style={styles.label}>Company</Text>
+                            <TextField icon="briefcase" value={this.state.user.CompanyName} onChangeText={(text) => this.onFieldEdit('CompanyName', text)} />
+                        </View>
+                    </View>
+                    <View style={styles.row}>
+                        <View style={[styles.formGroup, {flex:1}]}>
+                            <Text style={styles.label}>Location</Text>
+                            <TextField icon="map-marker"  value={this.state.user.Location} onChangeText={(text) => this.onFieldEdit('Location', text)} />
+                        </View>
+                    </View>
+                    <View style={styles.row}>
+                        <View style={[styles.formGroup, {flex:1}]}>
+                            <Text style={styles.label}>Mobile Number</Text>
+                            <TextField  icon="phone" value={this.state.user.Mobile} onChangeText={(text) => this.onFieldEdit('Mobile', text)} />
+                        </View>
+                        <View style={[styles.formGroup, {flex:1}]}>
+                            <Text style={styles.label}>Email</Text>
+                            <TextField  icon="envelope"  value={this.state.user.Email} onChangeText={(text) => this.onFieldEdit('Email', text)} />
+                        </View>
+                    </View>
+                </View>
+                <View style={styles.widgetFooter}>
+                    <Button text="Register New User" />
+                </View>
             </View>
         );
     }
@@ -393,5 +498,62 @@ var styles = StyleSheet.create({
   buttonText: {
       color:'#FFF',
        fontSize: 20
-   }
+   },
+   widget: {
+       backgroundColor: "#FFF",
+       alignItems: 'stretch',
+       flexDirection: 'column',
+       borderWidth: 1,
+       borderColor: '#C03C3D'
+   },
+   widgetHeader: {
+       backgroundColor: '#FFF',
+       padding: 10,
+       borderBottomWidth: 5,
+       borderBottomColor: '#C03C3D',
+       flexDirection: 'row'
+   },
+   widgetHeaderText: {
+       color: '#262626',
+       marginLeft: 2
+   },
+   widgetBody: {
+       backgroundColor: '#FFF',
+       padding: 10,
+       alignItems: 'stretch',
+       flex: 1
+   },
+   textFieldWrapper: {
+       flexDirection: 'row',
+       height: 40,
+       borderColor:'#F4F4F4',
+       borderWidth: 1,
+       alignItems: 'center',
+       justifyContent: 'center'
+   },
+   textField: {
+       color: '#858585',
+       flex: 1
+   },
+   sectionTitle: {
+       padding: 10,
+       borderBottomWidth: 1,
+       borderBottomColor: '#F4F4F4',
+       borderStyle: 'dashed'
+   },
+   sectionBody: {
+       padding: 10
+   },
+   formGroup: {
+       marginLeft: 10,
+       marginRight: 10
+   },
+   label: {
+       fontSize: 15,
+       marginBottom: 5,
+       marginTop: 5
+   },
+   row: {
+       flexDirection: 'row'
+   },
 });
