@@ -1,10 +1,13 @@
 'use strict';
 /**
- * Smart reception System
+ * Smart Reception System
  * @author Jasim
  * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
-
 import React, {
     StyleSheet, Text, View, Image,
     TouchableHighlight, TextInput, TouchableWithoutFeedback,
@@ -246,7 +249,7 @@ class SplashScreen extends React.Component {
                 </View>
                 <View style={{backgroundColor: '#FFF', padding: 10, borderWidth: 1, borderColor: '#d5d5d5', alignItems: 'center', justifyContent: 'center', marginTop: 20, width: 300 }}>
                     <TouchableWithoutFeedback onPress={ this.props.onRegisterPress }>
-                        <View>
+                        <View style={{flex:1}}>
                             <Text>I don''t have Emirates ID</Text>
                         </View>
                     </TouchableWithoutFeedback>

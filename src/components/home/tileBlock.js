@@ -5,7 +5,7 @@
  * @company E-Gov LLC
  */
 
-import React, { StyleSheet, Text, View, Image, TouchableHighlight, } from 'react-native';
+import React, { StyleSheet, Text, View, Image, TouchableHighlight, NativeModules, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const config = { width: 120, height: 120, margin: 10 };
@@ -13,7 +13,7 @@ const possibleIconColors = [ '#8F78D4', '#58AB6A', '#BD79C1', '#B7A047', '#DE7A9
 /**
  * @class Tile
  * @extends React.Component
- * 
+ *
  * Represents a single tile in dashboard screen
  *
  * @props {String} scale represents the size of a tile. Values can be small, large, extralarge, fullColumn
@@ -22,19 +22,37 @@ const possibleIconColors = [ '#8F78D4', '#58AB6A', '#BD79C1', '#B7A047', '#DE7A9
  * @props {Function} onPress event handler for on tile press event
  * @props {String} text tile text
  * @props {String} icon for tile, should be the font icon name
- * @props {StyleSheet} style if any extra styles should be rendered 
+ * @props {StyleSheet} style if any extra styles should be rendered
  * @props {Function} onPress press event handler
  */
 export default class Tile extends React.Component {
 
     /**
+     * On Tile press
+     *
+     * @eventhandler
+     * @return {Void} undefined
+     */
+    onTilePress() {
+        /**
+         * Play the native tap sound, as it's not supported in default view component by react native
+         */
+        NativeModules.MediaHelper.playClickSound();
+        /**
+         * execute on press event passed through the props
+         */
+        if(this.props.onPress)
+            this.props.onPress();
+    }
+
+    /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {View} the tile view
      */
     render() {
-        
+
         let scale = this.props.scale || 'small';
         let iconColor = this.props.iconColor || possibleIconColors[Math.floor(Math.random() * 6)];
         let textColor = this.props.textColor || '#313131';
@@ -56,7 +74,7 @@ export default class Tile extends React.Component {
             content = this.props.children;
 
         let component = (
-            <TouchableHighlight onPress={this.props.onPress} underlayColor="#FF0">
+            <TouchableHighlight onPress={this.onTilePress.bind(this)} underlayColor="#FF0">
                 <View style={[styles.tile, styles[scale], this.props.style]}>
                     {content}
                 </View>
@@ -64,12 +82,12 @@ export default class Tile extends React.Component {
         );
 
         /**
-         * Scale full column means the container with full screen height. 
+         * Scale full column means the container with full screen height.
          * When using this mode childrens are mandatory
          */
         if(this.props.scale == 'fullColumn') {
             component = (
-                <View style={[styles.tile, styles[scale], this.props.style]}>
+                <View style={[styles.tile, styles[scale], this.props.style]} accessible={true}>
                     {this.props.children}
                 </View>
             );

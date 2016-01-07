@@ -1,9 +1,13 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @author Jasim
- */
 'use strict';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ */
 
 import React, {  StyleSheet, Text, View, Image, TouchableHighlight,
   TouchableWithoutFeedback, TextInput, ListView, NativeModules, } from 'react-native';
@@ -18,153 +22,295 @@ import Attachments from '../app/attachments';
 import DialogAndroid from 'react-native-dialogs';
 import MeetingStatus from '../../constants/meetingStatus';
 import DrawingSurface from '../drawing/drawingSurface';
+import Attendees from './attendees';
 
-class MeetingArea extends React.Component{
-    constructor(args){
+/**
+ * MeetingArea
+ *
+ * @class MeetingArea
+ * @extends React.Component
+ */
+ export default class MeetingArea extends React.Component {
+     /**
+      * @constructor
+      */
+     constructor(args) {
         super(args);
-        this.state = { selectedTabIndex: 1, isRecording: false };
-        if(AppStore.isRecording)
+
+        /**
+         * @state
+         */
+         this.state = {
+             /**
+              * The Notes and Summary Tab index
+              */
+             selectedTabIndex: 1,
+             /**
+              * Is recoding sound in background
+              */
+             isRecording: false
+         };
+
+         /**
+          * If any previous unclosed sound recording  found, resume it
+          */
+         if(AppStore.isRecording)
             this.state.isRecording = true;
-    }
-    onTabPress(index) {
-        this.setState({ selectedTabIndex: index});
-    }
-    onMeetingUpdate(meeting) {
-        AppStore.updateActualMeeting(meeting);
-    }
-    onFinishPress() {
-        if(AppStore.getCurrentMeetingId() == this.props.meeting.BookedMeetingId) {
-            let dialog = new DialogAndroid();
-            let options = {
-                title: 'Confirm',
-                content: 'Are you sure want to finish current meeting?' ,
-                positiveText: 'Yes',
-                negativeText: 'No',
-                onPositive: () => AppStore.finishCurrentMeeting()
-            };
-            dialog.set(options);
-            dialog.show();
-        }
-    }
-    postMeeting() {
-        let dialog = new DialogAndroid();
-        let options = {
-            title: 'Confirm',
-            content: 'Are you sure ?' ,
-            positiveText: 'Yes',
-            negativeText: 'No',
-            onPositive: () => AppStore.postMeeting(this.props.meeting)
-        };
-        dialog.set(options);
-        dialog.show();
-    }
-    recordAudio() {
-        this.setState({ isRecording: true });
-        AppStore.isRecording = true;
-        NativeModules.MediaHelper.startRecording(this.props.meeting.BookedMeetingId.toString());
-    }
-    stopRecording() {
-        this.setState({ isRecording: false });
-        AppStore.isRecording = false;
-        NativeModules.MediaHelper.stopRecording();
-        if(this.props.onAttachmentAdded) {
-            this.props.onAttachmentAdded({ name: 'Voice Record', file: 'SmartReception/Record.3gp' });
-        }
-    }
-    navigateToSketches() {
-        this.props.navigator.push({ id: 'drawingsurface', component: DrawingSurface, title: 'Sketches', props: {
-            navigator: this.props.navigator,
-            meeting: this.props.meeting
-        }});
-    }
-    render() {
-        return (
+     }
+
+     /**
+      * @eventhandler
+      * @param {Number} index
+      * @return {Void} undefined
+      */
+     onTabPress(index) {
+         /**
+          * Play the native tap sound, as it's not supported in default view component by react native
+          */
+         NativeModules.MediaHelper.playClickSound();
+         /**
+          * Change the state
+          */
+         this.setState({ selectedTabIndex: index });
+     }
+
+     /**
+      * @eventhandler
+      * @param {Meeting} meeting
+      * @return {Void} undefined
+      */
+     onMeetingUpdate(meeting) {
+         return AppStore.updateActualMeeting(meeting);
+     }
+
+     /**
+      * Triggers when the advisor press the finish button on meeting screen.
+      * @eventhandler
+      * @return {Void} undefined
+      */
+     onFinishPress() {
+         if(AppStore.getCurrentMeetingId() == this.props.meeting.BookedMeetingId) {
+             let dialog = new DialogAndroid();
+             let options = {
+                 title: 'Confirm',
+                 content: 'Are you sure want to finish current meeting?' ,
+                 positiveText: 'Yes',
+                 negativeText: 'No',
+                 onPositive: () => AppStore.finishCurrentMeeting()
+             };
+             dialog.set(options);
+             dialog.show();
+         }
+     }
+
+     /**
+      * Confirm and post the meeting passed through the props
+      * @return {Void} undefined
+      */
+     postMeeting() {
+         let dialog = new DialogAndroid();
+         let options = {
+             title: 'Confirm',
+             content: 'Are you sure ?' ,
+             positiveText: 'Yes',
+             negativeText: 'No',
+             onPositive: () => AppStore.postMeeting(this.props.meeting)
+         };
+         dialog.set(options);
+         dialog.show();
+     }
+
+     /**
+      * Start the recording
+      * @return {Void} undefined
+      */
+     recordAudio() {
+         /**
+          * change the component state
+          */
+         this.setState({ isRecording: true });
+         /**
+          * Set the global store value
+          */
+         AppStore.isRecording = true;
+         /*
+          * Start the Recording
+          */
+         NativeModules.MediaHelper.startRecording(this.props.meeting.BookedMeetingId.toString());
+     }
+
+     /**
+      * Stop the recording.
+      * @return {Void} undefined
+      */
+     stopRecording() {
+         /**
+          * change the component state
+          */
+         this.setState({ isRecording: false });
+         /**
+          * Set the global store value
+          */
+         AppStore.isRecording = false;
+         /*
+          * Stop the Recording
+          */
+         NativeModules.MediaHelper.stopRecording();
+         /**
+          * If there is an attachment added event handler, call it with the newly recorded file
+          */
+         if(this.props.onAttachmentAdded) {
+             this.props.onAttachmentAdded({ name: 'Voice Record', file: 'SmartReception/Record.3gp' });
+         }
+     }
+
+     /**
+      * Move  the navigator to Sketches screen
+      * @return {Void} undefined
+      */
+     navigateToSketches() {
+         if(this.props.navigator) {
+             let route = {
+                 id: 'drawingsurface',
+                 component: DrawingSurface,
+                 title: 'Sketches',
+                 props: { navigator: this.props.navigator, meeting: this.props.meeting }
+             };
+             this.props.navigator.push(route);
+         }
+     }
+
+     /**
+      * Render meeting tabs
+      * @return {View} tabStripe
+      */
+     renderTabStripes() {
+         /**
+          * List Of tabs
+          */
+         let tabs = [
+             { id: 1, text: 'NOTES', icon: 'sticky-note-o' },
+             { id: 2, text: 'SUMMARY', icon: 'file-text-o' },
+             { id: 3, text: 'MINUTES', icon: 'list-alt' },
+             { id: 4, text: 'ATTACHMENTS', icon: 'paperclip' },
+             { id: 5, text: 'ATTENDEES', icon: 'paperclip' }
+         ];
+         /**
+          * @render
+          */
+         return (
+             <View style={styles.tabWrapper}>
+                 { tabs.map(item => this.renderTab(item.text, item.icon, item.id))}
+             </View>
+         );
+     }
+
+     /**
+      * Renders the single tab component
+      * @param {String} text
+      * @param {String} icon
+      * @param {Number} tabIndex
+      * @param {Boolean} hideSeparator optional
+      * @return {TouchableWithoutFeedback} tab
+      */
+     renderTab(text, icon, tabIndex, hideSeparator) {
+         let style = null;
+         /**
+          * if hideSeparator then remove right border
+          **/
+         if(hideSeparator)
+            style = { borderRightWidth: 0 };
+
+         return (
+             <TouchableWithoutFeedback onPress={()=>this.onTabPress(tabIndex)}>
+                 <View style={[styles.tab, style]}>
+                     <Text style={[styles.tabText, this.state.selectedTabIndex == tabIndex ? styles.tabSelected : {}]}>{text}</Text>
+                 </View>
+             </TouchableWithoutFeedback>
+         );
+     }
+
+     /**
+      * return currently selected screen
+      * @return {View} component
+      */
+     getCurrentScreen() {
+         let Component = Notes;
+
+         switch (this.state.selectedTabIndex) {
+            case 1:
+                Component = Notes;
+                break;
+            case 2:
+                Component = Summary;
+                break;
+            case 3:
+                Component = MinutesOfMeeting;
+                break;
+            case 4:
+                Component = Attachments;
+                break;
+            case 5:
+                Component = Attendees;
+                break;
+         }
+
+         return (<Component {...this.props} onMeetingUpdate={this.onMeetingUpdate.bind(this)} />);
+     }
+
+     /**
+      * Render footer
+      * @return {View} footer
+      */
+     renderFooter() {
+         let style = { flex:1, borderRightWidth:0 };
+         let recordBtn = (<Button icon="microphone" text="Record Audio" onPress={this.recordAudio.bind(this)} />);
+         let finishBtn = (<Button icon="check" text="Finish Meeting" disabled={AppStore.getCurrentMeetingId() != this.props.meeting.BookedMeetingId}
+             style={style} onPress={this.onFinishPress.bind(this)} />);
+         /**
+          * If passed meeting status is finished hide the finish button and show the confirm btn
+          *****/
+         if(this.props.meeting.Status == MeetingStatus.FINISHED)
+            finishBtn = (<Button icon="check" text="Confirm & Update Meeting" style={style} onPress={this.postMeeting.bind(this)} />);
+
+         /**
+          * If it's being recorded, then show stop btn
+          ***/
+         if(this.state.isRecording)
+            recordBtn = (<Button icon="stop" text="Stop Recording" onPress={this.stopRecording.bind(this)} />);
+
+         return (
+             <View style={styles.footer}>
+                 { recordBtn }
+                 <Button icon="list-alt" text="Sketches" onPress={this.navigateToSketches.bind(this)} />
+                 <Button icon="comments-o" text="Feedback" />
+                 <Button icon="check-square-o" text="Survey" />
+                 <Button icon="exchange" text="Transfer" />
+                 { finishBtn }
+             </View>
+         );
+     }
+
+     /**
+      * @render
+      * @return {View} view
+      */
+     render() {
+         let currentComponent = this.getCurrentScreen();
+         return (
             <View style={styles.container}>
                 <MeetingTitle meeting={this.props.meeting} />
-                <View style={{flex: 1, flexDirection: 'row'}}>
-                    <View style={{flex:1,flexDirection:'column'}}>
-                        <View style={styles.tabWrapper}>
-                            <TouchableWithoutFeedback onPress={()=>this.onTabPress(1)}>
-                                <View style={styles.tab}>
-                                    <Icon name="sticky-note-o" size={18} style={{ color: this.state.selectedTabIndex == 1 ? '#6477C1': '#A4C1E8'   }} />
-                                    <Text style={[styles.tabText, this.state.selectedTabIndex == 1 ? styles.tabSelected : {}]}>NOTES</Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={()=>this.onTabPress(2)}>
-                                <View style={styles.tab}>
-                                    <Icon name="file-text-o" size={18} style={{ color: this.state.selectedTabIndex == 2 ? '#6477C1': '#A4C1E8'   }} />
-                                    <Text style={[styles.tabText, this.state.selectedTabIndex == 2 ? styles.tabSelected : {}]}>SUMMARY</Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={()=>this.onTabPress(3)}>
-                                <View style={[styles.tab]}>
-                                    <Icon name="list-alt" size={18} style={{ color: this.state.selectedTabIndex == 3 ? '#6477C1': '#A4C1E8'   }}/>
-                                    <Text style={[styles.tabText, this.state.selectedTabIndex == 3 ? styles.tabSelected : {}]}>MINUTES OF MEETING</Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={()=>this.onTabPress(4)}>
-                                <View style={[styles.tab, { borderRightWidth: 0 }]}>
-                                    <Icon name="paperclip" size={18} style={{ color: this.state.selectedTabIndex == 4 ? '#6477C1': '#A4C1E8'   }} />
-                                    <Text style={[styles.tabText, this.state.selectedTabIndex == 4 ? styles.tabSelected : {}]}>ATTACHMENTS </Text>
-                                </View>
-                            </TouchableWithoutFeedback>
-                        </View>
-                        <View style={{ flex: 1, flexDirection: 'column', alignItems: 'stretch'}}>
-                            {(() => {
-                                switch(this.state.selectedTabIndex) {
-                                    case 1:
-                                        return (<Notes {...this.props} onMeetingUpdate={this.onMeetingUpdate.bind(this)} />);
-                                    case 2:
-                                        return (<Summary {...this.props}  onMeetingUpdate={this.onMeetingUpdate.bind(this)}/>);
-                                    case 3:
-                                        return (<MinutesOfMeeting {...this.props} onMeetingUpdate={this.onMeetingUpdate.bind(this)}/>);
-                                    case 4:
-                                        return (<Attachments {...this.props} />);
-                                }
-                            })()}
-                        </View>
-                        <View style={styles.footer}>
-                            {(()=>{
-                                if(!this.state.isRecording) {
-                                    return (<Button icon="microphone" text="Record Audio" onPress={this.recordAudio.bind(this)} />);
-                                }
-                                else {
-                                    return (<Button icon="stop" text="Stop Recording" onPress={this.stopRecording.bind(this)} />);
-                                }
-                            })()}
-
-                            <Button icon="list-alt" text="Sketches" onPress={this.navigateToSketches.bind(this)} />
-                            <Button icon="comments-o" text="Feedback" />
-                            <Button icon="check-square-o" text="Survey" />
-                            <Button icon="exchange" text="Transfer"  onPress={()=>{
-                                    NativeModules.MediaHelper.uploadFile();
-                                }}/>
-                            {(() => {
-                                if(this.props.meeting.Status == MeetingStatus.FINISHED) {
-                                    return (
-                                        <Button icon="check"
-                                            text="Confirm & Update Meeting"
-                                            style={{flex:1, borderRightWidth:0}}
-                                            onPress={this.postMeeting.bind(this)} />
-                                    );
-                                }
-                                else {
-                                    return (
-                                        <Button icon="check"
-                                            text="Finish Meeting"
-                                            disabled={AppStore.getCurrentMeetingId() != this.props.meeting.BookedMeetingId}
-                                            style={{flex:1, borderRightWidth:0}}
-                                            onPress={this.onFinishPress.bind(this)} />
-                                    );
-                                }
-                            })()}
-                        </View>
+                <View style={styles.row}>
+                    { this.renderTabStripes() }
+                    <View style={{ flex: 1, flexDirection: 'column', alignItems: 'stretch'}}>
+                        { this.getCurrentScreen() }
                     </View>
+                    { this.renderFooter() }
                 </View>
             </View>
-        );
-    }
-}
+         );
+     }
+ }
 
 class Button extends React.Component {
     render() {
@@ -205,7 +351,9 @@ var styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'stretch'
     },
-
+    row: {
+        flex: 1
+    },
 
     tabWrapper: {
         backgroundColor: '#F0F1F3',
@@ -217,8 +365,8 @@ var styles = StyleSheet.create({
         flexDirection: 'row',
         borderRightColor: '#CCC',
         borderRightWidth: 1,
-        flex: 1,
         padding: 10,
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center'
     },

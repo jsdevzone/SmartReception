@@ -21,7 +21,7 @@
 import React, { AppRegistry, StyleSheet, Text, View, Image, Navigator,
   BackAndroid, AsyncStorage, DeviceEventEmitter, NativeModules, ToastAndroid, } from 'react-native';
 
-import SignalR from 'react-native-signalr';
+import signalr from 'react-native-signalr';
 
 import Dashboard from './src/components/home/dashboard';
 import UserLogin from './src/components/auth/userLogin';
@@ -30,6 +30,8 @@ import BreadCrumb from './src/components/app/breadCrumb';
 import SplashScreen from './src/components/app/splashScreen';
 import ConnectionError from './src/components/app/connectionError';
 import AppStore from './src/stores/appStore';
+
+import ClientSplashScreen from './src/components/client/clientSplashScreen';
 
 var _navigator  =  null;
 var _initialRoute =  null;
@@ -136,6 +138,7 @@ class SmartReception extends React.Component {
      */
     componentDidMount() {
         NativeModules.SmartReception.startNetworkMonitoring();
+        this.configureSignalR();
     }
 
     /**
@@ -143,7 +146,37 @@ class SmartReception extends React.Component {
      * @return {Void} undefined
      */
     configureSignalR() {
+        var connection = signalr.hubConnection('http://smartreception.egovservice.com/');
+        connection.logging = true;
 
+        var proxy = connection.createHubProxy('Smart');
+
+                //receives broadcast messages from a hub function, called "messageFromServer"
+        proxy.on('updateGroup', (message) => {
+            NativeModules.SmartReception.createNotification("Notification", "Your have new message");
+            NativeModules.SmartReception.notifySound();
+            NativeModules.SmartReception.vibrate(1000);
+        });
+
+
+                // atempt connection, and handle errors
+                connection.start().done(() => {
+                    proxy.invoke('connect', '1');
+                    ToastAndroid.show("Now Connected " + connection.id, ToastAndroid.LONG)
+                }).fail(() => {
+                    console.log('Failed');
+                });
+
+
+
+                //connection-handling
+                connection.connectionSlow(function () {
+                    //console.log('We are currently experiencing difficulties with the connection.')
+                });
+
+                connection.error(function (error) {
+                  //console.log('SignalR error: ' + error)
+                });
     }
 
     /**
@@ -272,11 +305,7 @@ class SmartReception extends React.Component {
          */
         if(route.props && route.props.isClientModule == true) {
             app = (
-                <View style={ styles.container }>
-                    <View style={ styles.appContainer }>
-                        <Component navigator={_navigator} {...route.props} />
-                    </View>
-                </View>
+                <Component navigator={_navigator} {...route.props} />
             );
         }
 

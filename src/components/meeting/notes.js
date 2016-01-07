@@ -3,9 +3,13 @@
  * Smart Reception System
  * @author Jasim
  * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
-
-import React, { View, Text, StyleSheet,TextInput, TouchableHighlight, NativeModules, ScrollView, } from 'react-native';
+import React, { View, Text, StyleSheet,TextInput,
+    TouchableHighlight, NativeModules, ScrollView, ToastAndroid, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DialogAndroid from 'react-native-dialogs';
 import Button from '../meeting/button';
@@ -17,8 +21,8 @@ const modes = { EDIT: 1, READ: 2 };
 
 /**
  * @class Notes
- * @extends React.Component 
- * 
+ * @extends React.Component
+ *
  * Notes editor
  *
  * @props {Function} onMeetingUpdate
@@ -27,7 +31,7 @@ const modes = { EDIT: 1, READ: 2 };
  */
 export default class Notes extends React.Component {
 
-    /** 
+    /**
      * @constructor
      */
     constructor(args) {
@@ -42,7 +46,7 @@ export default class Notes extends React.Component {
         };
 
         /**
-         * If the meeting has actual meeting in object set the notes 
+         * If the meeting has actual meeting in object set the notes
          */
         if(this.hasActualMeeting())
             this.state.notes = this.props.meeting.ActualMeetings[0].Notes;
@@ -52,9 +56,9 @@ export default class Notes extends React.Component {
          */
         AppStore.addEventListener('actualMeetingupdated', this.onMeetingUpdated.bind(this));
     }
-    
+
     /**
-     * Checks the meeting has ActualMeeting. 
+     * Checks the meeting has ActualMeeting.
      * @return {Boolean} hasActualMeeting
      */
     hasActualMeeting() {
@@ -76,26 +80,27 @@ export default class Notes extends React.Component {
     }
 
     /**
-     * Save notes 
+     * Save notes
      *
      * @eventhandler
      * @return {Void} undefined
      */
     onNoteSave() {
         if(this.hasActualMeeting()) {
-             
+
             // Show waiting dialog
             NativeModules.DialogAndroid.showProgressDialog();
 
             this.props.meeting.ActualMeetings[0].Notes = this.state.notes;
             if(this.props.onMeetingUpdate) {
-                this.props.onMeetingUpdate(this.props.meeting);
+                this.props.onMeetingUpdate(this.props.meeting)
+                    .then(json => ToastAndroid.show("Notes Updated Successfully", ToastAndroid.LONG))
             }
         }
     }
 
     /**
-     * Change Text 
+     * Change Text
      *
      * @eventhandler
      * @param {String} text
@@ -116,7 +121,7 @@ export default class Notes extends React.Component {
     }
 
     /**
-     * Change mode to edit 
+     * Change mode to edit
      *
      * @eventhandler
      * @return {Boolean} isCurrentMeeting
@@ -124,7 +129,7 @@ export default class Notes extends React.Component {
     onEdit() {
         this.setState({ mode: modes.EDIT });
     }
-    
+
     /**
      * Cancel changes. Change the mode to read.
      *
@@ -138,17 +143,17 @@ export default class Notes extends React.Component {
             content: 'Are you sure ?',
             positiveText: 'Yes',
             negativeText: 'No',
-            onPositive: () => { 
+            onPositive: () => {
                 this.setState({ mode: modes.READ, notes: this.props.meeting.ActualMeetings[0].Notes });
             }
         };
         dialog.set(options);
         dialog.show();
     }
-    
+
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {View} component
      */
@@ -160,7 +165,7 @@ export default class Notes extends React.Component {
                     multiline={true}
                     value={this.state.notes}
                     onChangeText={this.onChangeText.bind(this)}
-                    placeholder="" 
+                    placeholder=""
                     underlineColorAndroid="#FFFFFF" />
             </View>
         );
@@ -168,7 +173,7 @@ export default class Notes extends React.Component {
         if(this.state.mode == modes.READ)
             component = (
                 <ScrollView style={styles.notesArea}>
-                    <Text style={[styles.input, {flex: 1}]}>{this.state.notes}</Text>           
+                    <Text style={[styles.input, {flex: 1}]}>{this.state.notes}</Text>
                 </ScrollView>
             );
 

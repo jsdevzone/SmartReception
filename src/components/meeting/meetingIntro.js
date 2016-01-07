@@ -14,8 +14,8 @@ import AppStore from '../../stores/appStore';
 
 /**
  * @class MeetingIntro
- * @extends React.Component 
- * 
+ * @extends React.Component
+ *
  * If the meeting is not started yet, this screen will be displayed and they can start meeting from this screen.
  *
  * @props {Meeting} meeting
@@ -51,8 +51,8 @@ export default class MeetingIntro extends React.Component {
 
         if(!AppStore.hasActualMeeting()) {
             // Get the availaable rooms
-            AppStore.getAvailableMeetingRooms().then(data => { 
-                
+            AppStore.getAvailableMeetingRooms().then(data => {
+
                 // Hide progress dialog
                 NativeModules.DialogAndroid.hideProgressDialog();
 
@@ -63,14 +63,14 @@ export default class MeetingIntro extends React.Component {
                 var rooms = new Array();
                 data.map(item  => rooms.push(item.Name));
 
-                options = { 
-                    title: 'Select A Meeting Area', 
-                    positiveText: 'Select', 
+                options = {
+                    title: 'Select A Meeting Area',
+                    positiveText: 'Select',
                     items: rooms
                 };
 
                 /**
-                 * Callback for item select 
+                 * Callback for item select
                  */
                 options.itemsCallback = (index) => {
                     AppStore.startMeeting(this.props.meeting, data[index].RoomId);
@@ -89,9 +89,9 @@ export default class MeetingIntro extends React.Component {
          */
         else
         {
-            options = { 
-                title: 'Error!', 
-                content: "Can't start start new meeting without stopping current one", 
+            options = {
+                title: 'Error!',
+                content: "Can't start start new meeting without stopping current one",
                 positiveText: "OK"
             };
             dialog.set(options);
@@ -101,7 +101,7 @@ export default class MeetingIntro extends React.Component {
 
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {View} component
      */
@@ -110,10 +110,8 @@ export default class MeetingIntro extends React.Component {
             <View style={styles.container}>
                 <View style={styles.titleWrapper}>
                     <View style={styles.headerWrapper}>
-                        <Image source={require('../../../resources/images/paperwithclip.png')} style={styles.headerIcon} />
+                        <Image source={require('../../../resources/images/35.png')} style={styles.headerIcon} />
                         <Text style={styles.title}>Meeting - #{this.props.meeting.BookedMeetingId}</Text>
-                        <Text> an unknown printer took a galley of type and scrambled it to make</Text>
-                        <Text>o popular belief, Lorem Ipsum is not simply random tex</Text>
                     </View>
 
                     <View style={[styles.notification, styles.info]}>
@@ -178,8 +176,8 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     headerIcon: {
-        width: 150,
-        height: 150,
+        width: 250,
+        height: 250,
         marginBottom: 20
     },
     notification: {

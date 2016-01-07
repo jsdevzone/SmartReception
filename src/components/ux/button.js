@@ -5,7 +5,7 @@
  * @company E-Gov LLC
  */
 
- import React, { View, StyleSheet, Text, TextInput, TouchableWithoutFeedback, ToastAndroid, } from 'react-native';
+ import React, { View, StyleSheet, Text,  TouchableNativeFeedback, ToastAndroid, } from 'react-native';
  import Icon from 'react-native-vector-icons/FontAwesome';
  import DialogAndroid from 'react-native-dialogs';
 
@@ -41,7 +41,7 @@ export default class Button extends React.Component {
     render() {
         return (
             <TouchableNativeFeedback background={TouchableNativeFeedback.Ripple('#CCC', false)}>
-                <View style={styles.button}>
+                <View style={[styles.button, this.props.style]}>
                     <Icon name={this.props.icon || "table"} size={20}/>
                     <Text>{this.props.text}</Text>
                 </View>

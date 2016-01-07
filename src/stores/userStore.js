@@ -11,7 +11,7 @@ import { EventEmitter } from 'events';
 import RequestManager from '../core/requestManager';
 
 /**
- * User Store is flux store to load app user related data from the server 
+ * User Store is flux store to load app user related data from the server
  * and serves the incoming data to the view components.
  *
  * @class UserStore
@@ -20,9 +20,9 @@ import RequestManager from '../core/requestManager';
  * @singleton
  */
 var UserStore = module.exports = Object.assign({}, EventEmitter.prototype, {
-    
+
     /**
-     * Add the event listener for this object 
+     * Add the event listener for this object
      * @param {String} evt the event name
      * @param {Function} callback, the callback function that should be triggered.
      * @return {Void} undefined
@@ -55,6 +55,20 @@ var UserStore = module.exports = Object.assign({}, EventEmitter.prototype, {
     getUpcomingMeeting: function(userId) {
         let promise = RequestManager.get('meeting/upcoming', { employeeId: userId || 1});
         promise.then( json => { this.emit('nextmeetingloaded', json) });
+        return promise;
+    },
+
+    /**
+     * Loads the preious meeting of the client
+     *
+     * @url - http://[server]/[service]/api/meeting/history?clientId={id}
+     *
+     * @param {Number} userId
+     * @return {Promise} data
+     */
+    getPreviousSchedule: function(clientId) {
+        let promise = RequestManager.get('meeting/history', { employeeId: 1, clientId: clientId });
+        promise.then(json => this.emit('historyloaded', json));
         return promise;
     }
 });

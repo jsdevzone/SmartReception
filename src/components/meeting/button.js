@@ -1,25 +1,73 @@
 'use strict';
-
-import React, {  StyleSheet, Text, View, Image, TouchableHighlight,
-  TouchableWithoutFeedback, TextInput, ListView,} from 'react-native';
-
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ */
+import React, { View, StyleSheet, Text,  TouchableWithoutFeedback, NativeModules } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import DialogAndroid from 'react-native-dialogs';
 
+/**
+ * Custom Class Header
+ *
+ * @class Button
+ * @extends React.Component
+ */
+ export default class Button extends React.Component {
+     /**
+      * @constructor
+      */
+     constructor(args) {
+        super(args);
 
-class Button extends React.Component {
-    render() {
-        return (
-            <TouchableWithoutFeedback onPress={this.props.onPress}>
-                <View style={[styles.button, styles[this.props.borderPosition || 'right'], this.props.style]}>
-                    <Icon name={this.props.icon} size={30} />
-                    <Text style={{textAlign:'center'}}>{this.props.text}</Text>
-                </View>
-            </TouchableWithoutFeedback>
-        );
-    }
-}
+        /**
+         * @state
+         */
+         this.state = {};
+     }
 
-var styles = StyleSheet.create({
+     /**
+      * On Press Handler
+      * @eventhandler
+      * @return {Void} undefined
+      */
+     onPress() {
+         /**
+          * Play the native tap sound, as it's not supported in default view component by react native
+          */
+         NativeModules.MediaHelper.playClickSound();
+         /**
+          * execute on press event passed through the props
+          */
+         if(this.props.onPress)
+             this.props.onPress();
+     }
+
+     /**
+      * @render
+      * @return {View} view
+      */
+     render() {
+         return (
+             <TouchableWithoutFeedback onPress={this.onPress.bind(this)}>
+                 <View style={[styles.button, styles[this.props.borderPosition || 'right'], this.props.style]}>
+                     <Icon name={this.props.icon} size={30} />
+                     <Text style={{textAlign:'center'}}>{this.props.text}</Text>
+                 </View>
+             </TouchableWithoutFeedback>
+         );
+     }
+ }
+
+/**
+ * @style
+ */
+const styles = StyleSheet.create({
     button: {
         padding: 10,
         alignItems: 'center',
@@ -43,5 +91,3 @@ var styles = StyleSheet.create({
         borderWidth: 0
     }
 });
-
-module.exports = Button;

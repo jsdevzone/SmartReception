@@ -60,7 +60,7 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
         mReactRootView.startReactApplication(mReactInstanceManager, "SmartReception", null);
 
         setContentView(mReactRootView);
-        setNotificationBarColor();
+        //setNotificationBarColor();
 
         boolean isPenEnabled = false;
         Spen spenPackage = new Spen();

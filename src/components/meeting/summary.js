@@ -3,9 +3,13 @@
  * Smart Reception System
  * @author Jasim
  * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
-
-import React, {View, Text, StyleSheet,TextInput, TouchableHighlight, NativeModules, ScrollView, } from 'react-native';
+import React, {View, Text, StyleSheet,TextInput,
+	TouchableHighlight, NativeModules, ScrollView, ToastAndroid, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DialogAndroid from 'react-native-dialogs';
 import Button from '../meeting/button';
@@ -17,8 +21,8 @@ const modes = { EDIT: 1, READ: 2 };
 
 /**
  * @class Summary
- * @extends React.Component 
- * 
+ * @extends React.Component
+ *
  * Summary Editor
  *
  * @props {Function} onMeetingUpdate
@@ -27,7 +31,7 @@ const modes = { EDIT: 1, READ: 2 };
  */
 export default class Summary extends React.Component {
 
-    /** 
+    /**
      * @constructor
      */
 	constructor(args) {
@@ -42,7 +46,7 @@ export default class Summary extends React.Component {
 		};
 
         /**
-         * If the meeting has actual meeting in object set the summary 
+         * If the meeting has actual meeting in object set the summary
          */
         if(this.hasActualMeeting())
 		  this.state.summary = this.props.meeting.ActualMeetings[0].Summary;
@@ -54,7 +58,7 @@ export default class Summary extends React.Component {
 	}
 
     /**
-     * Checks the meeting has ActualMeeting. 
+     * Checks the meeting has ActualMeeting.
      * @return {Boolean} hasActualMeeting
      */
     hasActualMeeting() {
@@ -71,18 +75,18 @@ export default class Summary extends React.Component {
             let options = { title: 'Select an option', positiveText: 'Select', items: AppStore.copyOptions };
             options.itemsCallback = (selectedOption) => {
             	let summary = null;
-        	   switch(selectedOption) {
-            		case 0:
-        			 summary = this.state.summary + " " + this.props.meeting.ActualMeetings[0].Notes;
-        			 break;
-        		  case 1:
-        			 summary = this.props.meeting.ActualMeetings[0].Notes;
-        			 break;
-        		  case 2:
-        			 summary = this.props.meeting.ActualMeetings[0].Notes + " " + this.state.summary;
-        			 break;
-        	   }
-        	      this.setState({ summary: summary });
+        	   	switch(selectedOption) {
+        			case 0:
+        				summary = this.state.summary || "" + " " + this.props.meeting.ActualMeetings[0].Notes;
+        				break;
+        		  	case 1:
+        			 	summary = this.props.meeting.ActualMeetings[0].Notes;
+        			 	break;
+        		  	case 2:
+        			 	summary = this.props.meeting.ActualMeetings[0].Notes + " " + this.state.summary || "";
+        			 	break;
+        	   	}
+        		this.setState({ summary: summary });
             };
             let dialog = new DialogAndroid();
             dialog.set(options);
@@ -91,7 +95,7 @@ export default class Summary extends React.Component {
 	}
 
     /**
-     * Change Text 
+     * Change Text
      *
      * @eventhandler
      * @param {String} text
@@ -102,7 +106,7 @@ export default class Summary extends React.Component {
 	}
 
     /**
-     * Change mode to edit 
+     * Change mode to edit
      *
      * @eventhandler
      * @return {Boolean} isCurrentMeeting
@@ -118,18 +122,18 @@ export default class Summary extends React.Component {
      * @return {Boolean} isCurrentMeeting
      */
 	onCancel() {
-        let dialog = new DialogAndroid();
-        let options = {
-            title: 'Confirm',
-            content: 'Are you sure ?' ,
-            positiveText: 'Yes',
-            negativeText: 'No',
-            onPositive: () => { 
-                this.setState({ mode: modes.READ, summary: this.props.meeting.ActualMeetings[0].Summary });
-            }
-        };
-        dialog.set(options);
-        dialog.show();
+		let dialog = new DialogAndroid();
+		let options = {
+			title: 'Confirm',
+			content: 'Are you sure ?' ,
+			positiveText: 'Yes',
+			negativeText: 'No',
+			onPositive: () => {
+				this.setState({ mode: modes.READ, summary: this.props.meeting.ActualMeetings[0].Summary });
+			}
+		};
+		dialog.set(options);
+		dialog.show();
 	}
 
     /**
@@ -141,13 +145,13 @@ export default class Summary extends React.Component {
 	onMeetingUpdated() {
          //Hide progress dialog
         NativeModules.DialogAndroid.hideProgressDialog();
-
         //change state
 		this.setState({ mode: modes.READ });
+
 	}
 
     /**
-     * Save summary 
+     * Save summary
      *
      * @eventhandler
      * @param {Meeting} meeting
@@ -155,20 +159,23 @@ export default class Summary extends React.Component {
      */
 	onSaveSummary() {
         if(this.hasActualMeeting()) {
-             
+
             // Show waiting dialog
             NativeModules.DialogAndroid.showProgressDialog();
 
             this.props.meeting.ActualMeetings[0].Summary = this.state.summary;
             if(this.props.onMeetingUpdate) {
-                this.props.onMeetingUpdate(this.props.meeting);
+                this.props.onMeetingUpdate(this.props.meeting).then(() => {
+					// Show notification
+					ToastAndroid.show("Summary Updated Successfully", ToastAndroid.LONG);
+				})
             }
         }
 	}
 
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {View} component
      */
@@ -180,7 +187,7 @@ export default class Summary extends React.Component {
                     multiline={true}
                     value={this.state.summary}
                     onChangeText={this.onChangeText.bind(this)}
-                    placeholder="" 
+                    placeholder=""
                     underlineColorAndroid="#FFFFFF" />
             </View>
         );
@@ -188,7 +195,7 @@ export default class Summary extends React.Component {
         if(this.state.mode == modes.READ) {
             component = (
                 <ScrollView style={styles.notesArea}>
-                    <Text style={[styles.input, {flex: 1}]}>{this.state.summary}</Text>           
+                    <Text style={[styles.input, {flex: 1}]}>{this.state.summary}</Text>
                 </ScrollView>
             );
         }
@@ -221,7 +228,7 @@ export default class Summary extends React.Component {
 /**
  * @style
  */
-const styles = StyleSheet.create({ 
+const styles = StyleSheet.create({
 	container: {
         flex: 1,
         flexDirection: 'row',

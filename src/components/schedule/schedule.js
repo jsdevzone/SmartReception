@@ -21,6 +21,7 @@ import ScheduleSidebar from './scheduleSidebar';
 import ProfileDetails from '../users/profileDetails';
 import Timeline from '../meeting/timeline';
 import Attachments from '../app/attachments';
+import Meeting from '../meeting/meeting';
 
 // Stores
 import ScheduleStore from '../../stores/scheduleStore';
@@ -117,7 +118,7 @@ export default class Schedule extends React.Component {
     render() {
 
         // Default component is ScheduleContentArea
-        let component = (<ScheduleContentArea schedule={this.state.schedule} />);
+        let component = (<ScheduleContentArea navigator={this.props.navigator} schedule={this.state.schedule} />);
 
         // If the component state shedule is null, then don't render the default component
         // As there will be chance to error due to lack of the data
@@ -240,6 +241,17 @@ class ScheduleContentArea extends React.Component {
         return (<Text>{this.state.content}</Text>)
     }
 
+    move() {
+        this.props.navigator.push({
+            id: 'meeting',
+            title: 'Meeting',
+            component: Meeting,
+            props: {
+                meeting: this.props.schedule
+            }
+        });
+    }
+
     /**
      * Render the header section for selected meeting
      * @return {View} component
@@ -255,9 +267,11 @@ class ScheduleContentArea extends React.Component {
                     <Text style={styles.titleTime}>{Moment(this.props.schedule.DateOfMeeting).format('MMMM, Do dddd, YYYY - hh:mm A')}</Text>
                 </View>
                 <View style={styles.statusWrapper}>
-                    <View style={[styles.notification, styles.info]}>
-                        <Text style={[styles.notificationText, styles.infoText]}>Go To Meeting Screen</Text>
-                    </View>
+                    <TouchableWithoutFeedback onPress={this.move.bind(this)}>
+                        <View style={[styles.notification, styles.info]}>
+                            <Text style={[styles.notificationText, styles.infoText]}>Go To Meeting Screen</Text>
+                        </View>
+                    </TouchableWithoutFeedback>
                 </View>
             </View>
         );

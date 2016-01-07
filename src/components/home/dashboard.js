@@ -8,7 +8,7 @@
 // Importing React Native
 import React, { StyleSheet, Text, View, Image,
     TouchableHighlight, TextInput, NativeModules } from 'react-native';
-    
+
 //Custom npm dependencies
 import Icon from 'react-native-vector-icons/FontAwesome';
 
@@ -40,12 +40,12 @@ RouteStore.add('feedback', { title: 'Feedback', component: Feedback });
 /**
  * @class Dashboard
  * @extend React.Component
- * 
+ *
  * @props {Navigator} navigator
  * Home screen for the DA. This contains metro style tile designs
  */
 export default class Dashboard extends React.Component{
-    
+
     /**
      * @constructor
      */
@@ -53,10 +53,10 @@ export default class Dashboard extends React.Component{
         super(args);
         this.state = { meeting: {} };
     }
-    
+
     /**
      * Handles the user press event on tile, and shows the new screen by changing the navigation
-     * 
+     *
      * @eventhandler
      * @param {String} route
      * @return {Void} undefined
@@ -64,10 +64,10 @@ export default class Dashboard extends React.Component{
     onTilePress(route) {
         this.props.navigator.push(RouteStore.get(route));
     }
-    
+
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {Void} undefined
      */
@@ -81,7 +81,7 @@ export default class Dashboard extends React.Component{
                                 <Tile onPress={() => this.onTilePress('meeting')} icon="calendar-check-o" text="Meeting" scale="small"  />
                                 <Tile onPress={() => this.onTilePress('calendar')} icon="calendar" text="Calendar" />
                             </View>
-                            <UpcomingMeeting />
+                            <UpcomingMeeting navigator={this.props.navigator} />
                             <View style={styles.horizontal}>
                                 <Tile onPress={() => this.onTilePress('splash')} icon="cog" text="Settings" />
                                 <Tile onPress={() => this.onTilePress('client search')} icon="user" text="Clients" />
@@ -109,10 +109,10 @@ export default class Dashboard extends React.Component{
             </View>
         );
     }
-    
+
     /**
      * Renders the date tile on dashboard
-     * @return {Tile} tile 
+     * @return {Tile} tile
      */
     renderDateTile() {
         return (
@@ -124,10 +124,10 @@ export default class Dashboard extends React.Component{
             </Tile>
         );
     }
-    
+
     /**
      * Renders the search tile on dashboard
-     * @return {View} tile 
+     * @return {View} tile
      */
     renderSearchTile() {
         return (
@@ -144,21 +144,21 @@ export default class Dashboard extends React.Component{
               </View>
         );
     }
-    
+
     /**
      * Renders the right most big schedule tile on dashboard
-     * @return {Tile} tile 
+     * @return {Tile} tile
      */
     renderScheduleTile() {
         let alignment = { alignItems: 'stretch' };
-        
+
         return (
             <Tile scale="fullColumn" style={alignment}>
                 <Notifications {...this.props} navigator={this.props.navigator}/>
             </Tile>
         );
     }
-    
+
     /**
      * Render the copyright banner on bottom right corner of  dashboard
      * @return {View} component

@@ -14,6 +14,7 @@ import Tile from './tileBlock';
 import UserStore from '../../stores/userStore';
 import RouteStore from '../../stores/routeStore';
 import AppStore from '../../stores/appStore';
+import Meeting from '../meeting/meeting';
 
 /**
  * @class UpcomingMeeting
@@ -40,7 +41,7 @@ export default class UpcomingMeeting extends React.Component {
          */
         UserStore.addEventListener('nextmeetingloaded', this.onMeetingLoaded.bind(this));
     }
-    
+
     /**
      * Lifecycle event of react js. Triggered just before the view is rendered to the screen
      *
@@ -73,7 +74,14 @@ export default class UpcomingMeeting extends React.Component {
     onTilePress(name) {
         let route = RouteStore.get(name)
         if(route)
-            this.props.navigator.push(route);
+            this.props.navigator.push({
+                id: 'meeting',
+                title: 'Meetings',
+                component: Meeting,
+                props: {
+                    meeting: this.state.meeting
+                }
+             });
     }
 
     /**

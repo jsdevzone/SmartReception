@@ -3,9 +3,14 @@
  * Smart Reception System
  * @author Jasim
  * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
 
-import React, {View, Text, Component, StyleSheet,TextInput, TouchableHighlight, ScrollView, NativeModules, } from 'react-native';
+import React, {View, Text, Component, StyleSheet,TextInput,
+	TouchableHighlight, ScrollView, NativeModules, ToastAndroid, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DialogAndroid from 'react-native-dialogs';
 import Button from '../meeting/button';
@@ -17,8 +22,8 @@ const modes = { EDIT: 1, READ: 2 };
 
 /**
  * @class MinutesOfMeeting
- * @extends React.Component 
- * 
+ * @extends React.Component
+ *
  * Summary Editor
  *
  * @props {Function} onMeetingUpdate
@@ -27,7 +32,7 @@ const modes = { EDIT: 1, READ: 2 };
  */
 export default class MinutesOfMeeting extends React.Component {
 
-    /** 
+    /**
      * @constructor
      */
 	constructor(args) {
@@ -42,7 +47,7 @@ export default class MinutesOfMeeting extends React.Component {
 		};
 
         /**
-         * If the meeting has actual meeting in object set the summary 
+         * If the meeting has actual meeting in object set the summary
          */
 		if(this.props.meeting && this.props.meeting.ActualMeetings.length > 0)
 			this.state.minutes = this.props.meeting.ActualMeetings[0].MinutesOfMeeting;
@@ -63,13 +68,13 @@ export default class MinutesOfMeeting extends React.Component {
         	let minutes = null;
         	switch(selectedOption) {
         		case 0:
-        			minutes = this.state.minutes + " " + this.props.meeting.ActualMeetings[0].Notes;
+        			minutes = this.state.minutes || "" + " " + this.props.meeting.ActualMeetings[0].Notes;
         			break;
         		case 1:
         			minutes = this.props.meeting.ActualMeetings[0].Notes;
         			break;
         		case 2:
-        			minutes = this.props.meeting.ActualMeetings[0].Notes + " " + this.state.minutes;
+        			minutes = this.props.meeting.ActualMeetings[0].Notes + " " + this.state.minutes || "";
         			break;
         	}
         	this.setState({ minutes: minutes });
@@ -89,13 +94,13 @@ export default class MinutesOfMeeting extends React.Component {
         	let minutes = null;
         	switch(selectedOption) {
         		case 0:
-        			minutes = this.state.minutes + " " + this.props.meeting.ActualMeetings[0].Summary;
+        			minutes = this.state.minutes || "" + " " + this.props.meeting.ActualMeetings[0].Summary;
         			break;
         		case 1:
         			minutes = this.props.meeting.ActualMeetings[0].Summary;
         			break;
         		case 2:
-        			minutes = this.props.meeting.ActualMeetings[0].Summary + " " + this.state.minutes;
+        			minutes = this.props.meeting.ActualMeetings[0].Summary + " " + this.state.minutes || "";
         			break;
         	}
         	this.setState({ minutes: minutes });
@@ -106,7 +111,7 @@ export default class MinutesOfMeeting extends React.Component {
 	}
 
     /**
-     * Change Text 
+     * Change Text
      *
      * @eventhandler
      * @param {String} text
@@ -117,7 +122,7 @@ export default class MinutesOfMeeting extends React.Component {
 	}
 
     /**
-     * Change mode to edit 
+     * Change mode to edit
      *
      * @eventhandler
      * @return {Boolean} isCurrentMeeting
@@ -133,21 +138,20 @@ export default class MinutesOfMeeting extends React.Component {
      * @return {Boolean} isCurrentMeeting
      */
 	onCancel() {
-
-        let dialog = new DialogAndroid();
-        let options = {
-            title: 'Confirm',
-            content: 'Are you sure ?' ,
-            positiveText: 'Yes',
-            negativeText: 'No',
-            onPositive: () => { 
-                this.setState({ mode: modes.READ, minutes: this.props.meeting.ActualMeetings[0].MinutesOfMeeting });
-            }
-        };
-        dialog.set(options);
-        dialog.show();
+		let dialog = new DialogAndroid();
+		let options = {
+			title: 'Confirm',
+			content: 'Are you sure ?' ,
+			positiveText: 'Yes',
+			negativeText: 'No',
+			onPositive: () => {
+				this.setState({ mode: modes.READ, minutes: this.props.meeting.ActualMeetings[0].MinutesOfMeeting });
+			}
+		};
+		dialog.set(options);
+		dialog.show();
 	}
-	
+
     /**
      * Update meeting upate triggered
      * @eventhandler
@@ -163,7 +167,7 @@ export default class MinutesOfMeeting extends React.Component {
     }
 
     /**
-     * Save minutes of meeting 
+     * Save minutes of meeting
      *
      * @eventhandler
      * @return {Void} undefined
@@ -174,13 +178,14 @@ export default class MinutesOfMeeting extends React.Component {
 
 		this.props.meeting.ActualMeetings[0].MinutesOfMeeting = this.state.minutes;
 		if(this.props.onMeetingUpdate) {
-            this.props.onMeetingUpdate(this.props.meeting);
+            this.props.onMeetingUpdate(this.props.meeting)
+				.then(json => ToastAndroid.show('Minutes Of Meeting Saved Successfully!', ToastAndroid.LONG))
         }
 	}
 
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {View} component
      */
@@ -192,7 +197,7 @@ export default class MinutesOfMeeting extends React.Component {
                     multiline={true}
                     value={this.state.minutes}
                     onChangeText={this.onChangeText.bind(this)}
-                    placeholder="" 
+                    placeholder=""
                     underlineColorAndroid="#FFFFFF" />
             </View>
         );
@@ -200,7 +205,7 @@ export default class MinutesOfMeeting extends React.Component {
         if(this.state.mode == modes.READ) {
             component = (
                 <ScrollView style={styles.notesArea}>
-                    <Text style={[styles.input, {flex: 1}]}>{this.state.minutes}</Text>           
+                    <Text style={[styles.input, {flex: 1}]}>{this.state.minutes}</Text>
                 </ScrollView>
             );
         }

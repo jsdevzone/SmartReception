@@ -1,4 +1,14 @@
 'use strict';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ */
+
 import React, { View, Text, StyleSheet, TextInput, Image, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {UserList} from '../users/userList';

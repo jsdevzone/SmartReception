@@ -1,104 +1,137 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @author Jasim
- */
-'use strict';
 
-import moment from 'moment';
-import React from 'react-native';
+'use strict';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ */
+
+import React, { View, StyleSheet, Text,  TouchableNativeFeedback, ListView, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import DialogAndroid from 'react-native-dialogs';
+import Moment from 'moment';
 
 import UserStore from '../../stores/userStore';
-import { getDayName, getMonthName, } from '../../utils/util';
 
-var {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  TouchableHighlight,
-  TextInput,
-  ListView,
-} = React;
-
-
-class TimeLine extends React.Component{
-
-    constructor(args){
+/**
+ * Custom Class Header
+ *
+ * @class TimeLine
+ * @extends React.Component
+ */
+ export default class TimeLine extends React.Component {
+     /**
+      * @constructor
+      */
+     constructor(args) {
         super(args);
-        var dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
-        this.state = {
-            dataSource: dataSource.cloneWithRows([]),
-            isLoading: false,
-            text: 'One'
-        }
-        this.store = new UserStore();
-        this.store.on('historyloaded', (data) => {
-            this.setState({ dataSource: dataSource.cloneWithRows(data), isLoading: false, text: 'Done' });
-        });
-        if(this.props.user) {
-            this.store.getPreviousSchedule(this.props.user.ClientId);
-        }
-    }
 
-    componentDidMount() {
+        /**
+         * List Data Source
+         */
+         this.dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
 
-    }
+        /**
+         * @state
+         */
+         this.state = {
+             dataSource: this.dataSource.cloneWithRows([]),
+             isLoading: false
+         };
+     }
+     /**
+      *  Life cycle method
+      *  This method will be called when the component is mounted to the application
+      *  See React Js componentDidMount method.
+      *
+      *  @lifecycle
+      *  @return {Void} undefined
+      */
+     componentDidMount() {
+         if(this.props.user)
+            UserStore.getPreviousSchedule(this.props.user.ClientId).then(this.onTimelineLoaded.bind(this));
+     }
 
-    renderRow(rowData) {
-        var date = moment.utc(rowData.DateOfMeeting);
+     /**
+      * Timeline data loaded from the server
+      *
+      * @eventhandler
+      * @param {Clients} data
+      * @return {Void} undefined
+      */
+     onTimelineLoaded(data) {
+            this.setState({ dataSource: this.dataSource.cloneWithRows(data) });
+     }
 
-        return(
-            <View style={styles.timeline}>
-                <View style={styles.tmLeft}>
-                    <Icon name="calendar" color="#5FB9CD" size={24} />
-                    <Text style={styles.tmTimeText}>{date.format("hh:mm")}</Text>
+     /**
+      * Transforms each row of list view. [See ListView for more details]
+      *
+      * @param {Object} rowData
+      * @param {Number} sectionID
+      * @param {Number} rowID
+      */
+     renderRow(rowData, sectionID: number, rowID: number) {
+         var date = Moment.utc(rowData.DateOfMeeting);
+
+         return(
+             <View style={styles.timeline}>
+                 <View style={styles.tmLeft}>
+                     <Icon name="calendar" color="#5FB9CD" size={24} />
+                     <Text style={styles.tmTimeText}>{date.format("hh:mm")}</Text>
+                 </View>
+                 <View style={styles.tmLine}>
+                     <View style={styles.tmLineTop} />
+                     <View style={styles.tmLineSeparator} />
+                     <View style={styles.tmLineBottom} />
+                 </View>
+                 <View style={styles.tmInfoWrapper}>
+                     <View style={styles.tmInfo}>
+                         <View style={styles.row}>
+                             <Text style={styles.tmDate}>{date.format("DD")}</Text>
+                             <View style={styles.tmDayMonthWrapper}>
+                                 <Text style={styles.tmDay}>{date.format("dddd")}</Text>
+                                 <Text style={styles.tmMonth}>{date.format("MMMM")}</Text>
+                             </View>
+                         </View>
+                         <View style={styles.tmTitle}>
+                             <Text style={styles.tmTitleText}>{rowData.Subject}</Text>
+                         </View>
+                     </View>
+                 </View>
+             </View>
+         );
+     }
+
+
+     /**
+      * @render
+      * @return {View} view
+      */
+     render() {
+         let component = <ListView dataSource={this.state.dataSource} renderRow={this.renderRow.bind(this)} style={{ flex: 1}} />;
+         if(this.state.isLoading)
+            component  = (
+                <View>
+                    <Text>Loading....</Text>
                 </View>
-                <View style={styles.tmLine}>
-                    <View style={styles.tmLineTop}>
-                    </View>
-                    <View style={styles.tmLineSeparator}>
-                    </View>
-                    <View style={styles.tmLineBottom}>
-                    </View>
-                </View>
-                <View style={styles.tmInfoWrapper}>
-                    <View style={styles.tmInfo}>
-                        <View style={styles.row}>
-                            <Text style={styles.tmDate}>{date.format("DD")}</Text>
-                            <View style={styles.tmDayMonthWrapper}>
-                                <Text style={styles.tmDay}>{date.format("dddd")}</Text>
-                                <Text style={styles.tmMonth}>{date.format("MMMM")}</Text>
-                            </View>
-                        </View>
-                        <View style={styles.tmTitle}>
-                            <Text style={styles.tmTitleText}>{rowData.Subject}</Text>
-                        </View>
-                    </View>
-                </View>
-            </View>
-        );
-    }
-    render() {
-        var content = this.state.isLoading ? (
-            <View>
-                <Text>Loading.... {this.state.text}</Text>
-            </View>
-        ) : (
-            <ListView dataSource={this.state.dataSource} renderRow={this.renderRow.bind(this)} style={{ flex: 1}} />
-        );
+            );
 
-        return (
-            <View style={styles.container}>
-                {content}
-            </View>
-        );
-    }
-}
+         return (
+             <View style={styles.container}>
+                 { component }
+             </View>
+         );
+     }
+ }
 
-var styles = StyleSheet.create({
+/**
+ * @style
+ */
+const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f9f9f9',
@@ -184,5 +217,3 @@ var styles = StyleSheet.create({
         paddingTop: 5
     },
 });
-
-module.exports = TimeLine;

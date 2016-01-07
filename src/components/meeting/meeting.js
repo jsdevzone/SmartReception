@@ -18,7 +18,7 @@ import MeetingIntro from './meetingIntro';
 import MeetingProgress from './meetingProgress';
 import PenSurface from '../ux/penSurface';
 
-// constants 
+// constants
 import MeetingStatus from '../../constants/meetingStatus';
 
 // Store
@@ -26,8 +26,8 @@ import AppStore from '../../stores/appStore';
 
 /**
  * @class Meeting
- * @extends React.Component 
- * 
+ * @extends React.Component
+ *
  * Meeting Main Screen
  *
  * @props {Meeting} meeting
@@ -35,7 +35,7 @@ import AppStore from '../../stores/appStore';
  */
 export default class Meeting extends React.Component {
 
-    /** 
+    /**
      * @constructor
      */
     constructor(args) {
@@ -55,7 +55,7 @@ export default class Meeting extends React.Component {
          * And set the default state values.
          */
         if (this.props.meeting) {
-            
+
             if(this.props.meeting.BookedMeetingId == AppStore.currentMeeting.BookedMeetingId)
                 this.state.meetingStatus = MeetingStatus.STARTED;
             else
@@ -93,14 +93,14 @@ export default class Meeting extends React.Component {
 
     onAttachmentAdded(attachment) {
         let meeting = this.state.meeting;
-        
+
         /**
-         * If the meeting does not have attachments yet add it 
+         * If the meeting does not have attachments yet add it
          */
         if(!meeting.Attachments) {
             meeting.Attachments = new Array();
         }
-        // Add the attachment to local state 
+        // Add the attachment to local state
         meeting.Attachments.push(attachment);
 
         // Change the State
@@ -117,8 +117,7 @@ export default class Meeting extends React.Component {
             return (<MeetingIntro {...this.props} />);
         // else show meeting screen
         else
-            return (<MeetingArea
-                        {...this.props}
+            return (<MeetingArea {...this.props}
                         meeting={this.state.meeting}
                         onAttachmentAdded = {this.onAttachmentAdded.bind(this)} />);
     }
@@ -150,7 +149,7 @@ export default class Meeting extends React.Component {
 
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {View} component
      */

@@ -1,4 +1,13 @@
 'use strict';
+/**
+ * Smart Reception System
+ * @author Jasim
+ * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ */
 import React, { Text, View, StyleSheet, Image, } from 'react-native';
 
 export default class LoadMask extends React.Component {
@@ -22,7 +31,8 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		alignItems: 'center',
-		justifyContent: 'center'
+		justifyContent: 'center',
+		backgroundColor: '#FFF'
 	},
 	loadingImage: {
 		width: 200,

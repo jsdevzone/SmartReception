@@ -5,7 +5,7 @@
  * @company E-Gov LLC
  */
 
-import React, { StyleSheet, Text, View, TouchableHighlight, ListView, Image, } from 'react-native';
+import React, { StyleSheet, Text, View, TouchableHighlight, ListView, Image, NativeModules, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Moment from 'moment';
 import { getRandomColor } from '../../utils/util';
@@ -14,14 +14,14 @@ import { getRandomColor } from '../../utils/util';
 import ScheduleStore from '../../stores/scheduleStore';
 
 /**
- * @class ScheduleList 
- * @extends React.Component 
- * 
- * List of schedules 
+ * @class ScheduleList
+ * @extends React.Component
+ *
+ * List of schedules
  *
  * @props {DataSource} dataSource
  * @props {Boolean}  showSeparator
- * @props {Function} onSchedulePress 
+ * @props {Function} onSchedulePress
  */
 export default class ScheduleList extends React.Component {
 
@@ -34,7 +34,7 @@ export default class ScheduleList extends React.Component {
 
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {View} undefined
      */
@@ -47,6 +47,25 @@ export default class ScheduleList extends React.Component {
     }
 
     /**
+     * On Schedule Item press
+     *
+     * @eventhandler
+     * @param {Object} rowData
+     * @return {Void} undefined
+     */
+    onScheuleItemPress(rowData) {
+        /**
+         * Play the native tap sound, as it's not supported in default view component by react native
+         */
+        NativeModules.MediaHelper.playClickSound();
+        /**
+         * execute on press event passed through the props
+         */
+        if(this.props.onSchedulePress)
+            this.props.onSchedulePress(rowData);
+    }
+
+    /**
      * Transforms each row of list view. [See ListView for more details]
      *
      * @param {Object} rowData
@@ -54,17 +73,17 @@ export default class ScheduleList extends React.Component {
      * @param {Number} rowID
      */
     renderRow(rowData, sectionID: number, rowID: number) {
-        
+
         var showSeparator = this.props.showSeparator ? { borderBottomColor: '#F9F9F9', borderBottomWidth: 1 }: {};
         var time  = Moment.utc(rowData.DateOfMeeting).format('h:mmA');
         var photo = (
             <Image source={{uri: 'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg' }} style={styles.profileImage} />
         );
-        
+
         // If the client does have the photo use it
-        if(rowData.Clients && rowData.Clients.Photo) 
-            photo =(<Image source={{uri: rowData.Clients.Photo }} style={styles.profileImage} />);   
-        
+        if(rowData.Clients && rowData.Clients.Photo)
+            photo =(<Image source={{uri: rowData.Clients.Photo }} style={styles.profileImage} />);
+
         else {
 
             // If the client does not have the photo use the first letter of name as profile picture
@@ -76,7 +95,7 @@ export default class ScheduleList extends React.Component {
         }
 
         return (
-            <TouchableHighlight underlayColor="#C6C7EA" onPress={() => this.props.onSchedulePress(rowData) }>
+            <TouchableHighlight underlayColor="#C6C7EA" onPress={() => this.onScheuleItemPress(rowData) }>
                 <View style={[styles.listItem, showSeparator ]}>
                     {photo}
                     <View style={styles.profileInfo}>
@@ -88,7 +107,7 @@ export default class ScheduleList extends React.Component {
                     </View>
                 </View>
            </TouchableHighlight>
-       ); 
+       );
     }
 }
 

@@ -2,12 +2,15 @@ package com.smartreception.module;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.SoundEffectConstants;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -58,6 +61,12 @@ public class MediaModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void playClickSound() {
+        AudioManager audioManager = (AudioManager) mActivity.getSystemService(Context.AUDIO_SERVICE);
+        audioManager.playSoundEffect(SoundEffectConstants.CLICK);
+    }
+
+    @ReactMethod
     public void startRecording(String meetingId) {
 
         File folder = new File(mFileName += "/" + meetingId);
@@ -100,7 +109,6 @@ public class MediaModule extends ReactContextBaseJavaModule {
         photoPickerIntent.setType("image/*");
         mActivity.startActivityForResult(photoPickerIntent, 2);
     }
-
 
     @ReactMethod
     public void uploadFile(String uri, String meetingId, String name, String desc,Callback callback) {

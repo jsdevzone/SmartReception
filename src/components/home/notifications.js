@@ -6,16 +6,21 @@
  * @company E-Gov LLC
  */
 
-import React, { StyleSheet, Text, View, Image, TouchableWithoutFeedback, 
-    TouchableNativeFeedback, ListView, TouchableHighlight,} from 'react-native';
+import React, { StyleSheet, Text, View, Image, TouchableWithoutFeedback,
+    TouchableNativeFeedback, ListView, TouchableHighlight, NativeModules, } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Moment from 'moment';
 
+/**
+ * App components
+ */
 import Meeting from '../meeting/meeting';
 import LoadMask from '../app/loadMask';
 import ScheduleList from '../schedule/scheduleList';
-
+/**
+ * Stores
+ */
 import RouteStore from '../../stores/routeStore';
 import ScheduleStore from '../../stores/scheduleStore';
 
@@ -23,14 +28,14 @@ import ScheduleStore from '../../stores/scheduleStore';
 /**
  * @class ScheduleList
  * @extend Rect.Component
- * 
+ *
  * This class renders the list of notifications for today, tomorrow and day after tomorrow
- * on right side of the  dashboard screen. 
+ * on right side of the  dashboard screen.
  *
  * @props {Navigator} navigator
  */
 export default class Notifications extends React.Component {
-    
+
     /**
      * @constructor
      */
@@ -44,7 +49,10 @@ export default class Notifications extends React.Component {
             selectedTabIndex: 0,
             dataSource: this.listDataSource.cloneWithRows([]),
             isLoading: true,
-            text: 'Loaded'
+            pendingCounts: {
+                pending: 0,
+                finished: 0
+            }
         };
 
         // Load today's schedule
@@ -63,6 +71,27 @@ export default class Notifications extends React.Component {
     }
 
     /**
+     *  Life cycle method
+     *  This method will be called when the component is mounted to the application
+     *  See React Js componentDidMount method.
+     *
+     *  @lifecycle
+     *  @return {Void} undefined
+     */
+    componentDidMount() {
+        ScheduleStore.getScheduleCount(1).then(this.updatePendingCount.bind(this))
+    }
+
+    /**
+     * Updates the count of pending in the top most part
+     * @param {Object} obj
+     * @return {Void} undefined
+     */
+    updatePendingCount(obj) {
+        this.setState({ pendingCounts: { pending: obj.Pending, finished: obj.Finished }});
+    }
+
+    /**
      * Event handler for schedule loaded from the server.
      *
      * @eventhandler
@@ -77,7 +106,7 @@ export default class Notifications extends React.Component {
     /**
      * Handles list item press on the schedule list. Navigates to meeting screen.
      *
-     * @param {Meeting} meeting 
+     * @param {Meeting} meeting
      * @return {Void} undefined
      */
     onSchedulePress(meeting) {
@@ -98,34 +127,41 @@ export default class Notifications extends React.Component {
      * @return {Void} undefined
      */
     onTabPress(idx) {
+        /**
+         * Play the native tap sound, as it's not supported in default view component by react native
+         */
+        NativeModules.MediaHelper.playClickSound();
+        /**
+         * Caclulate the date and get the schedules
+         */
         let date = Moment().add(idx, 'days')._d;
         this.setState({ selectedTabIndex: idx, isLoading: true });
         this.getSchedules(date);
     }
-    
+
     /**
      * Renders the current date and user status on top of the container
      * @return {View} component
      */
     renderUserStatus() {
-        let _today = Moment().format('MMMM Do YYYY');
-        let _iconStyle = { color: '#FF6335', marginRight: 4 };
-        let _statusStyle = { fontSize: 11, color: '#FFF' };
-        
+        let _today = Moment().format('MMMM Do YYYY h:mm:ss a');
+        let _iconStyle = { color: '#1fa67a', marginRight: 4 };
+        let _statusStyle = { fontSize: 14 };
+
         return (
             <View style={styles.statusContainer}>
-                <View style={{ flex:1 }} />
-                <View style={{ flexDirection: 'row'}}>
-                    <Icon name="clock-o" size={12}  style={_iconStyle} />
-                    <Text style={{ color: '#515151', fontSize: 11 }}>{_today}</Text>
-                </View>
                 <View style={styles.visibility}>
-                    <Text style={_statusStyle}>Online</Text>
+                    <Icon name="check-circle" size={20}  style={_iconStyle} />
+                    <Text style={_statusStyle}>Online since - {_today}</Text>
                 </View>
+                <View style={{ flexDirection: 'row'}}>
+
+                </View>
+
             </View>
         );
     }
-    
+
     /**
      * Renders any notification counts to the top of tile
      * @return {View} component
@@ -133,13 +169,12 @@ export default class Notifications extends React.Component {
     renderNotificationCounts() {
         return (
             <View style={styles.counterContainer}>
-                <NotificationCount count="5,345" message="Pendings" />
-                <NotificationCount count="5,345" message="Pendings" />
-                <NotificationCount count="5,345" message="Pendings" />
+                <NotificationCount count={this.state.pendingCounts.pending} text="Today's Pending" />
+                <NotificationCount count={this.state.pendingCounts.finished} text="Total Finished" />
             </View>
         );
     }
-    
+
     /**
      * renders a tab like views
      * @return {View} tabstrip
@@ -165,24 +200,24 @@ export default class Notifications extends React.Component {
             </View>
         );
     }
-    
+
     /**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {View} component
      */
     render() {
-        
+
         let _separator = require('../../../resources/images/fancy_separator.png');
         let _component = (<ScheduleList {...this.props}
-                                dataSource = {this.state.dataSource}                  
+                                dataSource = {this.state.dataSource}
                                 onSchedulePress={this.onSchedulePress.bind(this)}/>);
-                  
-         //If data is loading show loading screen inorder to block further interactions on componenr                      
+
+         //If data is loading show loading screen inorder to block further interactions on componenr
          if(this.state.isLoading)
             _component = (<LoadMask />);
-        
+
         return (
             <View style={styles.notificationTile}>
                 { this.renderUserStatus() }
@@ -199,8 +234,8 @@ export default class Notifications extends React.Component {
  * Creates a component which displays the count on top of notification tile
  * @class NotificationCount
  * @extends React.Component
- * 
- * @props icon 
+ *
+ * @props icon
  * @props count
  * @props text
  */
@@ -235,14 +270,10 @@ const styles = StyleSheet.create({
       padding: 10,
     },
     visibility: {
-        backgroundColor: '#4CAF50',
-        color: '#FFF',
         padding: 2,
-        fontSize: 10,
-        borderRadius: 3,
-        borderWidth: 1,
-        borderColor: '#4CAF50',
-        marginLeft: 10
+        fontSize: 12,
+        marginLeft: 10,
+        flexDirection: 'row'
     },
     counterContainer: {
         padding: 15,

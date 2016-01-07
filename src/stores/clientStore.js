@@ -35,6 +35,20 @@ var ClientStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 		return promise;
 	},
 
+
+	/**
+	 * Get the list of meetings of specific clients with employee details
+	 *
+	 * @url - http://[server]/[service]/api/meeting/byclientwithemployee?clientIdentity={identity}
+	 *
+	 * @param {String} identity client identity
+	 * @return {Promise} data
+	 */
+	getClientMeetingWithEmployee: function(identity) {
+		let promise = RequestManager.get('meeting/byclientwithemployee', { clientIdentity: identity});
+		return promise;
+	},
+
 	/**
 	 * Updates the client contact details on the server.
 	 *
@@ -89,6 +103,19 @@ var ClientStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	},
 
 	/**
+	 * Get the details of clint by emirates id no
+	 * @url - http://[server]/[service]/api/client/filter?filter={filter}
+	 *
+	 * @param {String} filter name of the client
+	 * @return {Promise} data
+	 */
+	getByIdentity: function(identity) {
+		let promise = RequestManager.get('client/identity', { identity: identity });
+		return promise;
+	},
+
+
+	/**
      * Add the event listener for this object
      * @param {String} evt the event name
      * @param {Function} callback, the callback function that should be triggered.
@@ -96,5 +123,17 @@ var ClientStore = module.exports = Object.assign({}, EventEmitter.prototype, {
      */
 	addEventListener: function(evt, callback) {
 		this.on(evt, callback);
-	}
+	},
+
+	/**
+	 * Get the details of clint by emirates id no
+	 * @url - http://[server]/[service]/api/client/filter?filter={filter}
+	 *
+	 * @param {String} filter name of the client
+	 * @return {Promise} data
+	 */
+	loginClient: function(identity) {
+		let promise = RequestManager.get('client/proceed', { clientId: identity });
+		return promise;
+	},
 });

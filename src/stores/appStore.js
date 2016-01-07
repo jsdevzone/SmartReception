@@ -178,19 +178,80 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 
 		return promise;
 	},
+
+	/**
+	 * Save the current meeting details to local storage
+	 *
+	 * @param {Meeting} meeting
+	 * @return {Promise} promise
+	 */
 	saveCurrentMeetingToLocalStorage: function(meeting) {
 		const STORAGE_KEY = AppConstants.storageKey + ':currentMeeting';
 		return AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(meeting));
 	},
+
+	/**
+	 * Update the meeting data to the server
+	 *
+	 * @url - http://[server]/[service]/api/meeting/update?[meeting]
+	 *
+	 * @param {Meeting} meeting
+	 * @return {Promise} promise
+	 */
 	updateMeeting: function () {
-		if(this.currentMeeting && this.currentMeeting.ActualMeetings && this.currentMeeting.ActualMeetings.length > 0) {
-			RequestManager.post('meeting/update', this.currentMeeting).then((json) => {
+		let promise = null;
+		/**
+		 * Check if any current meeting is going on
+		 */
+		if (this.hasActualMeeting())
+		{
+			promise = RequestManager.post('meeting/update', this.currentMeeting);
+			promise.then(json => {
 				this.currentMeeting = json;
+				/**
+				 * @emit the event
+				 */
 				this.emit('meetingupdated', this.currentMeeting);
+				/**
+				 * Save to local storage
+				 */
 				this.saveCurrentMeetingToLocalStorage(json);
 			});
 		}
+		return promise;
 	},
+
+	/**
+	 * Get the list of attendees for the meetin
+	 *
+	 * @url - http://[server]/[service]/api/meeting/attendees?BookedMeetingId
+	 *
+	 * @param {Meeting} meeting
+	 * @return {Promise} promise
+	 */
+	getAttendees: function(meeting) {
+		let promise = RequestManager.get('meeting/attendees', { meetingId: meeting.BookedMeetingId });
+		return promise
+	},
+
+
+	/**
+	 * When the participant join the meeting the advisor will press the button and call this method to start
+	 * the participant to be included in the meeting
+	 *
+	 * @url - http://[server]/[service]/api/meeting/joinattendee
+	 *
+	 * @param {Participant} participant
+	 * @return {Promise} promise
+	 */
+	joinAttendees: function(participant) {
+		let promise = RequestManager.post('meeting/joinattendee', { participantId: participant.ParticipantId });
+		return promise
+	},
+
+	/**
+	 * @return {Void} undefined
+	 */
 	finishCurrentMeeting: function() {
 		const STORAGE_KEY = AppConstants.storageKey + ':currentMeeting';
 		if(this.currentMeeting && this.currentMeeting.ActualMeetings && this.currentMeeting.ActualMeetings.length > 0) {
@@ -201,25 +262,49 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 			});
 		}
 	},
+
+	/**
+	 * @return {Void} undefined
+	 */
 	postMeeting: function(meeting) {
 		RequestManager.post('meeting/confirm', meeting).then(json => {
 			this.emit('meetingposted', json);
 		});
 	},
+
+	/**
+	 * @return {Void} undefined
+	 */
 	postUserFeedback: function(meeting, feedback) {
 		return RequestManager.post('meeting/feedback/' + feedback, meeting);
 	},
+
+	/**
+	 * @return {Void} undefined
+	 */
   	addEventListener: function(name, callback) {
     	this.on(name, callback);
   	},
+
+	/**
+	 * @return {Void} undefined
+	 */
   	logout: function (argument) {
 	    CredentialStore.logout(() => this.emit('logout'));
   	},
+
+	/**
+	 * @return {Void} undefined
+	 */
   	hasActualMeeting: function() {
   		return (this.currentMeeting != null &&
   			this.currentMeeting.ActualMeetings != undefined &&
   			this.currentMeeting.ActualMeetings.length >  0);
   	},
+
+	/**
+	 * @return {Void} undefined
+	 */
   	getCurrentMeetingId: function() {
   		if(this.hasActualMeeting()) {
   			return this.currentMeeting.BookedMeetingId;
