@@ -12,7 +12,8 @@ var {
   Text,
   View,
   Image,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  NativeModules,
 } = React;
 
 var Icon = require('react-native-vector-icons/FontAwesome');
@@ -22,7 +23,11 @@ export class Titlebar extends React.Component{
     return (
       <View style={styles.titlebar}>
         <TouchableWithoutFeedback  onPress={this.props.onTitleToggle}>
+            <TouchableWithoutFeedback onPres={()=>{
+                    NativeModules.MediaHelper.eid((a)=>{ ToastAndroid.show(a,ToastAndroid.LONG)});
+                }}>
             <Icon name="list" size={65} color="#FFF" style={styles.icon}  />
+            </TouchableWithoutFeedback>
         </TouchableWithoutFeedback>
         <View style={{flexDirection: 'column'}}>
             <Text style={styles.user}>John Doe</Text>

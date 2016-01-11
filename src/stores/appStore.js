@@ -245,9 +245,38 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	 * @return {Promise} promise
 	 */
 	joinAttendees: function(participant) {
-		let promise = RequestManager.post('meeting/joinattendee', { participantId: participant.ParticipantId });
+		let promise = RequestManager.post('meeting/attendee/join', { participantId: participant.ParticipantId });
 		return promise
 	},
+
+	/**
+	 * Add new attendee to the meeting
+	 *
+	 * @url - http://[server]/[service]/api/meeting/attendee/add
+	 *
+	 * @param {AspNetUsers} user
+	 * @param {BookedMeeting} meeting
+	 * @return {Promise} promise
+	 */
+	addAttendee: function(user, meeting) {
+		let promise = RequestManager.post('meeting/attendee/add', { user: user.UserName, meetingId: meeting.BookedMeetingId });
+		return promise
+	},
+
+	/**
+	 * Attendee leave the meeting
+	 *
+	 * @url - http://[server]/[service]/api/meeting/attendee/leave
+	 *
+	 * @param {Participants} participant
+	 * @return {Promise} promise
+	 */
+	leaveAttendee: function(participant) {
+		let promise = RequestManager.post('meeting/attendee/leave', participant);
+		return promise
+	},
+
+
 
 	/**
 	 * @return {Void} undefined

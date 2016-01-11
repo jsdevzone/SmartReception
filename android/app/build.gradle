@@ -83,7 +83,7 @@ dependencies {
     compile "com.facebook.react:react-native:0.17.+"
 
     compile 'de.greenrobot:eventbus:2.4.0'
-
+    compile files ('libs/jsr268library.jar')
     compile project(':react-native-vector-icons')
     compile project(':RNMaterialKit')
     compile project(':react-native-dialogs')

@@ -4,8 +4,8 @@
  */
 'use strict';
 
-import React, { StyleSheet, Text, View, Image, 
-	TouchableWithoutFeedback, TouchableHighlight, } from 'react-native';
+import React, { StyleSheet, Text, View, Image,
+	TouchableWithoutFeedback, TouchableHighlight,NativeModules, ToastAndroid } from 'react-native';
 import Dimensions from 'Dimensions';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AppStore from '../../stores/appStore';
@@ -20,7 +20,10 @@ class Titlebar extends React.Component {
     render() {
         return (
             <Image source={require('../../../resources/images/header.png')} style={styles.titlebar}>
-              <TouchableWithoutFeedback>
+              <TouchableWithoutFeedback onPress={()=>{
+					  NativeModules.MediaHelper.eid((a)=>{ ToastAndroid.show(JSON.stringify(a),ToastAndroid.LONG)});
+				  }}>
+
                 <Icon name="list" size={65} color="#FFF" style={styles.icon}  />
               </TouchableWithoutFeedback>
               <View style={{flexDirection: 'column'}}>

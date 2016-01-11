@@ -81,10 +81,11 @@ var RequestManager = module.exports = {
                 body: JSON.stringify(params)
             })
             .then((response) => resolve(response.json()))
-            .catch((error) => {
+            .catch((error) =>
+			{
                 if(reject)
                     reject(error);
-            })
+            });
         });
 	},
 

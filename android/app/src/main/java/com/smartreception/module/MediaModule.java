@@ -9,6 +9,9 @@ import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.smartcardio.CardException;
+import android.smartcardio.CommandAPDU;
+import android.telecom.Call;
 import android.util.Log;
 import android.view.SoundEffectConstants;
 
@@ -16,6 +19,9 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.stetho.json.ObjectMapper;
+import com.smartreception.eid.EidPublicData;
+import com.smartreception.eid.PCSCReader;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.MultipartBuilder;
 import com.squareup.okhttp.OkHttpClient;
@@ -45,11 +51,38 @@ public class MediaModule extends ReactContextBaseJavaModule {
     private static String mFileName = null;
     private ReactApplicationContext mReactContext;
     public static final int REQUEST_IMAGE_CAPTURE = 1;
+    /**
+     * ******************************************
+     */
+    private static final String MANAGEMENT_PACKAGE = "com.hidglobal.cardreadermanager";
+    private static final int REQUEST_APP_INSTALL = 48879;
+    private static final String MANAGEMENT_APP = "CardReaderManager.apk";
+
+    private PCSCReader mReader;
+
+    public static final CommandAPDU SELECT_MASTER_FILE =
+            new CommandAPDU(new byte[]{0x00, (byte) 0xA4, 0x00, 0x00});
+
+    public static final CommandAPDU SELECT_FILE_EEEE =
+            new CommandAPDU(new byte[]{0x00, (byte) 0xA4, 0x01, 0x0C, 0x02, (byte) 0xEE, (byte) 0xEE});
+
+    public static final CommandAPDU SELECT_FILE_5044 =
+            new CommandAPDU(new byte[]{0x00, (byte) 0xA4, 0x02, 0x04, 0x02, (byte) 0x50, (byte) 0x44});
+
+    /**
+     * *********************************************
+     */
 
     public MediaModule(ReactApplicationContext reactContext, Activity activity) {
         super(reactContext);
         mReactContext = reactContext;
         mActivity = activity;
+
+        try {
+            this.mReader = new PCSCReader(reactContext);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
         mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
         mFileName += "/SmartReception";
@@ -111,7 +144,7 @@ public class MediaModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void uploadFile(String uri, String meetingId, String name, String desc,Callback callback) {
+    public void uploadFile(String uri, String meetingId, String name, String desc, Callback callback) {
         Attachments attachments = new Attachments();
         attachments.setName(name);
         attachments.setDesc(desc);
@@ -125,11 +158,80 @@ public class MediaModule extends ReactContextBaseJavaModule {
 
     }
 
+    @ReactMethod
+    public void eid(Callback callback) {
+        try {
+
+            /*
+            ResponseAPDU response;
+            if (mFactory == null) {
+                mFactory = mService.getTerminalFactory();
+            }
+            List<CardTerminal> terminals = mFactory.terminals().list();
+            CardTerminal terminal_1 = terminals.get(0);
+            Boolean b =terminal_1.isCardPresent();
+            android.util.Log.v("Test",b.toString());
+            Card card = terminal_1.connect("T=0");
+            ATR x = card.getATR();
+            CardChannel channel = card.getBasicChannel();
+            */
+
+
+            if (mReader == null)
+                this.mReader = new PCSCReader(mReactContext);
+
+            if (mReader != null || !mReader.IsConnected())
+                mReader.Connect();
+
+            if (mReader.IsUAECard()) {
+                EidPublicData data = mReader.getPublicData();
+                String str = "{" +
+                        "\"ArabicName\": " + "" + data.getArabicFullName() + "," +
+                        "\"FulleName\": " + "" + data.getFullName() + "," +
+                "}";
+                callback.invoke(str);
+            }
+
+            mReader.Disconnect();
+            /*
+
+
+            //Select first file
+            //response = selectFile(channel, new byte[]{0x00, 0x02, 0x43, 0x00, 0x13, 0x00, 0x00, 0x00, 0x01, 0x01});
+            response = channel.transmit( new CommandAPDU(new byte[]{
+                    0x00,(byte)0xA4 ,0x04 ,0x00 ,0x0C ,(byte)0xA0 ,0x00 ,0x00 ,0x02 ,0x43 ,0x00 ,0x13 ,0x00 ,0x00 ,0x00 ,0x01 ,0x01
+            }));
+            if (response.getSW1()!=0x61)
+                throw new Exception("Response error");
+            //read from first file
+            response = getResponseStd(channel, response.getSW2()); ;//Not used data for now
+
+            response = channel.transmit(new CommandAPDU(new byte[]{(byte)0x80,(byte)0xC0, 0x02, (byte)0xA1, 0x08}));
+            if (response.getSW() != 0x9000)
+                throw new Exception("Failed to get Card serial no");
+
+
+            card.disconnect(true);
+
+            //if (response.getSW() != 0x9000)
+            //    throw new Exception("Response error");
+
+            */
+
+
+        } catch (CardException ex) {
+            //..
+            android.util.Log.v("Error", ex.getMessage());
+        } catch (Exception ex) {
+            android.util.Log.v("Error", ex.getMessage());
+        }
+    }
+
     private ProgressDialog progressDialog;
 
     private class UploadTask extends AsyncTask<Attachments, Void, Void> {
 
-        private  Callback callback;
+        private Callback callback;
 
         public Callback getCallback() {
             return callback;

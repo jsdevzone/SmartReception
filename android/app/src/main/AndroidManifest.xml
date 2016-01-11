@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.smartreception">
 
+    <uses-library android:name="com.hidglobal.cardreadermanager" android:required="false"/>
+    <uses-permission
+        android:name="com.hidglobal.ia.omnikey.service.permission.SMARTCARDIO" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />

@@ -10,19 +10,21 @@
  */
 
 import React, {  StyleSheet, Text, View, Image, TouchableHighlight,
-  TouchableWithoutFeedback, TextInput, ListView, NativeModules, } from 'react-native';
+  TouchableWithoutFeedback, TextInput, ListView, NativeModules, ToastAndroid, } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Notes from './notes';
 import Summary from './summary';
 import MinutesOfMeeting from './minutesOfMeeting';
 import MeetingTitle from './meetingTitle';
-import AppStore from '../../stores/appStore';
 import Attachments from '../app/attachments';
 import DialogAndroid from 'react-native-dialogs';
 import MeetingStatus from '../../constants/meetingStatus';
 import DrawingSurface from '../drawing/drawingSurface';
 import Attendees from './attendees';
+
+import AppStore from '../../stores/appStore';
+import ClientStore from '../../stores/clientStore';
 
 /**
  * MeetingArea
@@ -101,6 +103,83 @@ import Attendees from './attendees';
              dialog.set(options);
              dialog.show();
          }
+     }
+
+     /**
+      * Transfer the meeting to other employees.
+      * @eventhandler
+      * @return {Void} undefined
+      */
+     transferMeeting() {
+         // Show waiting dialog
+         NativeModules.DialogAndroid.showProgressDialog();
+
+         // Initialise dialog
+         let dialog = new DialogAndroid();
+
+         // Get all the departments
+         ClientStore.getDepartments().then(json => {
+             // Show waiting dialog
+             NativeModules.DialogAndroid.hideProgressDialog();
+
+             // iterate over departments and build department array
+             let departments = [];
+             json.map((item) => departments.push(item['Name']))
+
+             // show  the departments
+             let options = { title: 'Select a department', positiveText: 'Select', items: departments };
+             options.itemsCallback = (selectedOption) => {
+                 // Show waiting dialog
+                 NativeModules.DialogAndroid.showProgressDialog();
+                 // Get selected departmentId
+                 let departmentId = json[selectedOption].DepartmentId;
+                 // Get the employees on the selected department
+                 ClientStore.getDepartmentEmployees(departmentId).then(response => {
+                     // Show waiting dialog
+                     NativeModules.DialogAndroid.hideProgressDialog();
+                     // Transform the employees
+                     let employees = new Array();
+                     response.map(employee => employees.push(employee['FirstName'] + " " + employee["LastName"]));
+                     //set new options
+                     let newOptions = { title: 'Select a employee', positiveText: 'Select', items: employees };
+                     newOptions.itemsCallback = (selectedEmployeeIndex) => {
+                         let selectedEmployee = response[selectedEmployeeIndex];
+                         //AppStore.addAttendee(selectedEmployee, this.props.meeting).then(() => this.loadAttendees());
+                         ToastAndroid.show('Meeting Transferred to '+ selectedEmployee.FirstName + " " + selectedEmployee.LastName + " Successfully.", ToastAndroid.LONG);
+                     };
+                     //reinitialize the dialog
+                     let dialog1 = new DialogAndroid();
+                     //show dialogs
+                     dialog1.set(newOptions);
+                     dialog1.show();
+                 });
+             };
+
+             dialog.set(options);
+             dialog.show();
+         });
+     }
+
+     /**
+      * on Transfer button press
+      * @eventhandler
+      * @return {Void} undefined
+      */
+     onTransferPress() {
+
+         let dialog = new DialogAndroid();
+         let options = {
+             title: 'Confirm',
+             content: 'Are you sure want to continue?',
+             "positiveText": "Yes",
+             "negativeText": "No",
+             "neutralText": "Yes With Transfer",
+             "onPositive": () => ToastAndroid.show("POSITIVE!", ToastAndroid.SHORT),
+             "onNegative": () => ToastAndroid.show("NEGATIVE!", ToastAndroid.SHORT),
+             "onNeutral": this.transferMeeting.bind(this),
+         };
+         dialog.set(options);
+         dialog.show();
      }
 
      /**
@@ -285,7 +364,7 @@ import Attendees from './attendees';
                  <Button icon="list-alt" text="Sketches" onPress={this.navigateToSketches.bind(this)} />
                  <Button icon="comments-o" text="Feedback" />
                  <Button icon="check-square-o" text="Survey" />
-                 <Button icon="exchange" text="Transfer" />
+                 <Button icon="exchange" text="Transfer"  onPress={this.onTransferPress.bind(this)} />
                  { finishBtn }
              </View>
          );

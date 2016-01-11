@@ -136,4 +136,27 @@ var ClientStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 		let promise = RequestManager.get('client/proceed', { clientId: identity });
 		return promise;
 	},
+
+	/**
+	 * Get the list of the departments
+	 * @url - http://[server]/[service]/api/client/departments
+	 *
+	 * @return {Promise} data
+	 */
+	getDepartments: function() {
+		let promise = RequestManager.get('client/departments');
+		return promise;
+	},
+
+	/**
+	 * Get the list of the employees in a department
+	 * @url - http://[server]/[service]/api/client/departmentemployees
+	 *
+	 * @param {Number} departmentId
+	 * @return {Promise} data
+	 */
+	getDepartmentEmployees: function(departmentId) {
+		let promise = RequestManager.get('client/department/employees',  { departmentId: departmentId });
+		return promise;
+	},
 });

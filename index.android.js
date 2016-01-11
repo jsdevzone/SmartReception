@@ -138,7 +138,7 @@ class SmartReception extends React.Component {
      */
     componentDidMount() {
         NativeModules.SmartReception.startNetworkMonitoring();
-        this.configureSignalR();
+        //this.configureSignalR();
     }
 
     /**

@@ -36,6 +36,8 @@ import java.io.File;
 
 public class MainActivity extends FragmentActivity implements DefaultHardwareBackBtnHandler {
 
+
+
     private ReactInstanceManager mReactInstanceManager;
     private ReactRootView mReactRootView;
 

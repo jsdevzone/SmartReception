@@ -3,17 +3,21 @@
  * Smart Reception System
  * @author Jasim
  * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
 
-import React, { StyleSheet, Text, View, Image, TouchableWithoutFeedback, 
-    ScrollView, ListView, NativeModules, DeviceEventEmitter,TextInput } from 'react-native';
+import React, { StyleSheet, Text, View, Image, TouchableWithoutFeedback,
+    ScrollView, ListView, NativeModules, DeviceEventEmitter,TextInput, ToastAndroid, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import DialogAndroid from 'react-native-dialogs';
 import Button from '../meeting/button';
 
-/** 
- * Split data into equal separate arrays. To display as horizontal folder view in list 
+/**
+ * Split data into equal separate arrays. To display as horizontal folder view in list
  * @param {Array} data
  * @return {Array} data
  */
@@ -67,7 +71,7 @@ class Attachments extends React.Component {
         //List data source
         this.dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
 
-        //Transformed data 
+        //Transformed data
         this.data = prepareData([]);
 
         /**
@@ -77,7 +81,8 @@ class Attachments extends React.Component {
             dataSource: this.dataSource.cloneWithRows(this.data),
             selected: {},
             mode: READ_MODE,
-            currentFile: null
+            currentFile: null,
+            attachments: []
         };
 
 
@@ -85,8 +90,9 @@ class Attachments extends React.Component {
          * If the meeting has attachments in it create data source
          */
         if(this.hasAttachments()) {
-            this.data = prepareData(this.props.meeting.Attachments);
-            this.state.dataSource = this.dataSource.cloneWithRows(this.data);
+            //this.data = prepareData(this.props.meeting.Attachments);
+            //this.state.dataSource = this.dataSource.cloneWithRows(this.data);
+            this.state.attachments = this.props.meeting.Attachments;
         }
 
         /**
@@ -113,7 +119,7 @@ class Attachments extends React.Component {
      * @return {Void} undefined
      */
     onCameraImage() {
-        this.setState({ mode: EDIT_MODE });
+        this.confirmAttachment();
     }
 
     /**
@@ -121,7 +127,33 @@ class Attachments extends React.Component {
      * @return {Void} undefined
      */
     onGalleryImageReceived(filename) {
-        this.setState({ mode: EDIT_MODE, currentFile: filename });
+        this.confirmAttachment(filename);
+    }
+
+    /**
+     * Shows dialog box to enter the attachment name
+     * @param {String} name
+     * @return {Void} undefined
+     */
+    confirmAttachment(filename) {
+        let dialog = new DialogAndroid();
+        dialog.set({
+            title: 'File name',
+            content: 'Enter the attachment name',
+            input: {
+                hint: 'Attachment Name',
+                /**
+                 * When user press ok this function will be executed with the input as parameter
+                 * @param {String} input
+                 */
+                callback: input => {
+                    this.state.attachments.push({ Name: input, AttachmentId: this.state.attachments.length });
+                    this.setState({ attachments: this.state.attachments, currentFile: filename });
+                    this.onUpload(input, "desc");
+                }
+            }
+        });
+        dialog.show();
     }
 
     /**
@@ -132,6 +164,10 @@ class Attachments extends React.Component {
      */
     onUpload(name, desc) {
 
+        /**
+         * This attachment object should be same the attachment object both in java code and server c# entity and the table name in sql
+         * @
+         */
         let attachment = {
             AttachmentId: 0,
             Name: name,
@@ -140,24 +176,24 @@ class Attachments extends React.Component {
         };
 
         // Prepare data
-        this.props.meeting.Attachments.push(attachment);
-        this.data = prepareData(this.props.meeting.Attachments);
+        //this.props.meeting.Attachments.push(attachment);
+        //this.data = prepareData(this.props.meeting.Attachments);
 
         // Show waiting dialog
-        NativeModules.DialogAndroid.showProgressDialog();
-        
-        // Upload File and data to server 
+        //NativeModules.DialogAndroid.showProgressDialog();
+
+        // Upload File and data to server
         NativeModules.MediaHelper.uploadFile(
-            this.state.currentFile, 
-            this.props.meeting.BookedMeetingId.toString(), 
-            name, 
+            this.state.currentFile,
+            this.props.meeting.BookedMeetingId.toString(),
+            name,
             desc,
-            () => { 
-                NativeModules.DialogAndroid.hideProgressDialog(); 
+            () => {
+                //NativeModules.DialogAndroid.hideProgressDialog();
                 // Set state
-                this.setState({ 
-                    dataSource: this.dataSource.cloneWithRows(this.data), 
-                    mode: READ_MODE 
+                this.setState({
+                    dataSource: this.dataSource.cloneWithRows(this.data),
+                    mode: READ_MODE
                 });
             }
         );
@@ -195,9 +231,25 @@ class Attachments extends React.Component {
     render() {
 
         // file list view
-        let component = (<ListView dataSource={this.state.dataSource} renderRow={this.renderRow.bind(this)}  />);
+        //let component = (<ListView dataSource={this.state.dataSource} renderRow={this.renderRow.bind(this)}  />);
+        let component = (
 
-        // Right side toolbar 
+            <View style={styles.attachmentContainer}>
+                { this.state.attachments.map(item => {
+                    let type = "image";
+                    if(item.Path && item.Path != null) {
+                        type = item.Path.substr(item.Path.lastIndexOf(".") + 1);
+                    }
+                    return (
+                        <FileIcon name={item.Name}
+                                isSelected={this.state.selected.AttachmentId == item.AttachmentId ? true: false}
+                                onIconPress={()=>this.onIconPress(item)} icon={type} />
+                        );
+                }) }
+            </View>
+        )
+
+        // Right side toolbar
         let toolbar = (
             <View style={styles.buttonBar}>
                 <Button icon="camera" onPress={this.onCamera.bind(this)} text="Take Picture" borderPosition="bottom" />
@@ -209,13 +261,13 @@ class Attachments extends React.Component {
         );
 
         // Show or hide toolbar on right side
-        if(this.props.showToolbar != undefined && this.props.showToolbar == false) 
+        if(this.props.showToolbar != undefined && this.props.showToolbar == false)
             toolbar = null;
-        
+
         // if edit mode show editor instead of list view
-        if(this.state.mode == EDIT_MODE) 
+        if(this.state.mode == EDIT_MODE)
             component = (<AttachmentEditor onSave={this.onUpload.bind(this)} />)
-        
+
         // Displays the container
         return (
             <View style={styles.container}>
@@ -243,8 +295,8 @@ class Attachments extends React.Component {
                 type = item.Path.substr(item.Path.lastIndexOf(".") + 1);
             }
             items.push(
-                <FileIcon name={item.Name} 
-                        isSelected={this.state.selected.AttachmentId == item.AttachmentId ? true: false} 
+                <FileIcon name={item.Name}
+                        isSelected={this.state.selected.AttachmentId == item.AttachmentId ? true: false}
                         onIconPress={()=>this.onIconPress(item)} icon={type} />
             );
         });
@@ -264,7 +316,7 @@ class Attachments extends React.Component {
  * @extends React.Component
  ***/
 class FileIcon extends React.Component {
-    
+
     /**
      * @constructor
      */
@@ -359,6 +411,7 @@ var iconStyles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
+        margin: 10
     },
     icon: {
         width: 64,
@@ -372,6 +425,12 @@ var iconStyles = StyleSheet.create({
 });
 
 var styles = StyleSheet.create({
+    attachmentContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        flexWrap : 'wrap',
+        alignItems: 'center'
+    },
     container: {
         flex: 1,
         flexDirection: 'row',

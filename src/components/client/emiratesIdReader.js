@@ -39,8 +39,6 @@
               props: {
                   isClientModule: true
               }});
-
-
       }
 
 
