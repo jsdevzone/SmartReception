@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Environment;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -60,7 +62,17 @@ public class PenSurfaceModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void clear() {
+        try {
+            try {
+                SpenNoteDoc mSpenNoteDoc = new SpenNoteDoc(mContext, 1100, 700);
+                mPenSurfaceManager.setSpenNoteDoc(mSpenNoteDoc);
+            } catch (IOException ex) {
+                Log.d("", "");
+            }
 
+        } catch (Exception e) {
+            Toast.makeText(mContext, "Failed to load noteDoc.", Toast.LENGTH_LONG).show();
+        }
     }
 
     @ReactMethod
@@ -81,7 +93,7 @@ public class PenSurfaceModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void saveDrawings(int meetingId, int attachmentId) {
+    public void saveDrawings(int meetingId, int attachmentId, Callback callback) {
 
         String strDirName = Environment.getExternalStorageDirectory().getAbsolutePath()
                 + "/SmartReception"
@@ -127,6 +139,8 @@ public class PenSurfaceModule extends ReactContextBaseJavaModule {
         imgBitmap.recycle();
 
         uploadSketches(meetingId, attachmentId, strFileName);
+
+        callback.invoke();
     }
 
     @ReactMethod
@@ -195,6 +209,7 @@ public class PenSurfaceModule extends ReactContextBaseJavaModule {
                     .addFormDataPart("Name", "Sketches")
                     .addFormDataPart("Description", "User Sketches")
                     .addFormDataPart("AttachmentTypeId", "1")
+                    .addFormDataPart("FileName", strFileName)
                     .addFormDataPart("file", sourceFile.getName(), RequestBody.create(MediaType.parse("image/jpg"), sourceFile))
                     .build();
 

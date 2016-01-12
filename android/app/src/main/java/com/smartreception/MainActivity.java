@@ -32,6 +32,7 @@ import com.github.xinthink.rnmk.ReactMaterialKitPackage;
 import com.aakashns.reactnativedialogs.ReactNativeDialogsPackage;
 import com.samsung.android.sdk.pen.Spen;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 public class MainActivity extends FragmentActivity implements DefaultHardwareBackBtnHandler {
@@ -124,9 +125,10 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
+            String realPath = getRealPathFromURI(getImageUri(getApplicationContext(),imageBitmap));
             mReactInstanceManager.getCurrentReactContext()
                     .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                    .emit("camerapicturereceived", null);
+                    .emit("camerapicturereceived", realPath);
         }
         if (requestCode == 2 && resultCode == RESULT_OK) {
             Uri selectedImageURI = data.getData();
@@ -135,6 +137,13 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
                     .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                     .emit("imagereceivedfromgallery", imageFile.getAbsolutePath());
         }
+    }
+
+    private Uri getImageUri(Context context, Bitmap bitmap) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, "Title", null);
+        return Uri.parse(path);
     }
 
     private String getRealPathFromURI(Uri contentURI) {

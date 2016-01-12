@@ -16,40 +16,6 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import DialogAndroid from 'react-native-dialogs';
 import Button from '../meeting/button';
 
-/**
- * Split data into equal separate arrays. To display as horizontal folder view in list
- * @param {Array} data
- * @return {Array} data
- */
-function prepareData(data) {
-    let _data = new Array(),
-        index = 0,
-        lastIndex = 0;
-
-    while(index <= data.length) {
-        if(index % 5 == 0) {
-            if(lastIndex != index) {
-                let row = new Array();
-                for(let j = lastIndex; j < index; j++) {
-                    row.push(data[j])
-                }
-                _data.push(row);
-            }
-            lastIndex = index;
-        }
-        index = index + 1;
-    }
-
-    if(lastIndex < data.length - 1) {
-        let row = new Array();
-        for(let j = lastIndex; j < data.length; j++) {
-            row.push(data[j])
-        }
-        _data.push(row);
-    }
-    return _data;
- }
-
 const EDIT_MODE = 2;
 const READ_MODE = 1;
 
@@ -59,7 +25,6 @@ const READ_MODE = 1;
  * @class Attachments
  * @extends React.Component
  */
-
 class Attachments extends React.Component {
 
     /**
@@ -70,19 +35,16 @@ class Attachments extends React.Component {
 
         //List data source
         this.dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
-
-        //Transformed data
-        this.data = prepareData([]);
-
         /**
          * @state
          */
         this.state = {
-            dataSource: this.dataSource.cloneWithRows(this.data),
+            dataSource: this.dataSource.cloneWithRows([]),
             selected: {},
             mode: READ_MODE,
             currentFile: null,
-            attachments: []
+            attachments: [],
+            isFilePlaying: false
         };
 
 
@@ -104,6 +66,20 @@ class Attachments extends React.Component {
          * Register event handler gallery image receive
          */
         DeviceEventEmitter.addListener('imagereceivedfromgallery', this.onGalleryImageReceived.bind(this))
+
+        /**
+         * Register event handler When Sound Playback is finished
+         */
+        DeviceEventEmitter.addListener('playbackfinished', this.onPlaybackFinished.bind(this))
+
+    }
+
+    /**
+     * Playback stopped change the state
+     * @return {Void} undefined
+     */
+    onPlaybackFinished() {
+        this.setState({ isFilePlaying: false });
     }
 
     /**
@@ -114,12 +90,25 @@ class Attachments extends React.Component {
         return this.props.meeting.Attachments && this.props.meeting.Attachments.length > 0;
      }
 
+     /**
+      * Play selected sound file from network
+      * @return {Void} undefined
+      */
+     playFromNetwork() {
+         let url  = "http://192.168.4.77/SmartReception.Service/Attachments/" +
+          this.state.selected.BookedMeetingId + "/Others/" +
+          this.state.selected.AttachmentId + ".3gp";
+
+        NativeModules.MediaHelper.playFromNetwork(url);
+        this.setState({ isFilePlaying: true });
+     }
+
     /**
      * @eventhandler
      * @return {Void} undefined
      */
-    onCameraImage() {
-        this.confirmAttachment();
+    onCameraImage(filename) {
+        this.confirmAttachment(filename);
     }
 
     /**
@@ -138,7 +127,7 @@ class Attachments extends React.Component {
     confirmAttachment(filename) {
         let dialog = new DialogAndroid();
         dialog.set({
-            title: 'File name',
+            title: 'Attachment name',
             content: 'Enter the attachment name',
             input: {
                 hint: 'Attachment Name',
@@ -147,9 +136,12 @@ class Attachments extends React.Component {
                  * @param {String} input
                  */
                 callback: input => {
-                    this.state.attachments.push({ Name: input, AttachmentId: this.state.attachments.length });
-                    this.setState({ attachments: this.state.attachments, currentFile: filename });
-                    this.onUpload(input, "desc");
+                    if(input && input != null && input != "") {
+                        this.state.attachments.push({ Name: input, AttachmentId: this.state.attachments.length });
+                        this.setState({ attachments: this.state.attachments, currentFile: filename });
+                        this.onUpload(input, "desc");
+                    }
+                    // Show some message when user does not provided input
                 }
             }
         });
@@ -188,14 +180,7 @@ class Attachments extends React.Component {
             this.props.meeting.BookedMeetingId.toString(),
             name,
             desc,
-            () => {
-                //NativeModules.DialogAndroid.hideProgressDialog();
-                // Set state
-                this.setState({
-                    dataSource: this.dataSource.cloneWithRows(this.data),
-                    mode: READ_MODE
-                });
-            }
+            () => {}
         );
     }
 
@@ -220,7 +205,40 @@ class Attachments extends React.Component {
      * @return {Void} undefined
      */
     onIconPress(item) {
-        this.setState({ selected: item });
+        if(!this.state.isFilePlaying) {
+            this.setState({ selected: item });
+        }
+        else {
+            ToastAndroid.show("Stop the file and try again", ToastAndroid.LONG);
+        }
+    }
+
+    stopMediaPlayer() {
+        NativeModules.MediaHelper.stopMediaPlayer("", ()=>{
+            this.setState({ isFilePlaying: false });
+        });
+    }
+
+    viewSelectedImage() {}
+
+    renderActionButton() {
+        let actionButton = null;
+        if(this.state.selected) {
+            let type = "";
+            if(this.state.selected.Path && this.state.selected.Path != null) {
+                type = this.state.selected.Path.substr(this.state.selected.Path.lastIndexOf(".") + 1);
+            }
+            if(type == "3gp") {
+                if(!this.state.isFilePlaying)
+                    actionButton = (<Button icon="play" text="Play" borderPosition="bottom" onPress={()=>{ this.playFromNetwork() }} />);
+                else
+                    actionButton = (<Button icon="stop" text="Stop" borderPosition="bottom" onPress={()=>{ this.stopMediaPlayer() }} />);
+            }
+            else {
+                actionButton = (<Button icon="th" text="View" borderPosition="bottom" onPress={()=>{ this.viewSelectedImage() }} />)
+            }
+        }
+        return actionButton;
     }
 
     /**
@@ -229,11 +247,7 @@ class Attachments extends React.Component {
      * @return {View} view
      */
     render() {
-
-        // file list view
-        //let component = (<ListView dataSource={this.state.dataSource} renderRow={this.renderRow.bind(this)}  />);
         let component = (
-
             <View style={styles.attachmentContainer}>
                 { this.state.attachments.map(item => {
                     let type = "image";
@@ -244,10 +258,13 @@ class Attachments extends React.Component {
                         <FileIcon name={item.Name}
                                 isSelected={this.state.selected.AttachmentId == item.AttachmentId ? true: false}
                                 onIconPress={()=>this.onIconPress(item)} icon={type} />
-                        );
-                }) }
+                        )
+                })}
             </View>
-        )
+        );
+
+
+
 
         // Right side toolbar
         let toolbar = (
@@ -255,18 +272,13 @@ class Attachments extends React.Component {
                 <Button icon="camera" onPress={this.onCamera.bind(this)} text="Take Picture" borderPosition="bottom" />
                 <Button icon="picture-o" text="Take From Gallery" borderPosition="bottom" onPress={this.onGallery.bind(this)} />
                 <Button icon="trash" text="Delete Selected" borderPosition="bottom" />
-                <Button icon="upload" text="Upload All" borderPosition="bottom" />
-                <Button icon="download" text="Download Selected" borderPosition="none" />
+                { this.renderActionButton() }
             </View>
         );
 
         // Show or hide toolbar on right side
         if(this.props.showToolbar != undefined && this.props.showToolbar == false)
             toolbar = null;
-
-        // if edit mode show editor instead of list view
-        if(this.state.mode == EDIT_MODE)
-            component = (<AttachmentEditor onSave={this.onUpload.bind(this)} />)
 
         // Displays the container
         return (
@@ -314,7 +326,7 @@ class Attachments extends React.Component {
 /**
  * @class FileIcon
  * @extends React.Component
- ***/
+ */
 class FileIcon extends React.Component {
 
     /**
@@ -329,17 +341,41 @@ class FileIcon extends React.Component {
         this.state = {
         };
     }
+
+    /**
+     * Handler for icon press
+     * @eventhandler
+     * @param {Event} evt
+     * @return {Void} undefined
+     */
+    onIconPress() {
+        /**
+         * Play the native tap sound, as it's not supported in default view component by react native
+         */
+        NativeModules.MediaHelper.playClickSound();
+        /**
+         * Execute if any parent component Handler is passed to the compnent
+         */
+        if(this.props.onIconPress)
+            this.props.onIconPress();
+    }
+
+    /**
+     * React Js  Render method. This is the main component rendering method.
+     * Check out React Js documentation for more about render method.
+     * @return {View} view
+     */
     render() {
         var type = require('../../../resources/images/pdf.png');
         switch(this.props.icon) {
-            case 'image':
-            case 'png':
-            case 'jpg':
-            case 'gif':
+            case '3gp':
+                type = require('../../../resources/images/audio.png');
+                break;
+            case 'image': case 'png':
+            case 'jpg': case 'gif':
                 type = require('../../../resources/images/image.png');
                 break;
-            case 'doc':
-            case 'docx':
+            case 'doc': case 'docx':
                 type = require('../../../resources/images/doc.png');
                 break;
             case 'folder':
@@ -348,7 +384,7 @@ class FileIcon extends React.Component {
         }
 
         return (
-            <TouchableWithoutFeedback onPress={this.props.onIconPress}>
+            <TouchableWithoutFeedback onPress={this.onIconPress.bind(this)}>
                 <View style={[iconStyles.container, this.props.isSelected ? iconStyles.selected : {}]}>
                     <Image source={type} style={iconStyles.icon} />
                     <Text style={{textAlign:'center'}}>{this.props.name}</Text>
@@ -357,52 +393,6 @@ class FileIcon extends React.Component {
         );
     }
 }
-
-class AttachmentEditor extends React.Component {
-    constructor(args) {
-        super(args);
-        this.state = {
-            name: null,
-            desc: null
-        };
-    }
-    render() {
-        return (
-            <View style={styles.container}>
-                <View style={styles.attachmentEditor}>
-
-                    <Image source={require('../../../resources/images/image.png')} style={{width:200, height: 150, margin: 10}} />
-
-                    <View style={{ width: 350,height: 40, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 10 }} >
-                        <TextInput textAlign="center"
-                          underlineColorAndroid="#FFF"
-                          value={this.state.name}
-                          onTextChange={text=>this.setState({name:text})}
-                          onChangeText={text=>this.setState({name:text})}
-                          placeholder="Name of the attachment" style={{ flex: 1 }} />
-                    </View>
-                     <View style={{ width: 350,height: 80, borderColor: '#D8D8D8', borderWidth: 1, flexDirection: 'row', marginTop: 10 }} >
-                        <TextInput textAlign="center"
-                          underlineColorAndroid="#FFF"
-                          multiline={true}
-                          onTextChange={text=>this.setState({desc:text})}
-                          onChangeText={text=>this.setState({desc:text})}
-                          value={this.state.desc}
-                          placeholder="Description" style={{ flex: 1 }} />
-                    </View>
-
-                    <TouchableWithoutFeedback onPress={()=>{ this.props.onSave(this.state.name, this.state.desc)}}>
-                        <View style={{paddingTop: 10, paddingBottom:10, paddingRight: 20,paddingLeft: 20, backgroundColor:'#F53333', margin: 10}}>
-                            <Text style={{color:'#FFF'}}>Upload</Text>
-                        </View>
-                    </TouchableWithoutFeedback>
-
-                </View>
-            </View>
-        );
-    }
-}
-
 var iconStyles = StyleSheet.create({
     container: {
         width: 100,
@@ -411,7 +401,9 @@ var iconStyles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
-        margin: 10
+        margin: 10,
+        borderWidth: 1,
+        borderColor: 'transparent'
     },
     icon: {
         width: 64,

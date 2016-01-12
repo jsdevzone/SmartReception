@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -14,11 +15,13 @@ import android.smartcardio.CommandAPDU;
 import android.telecom.Call;
 import android.util.Log;
 import android.view.SoundEffectConstants;
+import android.webkit.MimeTypeMap;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.stetho.json.ObjectMapper;
 import com.smartreception.eid.EidPublicData;
 import com.smartreception.eid.PCSCReader;
@@ -39,6 +42,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 
 
 /**
@@ -51,6 +55,10 @@ public class MediaModule extends ReactContextBaseJavaModule {
     private static String mFileName = null;
     private ReactApplicationContext mReactContext;
     public static final int REQUEST_IMAGE_CAPTURE = 1;
+
+    private MediaPlayer mediaPlayer;
+
+    private String currentRecordingFileName = null;
     /**
      * ******************************************
      */
@@ -100,31 +108,93 @@ public class MediaModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void startRecording(String meetingId) {
+    public void playFromNetwork(String url) {
+        try {
+            if (mediaPlayer == null)
+                mediaPlayer = new MediaPlayer();
 
-        File folder = new File(mFileName += "/" + meetingId);
+
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mediaPlayer.setDataSource(url);
+            mediaPlayer.prepare(); // might take long! (for buffering, etc)
+            mediaPlayer.start();
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    mediaPlayer.stop();
+                    mediaPlayer.reset();
+                    mReactContext
+                            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                            .emit("playbackfinished", null);
+                }
+            });
+        } catch (Exception ex) {
+            mediaPlayer.stop();
+            mediaPlayer.reset();
+            mReactContext
+                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit("playbackfinished", null);
+            ex.printStackTrace();
+        }
+    }
+
+    @ReactMethod
+    public void stopMediaPlayer(String url, Callback callback) {
+        try {
+            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+                mediaPlayer.reset();
+                callback.invoke();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            callback.invoke();
+        }
+    }
+
+    @ReactMethod
+    public void startRecording(String meetingId) {
+        currentRecordingFileName = mFileName + "/" + meetingId + "/record_" + new Date().toString() + ".3gp";
+        File folder = new File(mFileName + "/" + meetingId);
         if (!folder.exists())
             folder.mkdirs();
 
-        try {
+        if (mediaRecorder == null)
             mediaRecorder = new MediaRecorder();
+
+        try {
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            mediaRecorder.setOutputFile(mFileName += "/record.3gp");
+            mediaRecorder.setOutputFile(currentRecordingFileName);
             mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             mediaRecorder.prepare();
             mediaRecorder.start();
+
+            mReactContext
+                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit("recordingstarted", currentRecordingFileName);
+
         } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }
 
     @ReactMethod
     public void stopRecording() {
-        if (mediaRecorder != null) {
-            mediaRecorder.stop();
-            mediaRecorder.release();
-            mediaRecorder = null;
+        try {
+            if (mediaRecorder != null) {
+                mediaRecorder.stop();
+                mediaRecorder.reset();
+                mediaRecorder = null;
+
+                mReactContext
+                        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                        .emit("recordingfinished", currentRecordingFileName);
+
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -188,7 +258,7 @@ public class MediaModule extends ReactContextBaseJavaModule {
                 String str = "{" +
                         "\"ArabicName\": " + "" + data.getArabicFullName() + "," +
                         "\"FulleName\": " + "" + data.getFullName() + "," +
-                "}";
+                        "}";
                 callback.invoke(str);
             }
 
@@ -244,9 +314,17 @@ public class MediaModule extends ReactContextBaseJavaModule {
         @Override
         protected Void doInBackground(Attachments... params) {
             Attachments param = params[0];
+            File sourceFile = new File(param.getUri());
+            String mimeType = "image/jpg";
+
+            String ext = sourceFile.getName().substring(sourceFile.getName().lastIndexOf('.'));
+            if (ext.equals(".3gp"))
+                mimeType = "video/mp4";
+
             try {
-                File sourceFile = new File(param.getUri());
+
                 OkHttpClient client = new OkHttpClient();
+
                 RequestBody requestBody = new MultipartBuilder()
                         .type(MultipartBuilder.FORM)
                         .addFormDataPart("AttachmentId", "0")
@@ -254,7 +332,8 @@ public class MediaModule extends ReactContextBaseJavaModule {
                         .addFormDataPart("Name", param.getName())
                         .addFormDataPart("Description", param.getDesc())
                         .addFormDataPart("AttachmentTypeId", "2")
-                        .addFormDataPart("file", sourceFile.getName(), RequestBody.create(MediaType.parse("image/jpg"), sourceFile))
+                        .addFormDataPart("FileName", sourceFile.getName())
+                        .addFormDataPart("file", sourceFile.getName(), RequestBody.create(MediaType.parse(mimeType), sourceFile))
                         .build();
 
                 Request request = new Request.Builder()

@@ -105,6 +105,9 @@ export default class Meeting extends React.Component {
 
         // Change the State
         this.setState({ meeting: meeting });
+
+        // Attach file to the server
+        NativeModules.MediaHelper.uploadFile(attachment.Path, meeting.BookedMeetingId.toString(), attachment.Name, "", () => {});
     }
 
     /**

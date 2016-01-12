@@ -18,15 +18,15 @@ var id  = 1;
 
 /**
  * @class DrawingSurface
- * @extends React.Component 
- * 
+ * @extends React.Component
+ *
  * Drawing Surface
  *
  * @props {Meeting} meeting
  * @props {Navigator} navigator
  */
 export default class DrawingSurface extends React.Component {
-		
+
 	/**
 	 * @constructor
 	 */
@@ -40,6 +40,7 @@ export default class DrawingSurface extends React.Component {
  		 * @state
  		 */
  		this.state = {
+			selected: {},
  			text: null,
  			dataSource: this.listDataSource.cloneWithRows(this.data)
  		};
@@ -52,8 +53,12 @@ export default class DrawingSurface extends React.Component {
 		this.getAttachmentList();
 	}
 
+	/**
+	 * Get the list of the attachments
+	 * @return {Void} undefined
+	 */
 	getAttachmentList() {
-		ScheduleStore.getAttachments(129).then(json => {
+		ScheduleStore.getSketches(this.props.meeting.BookedMeetingId).then(json => {
 			this.data = json;
 			this.setState({dataSource: this.listDataSource.cloneWithRows(json)})
 		})
@@ -65,8 +70,9 @@ export default class DrawingSurface extends React.Component {
  	  */
  	 addPage() {
  	 	this.data.forEach(item => item.selected = false);
- 	  	this.data.push({ id: ++id, selected: true });
- 	  	this.setState({dataSource: this.listDataSource.cloneWithRows(this.data)})
+		let page = { AttachmentId: 0, selected: true };
+ 	  	this.data.push(page);
+ 	  	this.setState({dataSource: this.listDataSource.cloneWithRows(this.data), selected: page });
  	 }
 
 
@@ -77,24 +83,38 @@ export default class DrawingSurface extends React.Component {
  	 onPageSelect(page) {
  	 	this.data.forEach(item => item.selected = false);
  	  	page.selected = true
- 	  	this.setState({dataSource: this.listDataSource.cloneWithRows(this.data)});
- 	  	NativeModules.PenSurface.loadImage(129, 263);
+ 	  	this.setState({dataSource: this.listDataSource.cloneWithRows(this.data), selected: page });
+ 	  	if(page.AttachmentId != 0)
+			NativeModules.PenSurface.loadImage(page.BookedMeetingId, page.AttachmentId);
+		else
+			NativeModules.PenSurface.clear()
  	 }
+
+	 /**
+  	  * Upload the drawings to the server
+  	  * @return {Void} undefined
+  	  */
+	 onSave() {
+		 let meetingId = this.props.meeting.BookedMeetingId;
+		 let attachmentId = this.state.selected.AttachmentId;
+		 NativeModules.PenSurface.saveDrawings(meetingId, attachmentId,()=>this.getAttachmentList());
+	 }
 
 	/**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {View} component
      */
 	render() {
 		return (
 			<View style={styles.container}>
-				<PageExplorer dataSource={this.state.dataSource} onPageSelect={this.onPageSelect.bind(this)}/>
-				<View style={{ flexDirection: 'column', alignItems: 'stretch', flex: 1 }}>
-					<Text>{this.state.text}</Text>
-					<DrawingToolbar onPageAdd={this.addPage.bind(this)} />
-					<PenSurface style={{flex:1}}/>
+				<DrawingToolbar onPageAdd={this.addPage.bind(this)} onSave={this.onSave.bind(this)} />
+				<View style={{ flexDirection: 'row', alignItems: 'stretch', flex: 1 }}>
+					<PageExplorer dataSource={this.state.dataSource} onPageSelect={this.onPageSelect.bind(this)}/>
+					<View style={{ flex: 1, padding: 25, backgroundColor: '#F4F4F4'}}>
+						<PenSurface style={{flex:1, borderColor: '#CCC', borderWidth: 1}}/>
+					</View>
 				</View>
 			</View>
 		);
@@ -102,6 +122,12 @@ export default class DrawingSurface extends React.Component {
 }
 
 
+/**
+ * @class PageExplorer
+ * @extends React.Component
+ *
+ * List of pages
+ */
 class PageExplorer extends React.Component {
 
 	constructor(args) {
@@ -124,19 +150,19 @@ class PageExplorer extends React.Component {
     	let filename = "";
     	if(rowData.Path)
     		 filename = rowData.Path.substr(rowData.Path.lastIndexOf("\\") + 1);
-    	let path = "http://192.168.4.77/SmartReception.Service/Attachments/" + filename;
+    	let path = "http://192.168.4.77/SmartReception.Service/Attachments/" + rowData.BookedMeetingId + "/Sketches/"+ rowData.AttachmentId+ ".png" ;
         return (
         	<TouchableHighlight underlayColor="#F4F4F4" onPress={() => this.props.onPageSelect(rowData) }>
             	<View style={[p_styles.page, rowData.selected ? p_styles.selected : null]}>
             		<Image style={p_styles.image} source={{uri: path}} />
 				</View>
 			</TouchableHighlight>
-       ); 
+       );
     }
 
 	/**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {View} component
      */
@@ -151,8 +177,8 @@ class PageExplorer extends React.Component {
 
 /**
  * @class DrawingToolbar
- * @extends React.Component 
- * 
+ * @extends React.Component
+ *
  * Drawing Surface
  *
  * @props {Meeting} meeting
@@ -190,7 +216,7 @@ class PageExplorer extends React.Component {
  	 */
 
  	exportDrawings() {
-		NativeModules.PenSurface.saveDrawings(129, 264);
+		this.props.onSave();
  	}
 
  	/**
@@ -198,7 +224,7 @@ class PageExplorer extends React.Component {
  	  * @return {Void} undefined
  	  */
  	 addPage() {
- 	  	NativeModules.PenSurface.addNewPage();	
+ 	  	NativeModules.PenSurface.addNewPage();
  	  	if(this.props.onPageAdd) {
  	  		this.props.onPageAdd();
  	  	}
@@ -209,13 +235,13 @@ class PageExplorer extends React.Component {
  	  * @return {Void} undefined
  	  */
  	 loadImage() {
-		NativeModules.PenSurface.loadImage(129, 263);	
-		//NativeModules.PenSurface.downloadSketches();	
+		NativeModules.PenSurface.loadImage(129, 263);
+		//NativeModules.PenSurface.downloadSketches();
  	 }
 
  	/**
      * Renders the scene. [See Rect Js Render Method for more details]
-     * 
+     *
      * @render
      * @return {View} component
      */
@@ -257,16 +283,13 @@ class PageExplorer extends React.Component {
 	}
  }
 
-
-
-
 /**
  * @style
  */
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		flexDirection: 'row',
+		flexDirection: 'column',
 		alignItems: 'stretch'
 	}
 });
@@ -279,7 +302,7 @@ const t_styles = StyleSheet.create({
 		padding: 10,
 		flexDirection: 'row',
 		alignItems: 'stretch',
-		borderBottomColor: '#F4F4F4',
+		borderBottomColor: '#EEE',
 		borderBottomWidth: 1
 	},
 	toolbarButton: {
@@ -290,34 +313,34 @@ const t_styles = StyleSheet.create({
 	}
 });
 
-
 /**
  * @style - page-explorer
  */
 const p_styles = StyleSheet.create({
 	container: {
-		paddingTop: 20,
+		paddingTop: 25,
+		paddingBottom: 25,
 		flexDirection: 'row',
-		backgroundColor: '#F4F4F4',
-		borderRightColor: '#E9E9E9',
-		borderRightWidth: 1
+		backgroundColor: '#F4F4F4'
 	},
 	page: {
 		backgroundColor: "#FFF",
 		borderColor: '#E9E9E9',
 		borderWidth: 1,
-		width: 150,
-		height: 200,
+		width: 180,
+		height: 140,
 		marginLeft: 20,
 		marginRight: 20,
-		marginBottom : 5
+		marginBottom : 5,
+		alignItems: 'center',
+		justifyContent: 'center'
 	},
 	selected: {
 		borderWidth: 3,
 		borderColor: '#85C3F7'
 	},
 	image: {
-		width: 150,
-		height: 200,
+		width: 160,
+		height: 120,
 	},
 });

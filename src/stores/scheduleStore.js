@@ -88,7 +88,6 @@ var ScheduleStore = module.exports = Object.assign({}, EventEmitter.prototype, {
       * @return {Promise} promise
       */
       getAttachments: function(meetingId) {
-
         let promise = RequestManager.get('meeting/attachments', { meetingId: meetingId});
         promise.then( json => this.emit('attachmentsloaded', json ));
 
@@ -103,11 +102,22 @@ var ScheduleStore = module.exports = Object.assign({}, EventEmitter.prototype, {
       * @return {Promise} promise
       */
      getScheduleCount() {
-
          let promise = RequestManager.get('client/schedulecount', { employeeId: 1 });
          return promise;
+     },
+
+     /**
+      * Get the list of sketches for this schedule
+      *
+      * @url - http://[server]/[service]/api/meeting/sketches
+      *
+      * @param {Number} meetingId
+      * @return {Promise} promise
+      */
+      getSketches: function(meetingId) {
+        let promise = RequestManager.get('meeting/sketches', { meetingId: meetingId});
+        promise.then( json => this.emit('sketchesloaded', json ));
+
+        return promise;
      }
-
-
-
 });

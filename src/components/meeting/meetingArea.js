@@ -9,16 +9,17 @@
  * Proprietary and confidential
  */
 
-import React, {  StyleSheet, Text, View, Image, TouchableHighlight,
+import React, {  StyleSheet, Text, View, Image, TouchableHighlight, DeviceEventEmitter,
   TouchableWithoutFeedback, TextInput, ListView, NativeModules, ToastAndroid, } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
+import DialogAndroid from 'react-native-dialogs';
+
 import Notes from './notes';
 import Summary from './summary';
 import MinutesOfMeeting from './minutesOfMeeting';
 import MeetingTitle from './meetingTitle';
 import Attachments from '../app/attachments';
-import DialogAndroid from 'react-native-dialogs';
 import MeetingStatus from '../../constants/meetingStatus';
 import DrawingSurface from '../drawing/drawingSurface';
 import Attendees from './attendees';
@@ -58,6 +59,45 @@ import ClientStore from '../../stores/clientStore';
           */
          if(AppStore.isRecording)
             this.state.isRecording = true;
+
+        /*
+         * When user finishes the audio recording this event will be emitted from  the java code.
+         * So capture it and add the recorded file into attachment list.
+         */
+        this.recordingEventSubscription = DeviceEventEmitter.addListener('recordingfinished', this.onRecordingFinished.bind(this));
+     }
+     
+     /**
+	  * @lifecycle
+	  * @return {Void} undefined
+	  **/
+	 componentWillUnmount() {
+		 // Stop recordingEventSubscription
+		  this.recordingEventSubscription.remove();
+	 }
+
+     /**
+      * When the user finishes the recording add the recorded audio to the attachment list
+      *
+      * @eventhandler
+      * @param {String} filename - the recorded file name
+      * @return {Void} undefined
+      */
+     onRecordingFinished(filename) {
+         /**
+          * If there is an attachment added event handler, call it with the newly recorded file
+          */
+         if(this.props.onAttachmentAdded) {
+             // attachment object should be same as the  attachment entity
+             let attachment = {
+                 AttachmentId: 0,
+                 Name: 'Sound recording',
+                 Path: filename,
+                 AttachmentTypeId: 1
+             };
+             // call the callback
+             this.props.onAttachmentAdded(attachment);
+         }
      }
 
      /**
@@ -235,12 +275,6 @@ import ClientStore from '../../stores/clientStore';
           * Stop the Recording
           */
          NativeModules.MediaHelper.stopRecording();
-         /**
-          * If there is an attachment added event handler, call it with the newly recorded file
-          */
-         if(this.props.onAttachmentAdded) {
-             this.props.onAttachmentAdded({ name: 'Voice Record', file: 'SmartReception/Record.3gp' });
-         }
      }
 
      /**
