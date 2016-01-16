@@ -101,8 +101,8 @@ var ScheduleStore = module.exports = Object.assign({}, EventEmitter.prototype, {
       *
       * @return {Promise} promise
       */
-     getScheduleCount() {
-         let promise = RequestManager.get('client/schedulecount', { employeeId: 1 });
+     getScheduleCount(user) {
+         let promise = RequestManager.get('client/schedulecount', { employeeId: user });
          return promise;
      },
 

@@ -10,7 +10,6 @@ import com.facebook.react.uimanager.ViewManager;
 import com.smartreception.module.MediaModule;
 import com.smartreception.module.PenSurfaceModule;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

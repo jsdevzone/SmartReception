@@ -22,7 +22,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.facebook.stetho.json.ObjectMapper;
+
 import com.smartreception.eid.EidPublicData;
 import com.smartreception.eid.PCSCReader;
 import com.squareup.okhttp.MediaType;
@@ -32,7 +32,8 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 
-import org.json.JSONObject;
+
+import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -255,11 +256,14 @@ public class MediaModule extends ReactContextBaseJavaModule {
 
             if (mReader.IsUAECard()) {
                 EidPublicData data = mReader.getPublicData();
+
+                ObjectMapper mapper = new ObjectMapper();
+                String jsonInString = mapper.writeValueAsString(data);
+
                 String str = "{" +
-                        "\"ArabicName\": " + "" + data.getArabicFullName() + "," +
-                        "\"FulleName\": " + "" + data.getFullName() + "," +
+                        "\"ArabicName\": " + "\"" + data.getArabicFullName() + "\"," +
                         "}";
-                callback.invoke(str);
+                callback.invoke(jsonInString);
             }
 
             mReader.Disconnect();

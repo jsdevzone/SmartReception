@@ -21,7 +21,7 @@
 import React, { AppRegistry, StyleSheet, Text, View, Image, Navigator,
   BackAndroid, AsyncStorage, DeviceEventEmitter, NativeModules, ToastAndroid, } from 'react-native';
 
-import signalr from 'react-native-signalr';
+import SignalR from 'react-native-signalr';
 
 import Dashboard from './src/components/home/dashboard';
 import UserLogin from './src/components/auth/userLogin';
@@ -29,13 +29,27 @@ import Titlebar from './src/components/app/titleBar';
 import BreadCrumb from './src/components/app/breadCrumb';
 import SplashScreen from './src/components/app/splashScreen';
 import ConnectionError from './src/components/app/connectionError';
+import ClientSplashScreen from './src/components/client/clientSplashScreen';
 import AppStore from './src/stores/appStore';
 
-import ClientSplashScreen from './src/components/client/clientSplashScreen';
+
+import RequestManager from './src/core/requestManager';
 
 var _navigator  =  null;
 var _initialRoute =  null;
 var _isLoggedIn = false;
+
+/**
+ * SignalR configuration
+ * @property {String} server - the signalr server
+ */
+//var _server = 'http://192.168.4.77/SmartReception.Service/signalr/hubs';
+var _server = 'http://smartreception.egovservice.com/services/signalr/hubs';
+
+/**
+ * @property {String} hunName - the signalr hub name
+ */
+var _hubName = 'SmartReceptionHub';
 
 /**
  * Attach event listener to android back button press.
@@ -138,7 +152,10 @@ class SmartReception extends React.Component {
      */
     componentDidMount() {
         NativeModules.SmartReception.startNetworkMonitoring();
-        //this.configureSignalR();
+        /**
+         * Configure SignalR
+         */
+        this.configureSignalR();
     }
 
     /**
@@ -146,37 +163,34 @@ class SmartReception extends React.Component {
      * @return {Void} undefined
      */
     configureSignalR() {
-        var connection = signalr.hubConnection('http://smartreception.egovservice.com/');
-        connection.logging = true;
-
-        var proxy = connection.createHubProxy('Smart');
-
-                //receives broadcast messages from a hub function, called "messageFromServer"
-        proxy.on('updateGroup', (message) => {
-            NativeModules.SmartReception.createNotification("Notification", "Your have new message");
-            NativeModules.SmartReception.notifySound();
-            NativeModules.SmartReception.vibrate(1000);
+        /**
+         * Configuring connection
+         */
+        let signalRConnection = new SignalR.hubConnection(_server);
+        signalRConnection.logging = true;
+        /**
+         * Create proxy for the signalr hub
+         */
+        let proxy = signalRConnection.createHubProxy(_hubName);
+        /**
+         * On Message received execute the callback
+         */
+        proxy.on('updateGroup', (msg, employee) => {
+            if(employee && employee == AppStore.user.UserName || employee == '-1') {
+                NativeModules.SmartReception.createNotification("Notification", msg || "Your have new message");
+                NativeModules.SmartReception.notifySound();
+                NativeModules.SmartReception.vibrate(1000);
+            }
         });
-
-
-                // atempt connection, and handle errors
-                connection.start().done(() => {
-                    proxy.invoke('connect', '1');
-                    ToastAndroid.show("Now Connected " + connection.id, ToastAndroid.LONG)
-                }).fail(() => {
-                    console.log('Failed');
-                });
-
-
-
-                //connection-handling
-                connection.connectionSlow(function () {
-                    //console.log('We are currently experiencing difficulties with the connection.')
-                });
-
-                connection.error(function (error) {
-                  //console.log('SignalR error: ' + error)
-                });
+        /**
+         * Connect to the hub
+         */
+        signalRConnection.start().done(() => {
+            proxy.invoke('connect', '1')
+            proxy.invoke('Connect', '1')
+            ToastAndroid.show("Now Connected " + signalRConnection.id, ToastAndroid.LONG)
+        });
+        //NativeModules.SignalRModule.connectToHub();
     }
 
     /**
@@ -213,7 +227,7 @@ class SmartReception extends React.Component {
         else {
             // If a previous authentication found, then load the Dashboard screen
             newState.hasCurrentMeeting = _settings.currentMeeting != undefined;
-            route = { component: Dashboard, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
+            route = { component: ClientSplashScreen, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
         }
 
         // Currently navigator is showing loading screen. So replace it with route object assigned

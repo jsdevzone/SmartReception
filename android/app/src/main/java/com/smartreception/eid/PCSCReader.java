@@ -15,6 +15,8 @@ import android.smartcardio.ResponseAPDU;
 import android.smartcardio.TerminalFactory;
 
 import java.io.FileNotFoundException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 
 import java.util.List;
@@ -163,19 +165,30 @@ public class PCSCReader {
         return eid;
     }
 
+    private int getNextZero(byte[] data, int startFrom)
+    {
+        for(int i=startFrom; i<data.length; i++)
+        {
+            if((int)data[i]==0) {
+               return i;
+            }
+        }
+        return -1;
+    }
+
 
     final static int ISSUE_DATE_OFFS = 14;
     final static int EXPIRY_DATE_OFFS = 22;
     final static int BIRTH_DATE_OFFS =  157;
     final static int ARABIC_FULL_NAME_OFFS = 34;
-    final static int ENGLISH_FULL_NAME_OFFS = 86;
+    final static int ENGLISH_FULL_NAME_OFFS = 82;
     final static int SEX_OFFS = 119;
     final static int ARABIC_NATIONALITY_OFFS = 124;
     final static int ENGLISH_NATIONALITY_OFFS = 140;
     final static int NATIONALITY_CODE_OFFS = 0x8F;
     final static int ID_TYPE_OFFS = 8;
 
-
+    private final Charset UTF8_CHARSET = Charset.forName("UTF-8");
 
     private void setPublicData(EidPublicData eid) throws  Exception {
 
@@ -195,11 +208,85 @@ public class PCSCReader {
             throw new Exception("Failed to read public data v1");
 
         byte[] data = response.getData(); //Reference to data
+        int nexIndex = 0;
+        int endIndex = ARABIC_FULL_NAME_OFFS - 2;
+
+
+        int startIndex = getNextZero(data, 0);
+        int length = data[startIndex + 1];
+
+        int typeId = 0;
+
+        while(startIndex < data.length) {
+            if(length == 0) {
+                startIndex = getNextZero(data, startIndex);
+                length = data[startIndex + 1];
+            }
+
+            byte[] tobeExtracted = new byte[length];
+
+            System.arraycopy(data, startIndex + 2, tobeExtracted, 0, length);
+
+            switch (typeId) {
+                case 1:
+                    eid.setIssueDate(Utils.CharArrayToStringDate(Utils.ToCharArray(tobeExtracted)));
+                    break;
+                case 2:
+                    eid.setExpiryDate(Utils.CharArrayToStringDate(Utils.ToCharArray(tobeExtracted)));
+                    break;
+                case 4:
+                    eid.setArabicFullName(Utils.CharArrayToUTF8String(Utils.ToCharArray(tobeExtracted)));
+                    break;
+                case 6:
+                    eid.setFullName(Utils.CharArrayToUTF8String(Utils.ToCharArray(tobeExtracted)));
+                    break;
+                case 7:
+                    eid.setSex(Utils.CharArrayToUTF8String(Utils.ToCharArray(tobeExtracted)));
+                    break;
+                case 10:
+                    eid.setNationality(Utils.CharArrayToUTF8String(Utils.ToCharArray(tobeExtracted)));
+                    break;
+                case 11:
+                    eid.setDateOfBirth(Utils.CharArrayToStringDate(Utils.ToCharArray(tobeExtracted)));
+                    break;
+
+            }
+
+            if(typeId >= 13)
+                break;
+
+
+
+
+
+            startIndex = getNextZero(data, startIndex + 2);
+            length = data[startIndex + 1];
+            typeId = typeId + 1;
+        }
+
+
+
+
+
+        /*int index = 0;
+String transformed = new String(data, UTF8_CHARSET);*/
 
         //---- ISSUE DATE -------------------------------------------------------
-        {
-            byte[] date1 = new byte[data[ISSUE_DATE_OFFS - 1]];
-            System.arraycopy(data, ISSUE_DATE_OFFS, date1, 0, date1.length);
+        /*{
+
+            String text = HexToChar(data);
+
+            index = getNextZero(data, index);
+
+
+
+
+            endIndex = getNextZero(data, index + 1);
+
+            int length = endIndex - nexIndex;
+
+            byte[] date1 = new byte[length];
+            System.arraycopy(data, index+2, date1, 0, length);
             eid.setIssueDate(Utils.CharArrayToStringDate(Utils.ToCharArray(date1)));
 
             //---- ISSUE DATE -------------------------------------------------------
@@ -211,19 +298,30 @@ public class PCSCReader {
             eid.setDateOfBirth(Utils.CharArrayToStringDate(Utils.ToCharArray(date1)));
         }
         //---- ARABIC NAME -----------------------------------------------------------------
-        {
-            byte[] arabic_name = new byte[data[ARABIC_FULL_NAME_OFFS - 1]];
+        /*{
+            int endIndex = getNextZero(data, ARABIC_FULL_NAME_OFFS);
+            int length = endIndex - ARABIC_FULL_NAME_OFFS;
+
+            //byte[] arabic_name = new byte[data[ARABIC_FULL_NAME_OFFS - 1]];
+            byte[] arabic_name = new byte[length];
             System.arraycopy(data, ARABIC_FULL_NAME_OFFS, arabic_name, 0, arabic_name.length);
             eid.setArabicFullName(Utils.CharArrayToUTF8String(Utils.ToCharArray(arabic_name)));
-        }
+
+            nexIndex = getNextNonZero(data, endIndex + 1);
+        }*/
         //---- ENGLISH NAME
-        {
-            byte[] english_name = new byte[data[ENGLISH_FULL_NAME_OFFS - 1]];
-            System.arraycopy(data, ENGLISH_FULL_NAME_OFFS, english_name, 0, english_name.length);
+        /*{
+
+            int endIndex = getNextZero(data, nexIndex);
+            int length = endIndex - nexIndex;
+
+
+            byte[] english_name = new byte[length];
+            System.arraycopy(data, nexIndex, english_name, 0, english_name.length);
             eid.setFullName(Utils.CharArrayToUTF8String(Utils.ToCharArray(english_name)));
-        }
+        }*/
         //--- NATIONALITY CODE-------------------------------------------------------------
-        {
+       /* {
             byte[] nationalityCode = new byte[NATIONALITY_CODE_OFFS - 1];
 
             //int destIndex = data.length - NATIONALITY_CODE_OFFS - 1;
@@ -244,7 +342,7 @@ public class PCSCReader {
             byte[] idType = new byte[ID_TYPE_OFFS-1];
             System.arraycopy(data, ENGLISH_FULL_NAME_OFFS, idType, 0, idType.length);
             eid.setIDType(Utils.CharArrayToUTF8String(Utils.ToCharArray(idType)));
-        }
+        }*/
 
         android.util.Log.v("Done with public data", "Public data has been converted successfully");
     }
@@ -299,7 +397,7 @@ public class PCSCReader {
             if(data.length != 0) {
                 s = new StringBuilder(data.length*2);
                 for(int i = 0; i < data.length; ++i) {
-                    s.append(HEX_TABLE[data[i] >>> 4 & 15]);
+                    s.append(HEX_TABLE[data[i] >>> 4 & 0x0f]);
                     s.append(HEX_TABLE[data[i] & 15]);
                 }
             }

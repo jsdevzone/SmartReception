@@ -23,6 +23,7 @@ import Attachments from '../app/attachments';
 import MeetingStatus from '../../constants/meetingStatus';
 import DrawingSurface from '../drawing/drawingSurface';
 import Attendees from './attendees';
+import Button from '../meeting/button';
 
 import AppStore from '../../stores/appStore';
 import ClientStore from '../../stores/clientStore';
@@ -66,7 +67,7 @@ import ClientStore from '../../stores/clientStore';
          */
         this.recordingEventSubscription = DeviceEventEmitter.addListener('recordingfinished', this.onRecordingFinished.bind(this));
      }
-     
+
      /**
 	  * @lifecycle
 	  * @return {Void} undefined
@@ -138,7 +139,9 @@ import ClientStore from '../../stores/clientStore';
                  content: 'Are you sure want to finish current meeting?' ,
                  positiveText: 'Yes',
                  negativeText: 'No',
-                 onPositive: () => AppStore.finishCurrentMeeting()
+                 "neutralText": "Yes With Transfer",
+                 onPositive: () => AppStore.finishCurrentMeeting(),
+                 "onNeutral": this.transferMeeting.bind(this)
              };
              dialog.set(options);
              dialog.show();
@@ -184,8 +187,12 @@ import ClientStore from '../../stores/clientStore';
                      let newOptions = { title: 'Select a employee', positiveText: 'Select', items: employees };
                      newOptions.itemsCallback = (selectedEmployeeIndex) => {
                          let selectedEmployee = response[selectedEmployeeIndex];
-                         //AppStore.addAttendee(selectedEmployee, this.props.meeting).then(() => this.loadAttendees());
-                         ToastAndroid.show('Meeting Transferred to '+ selectedEmployee.FirstName + " " + selectedEmployee.LastName + " Successfully.", ToastAndroid.LONG);
+                         /**
+                          * Transfer the meeting
+                          */
+                         AppStore.transferMeeting(this.props.meeting, selectedEmployee).then(() => {
+                            ToastAndroid.show('Meeting Transferred to '+ selectedEmployee.FirstName + " " + selectedEmployee.LastName + " Successfully.", ToastAndroid.LONG);
+                         });
                      };
                      //reinitialize the dialog
                      let dialog1 = new DialogAndroid();
@@ -213,10 +220,8 @@ import ClientStore from '../../stores/clientStore';
              content: 'Are you sure want to continue?',
              "positiveText": "Yes",
              "negativeText": "No",
-             "neutralText": "Yes With Transfer",
-             "onPositive": () => ToastAndroid.show("POSITIVE!", ToastAndroid.SHORT),
-             "onNegative": () => ToastAndroid.show("NEGATIVE!", ToastAndroid.SHORT),
-             "onNeutral": this.transferMeeting.bind(this),
+             "onPositive": () => { this.transferMeeting() },
+             "onNegative": () => ToastAndroid.show("NEGATIVE!", ToastAndroid.SHORT)
          };
          dialog.set(options);
          dialog.show();
@@ -425,7 +430,7 @@ import ClientStore from '../../stores/clientStore';
      }
  }
 
-class Button extends React.Component {
+/*class Button extends React.Component {
     render() {
         let color = "#424242";
         if(this.props.disabled)
@@ -439,7 +444,7 @@ class Button extends React.Component {
             </TouchableWithoutFeedback>
         );
     }
-}
+}*/
 
 var styles = StyleSheet.create({
     button: {

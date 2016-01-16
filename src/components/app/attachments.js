@@ -213,14 +213,22 @@ class Attachments extends React.Component {
         }
     }
 
+    /**
+     * If the media player is playing stop it
+     * @return {Void} undefined
+     */
     stopMediaPlayer() {
-        NativeModules.MediaHelper.stopMediaPlayer("", ()=>{
-            this.setState({ isFilePlaying: false });
-        });
+        NativeModules.MediaHelper.stopMediaPlayer("", ()=>{ this.setState({ isFilePlaying: false }); });
     }
 
+    /**
+     * @return {Void} undefined
+     */
     viewSelectedImage() {}
 
+    /**
+     * @return {Button} actionButton
+     */
     renderActionButton() {
         let actionButton = null;
         if(this.state.selected) {

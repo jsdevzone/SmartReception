@@ -53,11 +53,21 @@ import DialogAndroid from 'react-native-dialogs';
       * @return {View} view
       */
      render() {
+         /**
+          * If any props with disabled = true then don't respond to the events
+          */
+         let color = "#424242";
+         /**
+          * If disabled change the color
+          */
+         if(this.props.disabled)
+             color = "#CCC";
+
          return (
              <TouchableWithoutFeedback onPress={this.onPress.bind(this)}>
                  <View style={[styles.button, styles[this.props.borderPosition || 'right'], this.props.style]}>
-                     <Icon name={this.props.icon} size={30} />
-                     <Text style={{textAlign:'center'}}>{this.props.text}</Text>
+                     <Icon name={this.props.icon} size={30} color={color} />
+                     <Text style={{textAlign:'center', color: color}}>{this.props.text}</Text>
                  </View>
              </TouchableWithoutFeedback>
          );

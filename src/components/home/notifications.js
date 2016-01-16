@@ -23,7 +23,7 @@ import ScheduleList from '../schedule/scheduleList';
  */
 import RouteStore from '../../stores/routeStore';
 import ScheduleStore from '../../stores/scheduleStore';
-
+import AppStore from '../../stores/appStore';
 
 /**
  * @class ScheduleList
@@ -66,7 +66,7 @@ export default class Notifications extends React.Component {
      */
     getSchedules(date) {
         ScheduleStore
-            .getSchedules(1, date)
+            .getSchedules(AppStore.user.UserName || 1, date)
             .then(this.onScheduleLoaded.bind(this));
     }
 
@@ -79,7 +79,7 @@ export default class Notifications extends React.Component {
      *  @return {Void} undefined
      */
     componentDidMount() {
-        ScheduleStore.getScheduleCount(1).then(this.updatePendingCount.bind(this))
+        ScheduleStore.getScheduleCount(AppStore.user.UserName || 1).then(this.updatePendingCount.bind(this))
     }
 
     /**

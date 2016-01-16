@@ -68,7 +68,23 @@ import AppStore from '../../stores/appStore';
       * @return {Void} undefined
       */
 	 onLogout() {
-         AppStore.logout();
+
+		 /**
+		  * Play the native tap sound, as it's not supported in default view component by react native
+		  */
+		 NativeModules.MediaHelper.playClickSound();
+
+		 /**
+		  * IF any ongoing meeting is there first finish it
+		  */
+		 if(AppStore.hasActualMeeting()) {
+			let dialog = new DialogAndroid();
+			dialog.set({ title: 'Notice!',content: 'Please finish the ongoing meeting before you logout', positiveText: 'OK'});
+			dialog.show();
+		 }
+		 else {
+		 	AppStore.logout();
+		 }
      }
 
 	 /**

@@ -17,10 +17,10 @@ import { ToastAndroid } from 'react-native';
 var RequestManager = module.exports = {
 
 	// local address
-	endpointBase: 'http://192.168.4.77/SmartReception.Service/api/',
+	//endpointBase: 'http://192.168.4.77/SmartReception.Service/api/',
 
 	// remote server address
-    // endpointBase: 'http://smartreception.egovservice.com/services/api/',
+    endpointBase: 'http://smartreception.egovservice.com/services/api/',
 
 	/**
 	 * Authentication header, should sent for each request.
@@ -56,7 +56,12 @@ var RequestManager = module.exports = {
 				method: 'GET',
 				headers: header
 			})
-			.then((response) => resolve(response.json()))
+			.then((response) => {
+				if(response != null && response != undefined)
+					resolve(response.json())
+				else
+					resolve(undefined)
+			})
 			.catch((error) => {
 				if(reject)
 					reject(error);

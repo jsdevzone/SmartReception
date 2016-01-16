@@ -49,7 +49,7 @@ export default class UpcomingMeeting extends React.Component {
      * @return {Void} undefined
      */
     componentDidMount() {
-        UserStore.getUpcomingMeeting().then(this.onMeetingLoaded.bind(this));
+        UserStore.getUpcomingMeeting(AppStore.user.UserName || 1).then(this.onMeetingLoaded.bind(this));
     }
 
     /**
@@ -61,7 +61,9 @@ export default class UpcomingMeeting extends React.Component {
      * @return {Void} undefined
      */
     onMeetingLoaded(data) {
-        this.setState({ meeting: data, isLoading: false });
+        if(data) {
+            this.setState({ meeting: data, isLoading: false });
+        }
     }
 
     /**
@@ -109,7 +111,6 @@ export default class UpcomingMeeting extends React.Component {
 
         let component = (
             <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-                <Text>Loadig...</Text>
             </View>
         );
 

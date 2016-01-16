@@ -80,10 +80,16 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 				 */
 				if(item[0] == STORAGE_KEY + ":user") {
 					if(item[1] != null && item[1] != '') {
-						_settings.user = { name:'Muhammed Jasim', profession:'Sr. Software Developer' };
-						_settings.isAuthenticated = true;
-
 						let authHeader = JSON.parse(item[1])
+
+						AppStore.user.FirstName = authHeader.FirstName;
+						AppStore.user.LastName = authHeader.LastName;
+						AppStore.user.Profession = 'Sr. Software Developer';
+						AppStore.user.UserName = authHeader.UserName;
+
+
+						_settings.user = { name: AppStore.user.FirstName + " " + AppStore.user.LastName, profession:'Sr. Software Developer', userName: AppStore.user.UserName };
+						_settings.isAuthenticated = true;
 
 						if(authHeader.access_token) {
 							RequestManager.authHeader = { 'Authorization': 'Bearer ' + authHeader.access_token };
@@ -276,7 +282,20 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 		return promise
 	},
 
-
+	/**
+	 * Transfer Meeting
+	 *
+	 * @url - http://[server]/[service]/api/meeting/transfer
+	 *
+	 * @param {BookedMeeting} meeting
+	 * @param {AspNetUsers} user
+	 * @return {Promise} promise
+	 */
+	transferMeeting: function(meeting, employee) {
+		let requestParam = { BookedMeetingId: meeting.BookedMeetingId, EmployeeId: employee.UserName  };
+		let promise = RequestManager.post('meeting/transfer', requestParam);
+		return promise
+	},
 
 	/**
 	 * @return {Void} undefined

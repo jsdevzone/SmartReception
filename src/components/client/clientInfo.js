@@ -35,25 +35,45 @@
           this.state = {
               client: {
                   FirstName: 'First',
-                  LastName: 'Last',
-                  Position: 'Your Position'
+                  LastName: '',
+                  Position: ''
               },
               meeting: {},
               employee: {},
-              hasMeeting: false
+              hasMeeting: false,
+              mode: 2
           };
+
+          this.state.mode = this.props.mode || 2;
+
+          if(this.props.client) {
+              this.state.client.FirstName = this.props.client.fullName.replace(/,/gi,' ');
+              this.state.client.Nationality = this.props.client.nationality;
+              this.state.client.Gender = this.props.client.sex == 'M' ? 'Male' : 'Female';
+              this.state.client.EmiratesIdNo = this.props.client.idnumber;
+              this.state.client.ArabicName = this.props.client.arabicFullName.replace(/,/gi,' ');
+              this.state.client.DateOfBirth = this.props.client.dateOfBirth;
+            }
       }
 
       componentDidMount() {
-         if(this.props.mode != 1) {
-             let identity = "1";
-              this.setState({ client: {FirstName: ''} });
-             ClientStore.getByIdentity(identity).then(json => {
-                 let client = json;
-                 client.CompanyName = json.Companies.Name;
-                 this.setState({ client: client });
+         if(this.state.mode != 1 && this.props.client) {
+             ClientStore.getByIdentity(this.state.client.EmiratesIdNo).then(json => {
 
-                 ClientStore.getClientMeetingWithEmployee(identity).then(data => {
+
+
+                if(json != null) {
+                    let client = json;
+                    client.CompanyName = json.Companies.Name;
+                    client.FullName = json.FirstName + " " + json.LastName;
+                    this.setState({ client: client });
+                }
+                else{
+                    ToastAndroid.show("Here ", ToastAndroid.LONG);
+                    this.setState({ mode: 1 });
+                }
+
+                 ClientStore.getClientMeetingWithEmployee(this.state.client.EmiratesIdNo).then(data => {
                      if(data) {
                          this.setState({ meeting: data.BookedMeetings, employee: data.Employee, hasMeeting: true });
                      }
@@ -61,7 +81,6 @@
 
              });
          }
-
       }
 
       /**
@@ -79,7 +98,7 @@
       }
 
       onProceedClick() {
-           if(this.props.mode == 1) {
+           if(this.state.mode == 1) {
                NativeModules.DialogAndroid.showProgressDialog();
                ClientStore.registerClientTemporary(this.state.client).then(() => {
                    NativeModules.DialogAndroid.hideProgressDialog();
@@ -121,7 +140,7 @@
                                    }
                                 });
                             }
-    });
+                        });
                    dialog.show();
                });
            }
@@ -160,7 +179,7 @@
                       </View>
                       <View style={[styles.widget, {flex: 1}]}>
                           <View style={styles.widgetHeader}>
-                              <Text style={styles.headerText}>SCHEDULED MEETING</Text>
+                              <Text style={styles.headerText}>SCHEDULED MEETING { this.state.mode }</Text>
                           </View>
                           <View style={styles.widgetBody}>
                               {(() => {
@@ -191,7 +210,7 @@
                                           style={{ height: 40 }} underlineColorAndroid="#FFF"
                                           onChangeText={(text) => this.onFieldEdit('FirstName', text)}/>
                                   </View>
-                                  <View style={{ flex : 1}}>
+                                  <View style={styles.formItem}>
                                       <Text>LAST NAME</Text>
                                       <TextInput value={this.state.client.LastName}
                                           style={{ height: 40 }} underlineColorAndroid="#FFF"
@@ -201,27 +220,11 @@
                               <View style={styles.formGroup}>
                                   <View style={styles.formItem}>
                                       <Text>GENDER</Text>
-                                       <TextInput style={{ height: 40 }} underlineColorAndroid="#FFF" />
+                                       <TextInput  value={this.state.client.Gender} style={{ height: 40 }} underlineColorAndroid="#FFF" />
                                   </View>
                                   <View style={{ flex: 1}}>
                                       <Text>NATIONALITY</Text>
-                                      <TextInput style={{ height: 40 }} underlineColorAndroid="#FFF" />
-                                  </View>
-                              </View>
-                              <View style={styles.formGroup}>
-                                  <View style={styles.formItem}>
-                                      <Text>IDENTIFICATION TYPE</Text>
-                                      <TextInput style={{ height: 40 }} underlineColorAndroid="#FFF" />
-                                  </View>
-                                  <View style={styles.formItem}>
-                                      <Text>IDENTIFICATION NO.</Text>
-                                      <TextInput value={this.state.client.EmiratesIdNo} style={{ height: 40 }} underlineColorAndroid="#FFF"
-                                          onChangeText={(text) => this.onFieldEdit('EmiratesIdNo', text)}/>
-                                  </View>
-                                  <View style={{ flex :1 }}>
-                                      <Text>MOBILE NO.</Text>
-                                      <TextInput value={this.state.client.Mobile}  style={{ height: 40 }} underlineColorAndroid="#FFF"
-                                          onChangeText={(text) => this.onFieldEdit('Mobile', text)}/>
+                                      <TextInput  value={this.state.client.Nationality} style={{ height: 40 }} underlineColorAndroid="#FFF" />
                                   </View>
                               </View>
                               <View style={styles.formGroup}>
@@ -230,34 +233,10 @@
                                       <TextInput value={this.state.client.Email}  style={{ height: 40 }} underlineColorAndroid="#FFF"
                                           onChangeText={(text) => this.onFieldEdit('Email', text)}/>
                                   </View>
-                              </View>
-                              <View style={[styles.formHeader, { marginTop: 20 }]}>
-                                  <Text style={{ color: '#000', fontSize: 20 }}>Company Information</Text>
-                              </View>
-                              <View style={styles.formGroup}>
-                                  <View style={styles.formItem}>
-                                      <Text>COMPANY</Text>
-                                      <TextInput
-                                          value={this.state.client.CompanyName}
-                                          style={{ height: 40 }} underlineColorAndroid="#FFF"
-                                          onChangeText={(text) => this.onFieldEdit('CompanyName', text)}/>
-                                  </View>
-                                  <View style={{ flex : 1}}>
-                                      <Text>JOB TITLE</Text>
-                                      <TextInput value={this.state.client.Position}  style={{ height: 40 }} underlineColorAndroid="#FFF"
-                                          onChangeText={(text) => this.onFieldEdit('Position', text)}/>
-                                  </View>
-                              </View>
-                              <View style={styles.formGroup}>
-                                  <View style={[styles.formItem, { flex: 2}]}>
-                                      <Text>LOCATION</Text>
-                                      <TextInput value={this.state.client.Location}  style={{ height: 40 }} underlineColorAndroid="#FFF"
-                                          onChangeText={(text) => this.onFieldEdit('Location', text)}/>
-                                  </View>
-                                  <View style={{ flex : 1}}>
-                                      <Text>P.O.BOX</Text>
-                                      <TextInput value={this.state.client.PoBox}  style={{ height: 40 }} underlineColorAndroid="#FFF"
-                                          onChangeText={(text) => this.onFieldEdit('PoBox', text)}/>
+                                  <View style={{ flex :1 }}>
+                                      <Text>MOBILE NO.</Text>
+                                      <TextInput keyboardType="numeric" value={this.state.client.Mobile}  style={{ height: 40 }} underlineColorAndroid="#FFF"
+                                          onChangeText={(text) => this.onFieldEdit('Mobile', text)}/>
                                   </View>
                               </View>
 
@@ -267,7 +246,6 @@
 
                           </View>
                       </View>
-
                   </View>
               </Image>
           );

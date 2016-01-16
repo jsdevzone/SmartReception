@@ -1,132 +1,125 @@
 package com.smartreception.services;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.IBinder;
+import android.os.PowerManager;
+import android.preference.PreferenceManager;
+import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 
+import de.greenrobot.event.EventBus;
 import microsoft.aspnet.signalr.client.Action;
 import microsoft.aspnet.signalr.client.SignalRFuture;
 import microsoft.aspnet.signalr.client.hubs.HubConnection;
 import microsoft.aspnet.signalr.client.hubs.HubProxy;
 import microsoft.aspnet.signalr.client.hubs.SubscriptionHandler;
 import microsoft.aspnet.signalr.client.hubs.SubscriptionHandler1;
-
-
-/**
- * Created by itse4 on 12/29/2015.
- */
 public class SignalRService extends Service {
 
-    private final String mEndPoint = "";
-    private final String mHubName = "";
-    private final String mGroupName = "";
+    android.os.Handler handler = new android.os.Handler() {
+    };
 
-    private HubConnection mConnection;
-    private HubProxy mHubProxy;
-    private SignalRFuture<Void> mAwaitConnection;
+    public String _msg;
 
-    private boolean mDisconnect = false;
+    private EventBus bus = EventBus.getDefault();
 
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        // initialize the hub
-        mConnection = new HubConnection(mEndPoint);
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-        // create the proxy
-        mHubProxy = mConnection.createHubProxy(mHubName);
-
-        // Wait for 5 seconds, then start the connection
-        new Timer(false).schedule(mConnectTask, 5000);
-
-        // Deal with connection closed event, re-connect it after 5 seconds
-        mConnection.closed(mConnectionClosed);
-
-        // Register signalR server event
-        mHubProxy.on("", mEventReceiver, String.class);
+        Log.d("service", "Service created....");
     }
 
+    private SharedPreferences mSharedPreferences;
 
-    private SubscriptionHandler1<String> mEventReceiver = new SubscriptionHandler1<String>() {
-        @Override
-        public void run(String s) {
+    @SuppressWarnings("deprecation")
+    @Override
+    public void onStart(Intent intent, int startId) {
 
+
+        super.onStart(intent, startId);
+
+
+        Log.d("service", "Service start....");
+        Toast.makeText(this, "Service Start", Toast.LENGTH_LONG).show();
+
+        final String server = "http://192.168.4.77/SmartReception.Service/";
+        HubConnection connection = null;
+        try{
+            //String server = "http://webservices.egovservice.com/Feedback/";
+            connection = new HubConnection(server);
+        }catch (Exception ex) {
+            ex.printStackTrace();
         }
-    };
 
-    /**
-     * Runnable instance to work with connection closed events.
-     *
-     * @Runnable
-     */
-    private Runnable mConnectionClosed = new Runnable() {
-        @Override
-        public void run() {
-            if (!mDisconnect)
-                new Timer(false).schedule(mConnectTask, 5000);
-        }
-    };
 
-    /**
-     * Timer task intended to establish the connection to the SignalR server.
-     *
-     * @Runnable
-     */
-    private TimerTask mConnectTask = new TimerTask() {
-        @Override
-        public void run() {
-            if (mConnection != null) {
-                mConnection.start().done(new Action<Void>() {
-                    @Override
-                    public void run(Void aVoid) throws Exception {
-                        registerConnection();
-                    }
-                });
-            }
-        }
-    };
+        HubProxy proxy = connection.createHubProxy("SmartReceptionHub");
 
-    /**
-     * Register the client with SignalR hub.
-     * Start mConnectTask to invoke this method.
-     * Don't call this directly.
-     *
-     * @return {Void} null
-     */
-    private void registerConnection() {
+        Log.d("service", "proxy created");
+
+        SignalRFuture<Void> awaitConnection = connection.start();
         try {
-            /**
-             * Aquire the connection from server
-             */
-            mAwaitConnection.get();
-            /**
-             * Register the device into SignalR group
-             */
-            mHubProxy.invoke("RegisterClient", mGroupName);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        } catch (ExecutionException ex) {
-            ex.printStackTrace();
+
+            awaitConnection.get();
+
+            //proxy.invoke("Send", "Android", "Hello world!").get();
+            proxy.invoke("Connect", "1");
+
+            Log.d("service", "invoked");
+
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+
+            Log.d("qqq", e.toString());
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            // TODO Auto-generated catch block
+            Log.d("qqq", e.toString());
+            e.printStackTrace();
         }
+
+        final SignalRService service = this;
+
+
+
     }
 
-    /**
-     * Disconnect from the server
-     * @return {Void} null
-     */
-    public void disconnect() {
-        mConnection.disconnect();
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
     }
 
+    @Override
+    public IBinder onBind(Intent arg0) {
+        Toast.makeText(this.getApplicationContext(), "Msg recived" + _msg, Toast.LENGTH_LONG).show();
+        return null;
+    }
+
+    public void DisplayToast() {
+        Toast.makeText(this.getApplicationContext(), "Msg recived" + _msg, Toast.LENGTH_LONG).show();
+
+    }
+
+    private Runnable toast = new Runnable() {
+        public void run() {
+            DisplayToast();
+            stopSelf();
+        }
+    };
+
+    private void unlock() {
+        PowerManager powermanager = ((PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE));
+        PowerManager.WakeLock wakeLock = powermanager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "tag");
+        wakeLock.acquire();
+    }
 }

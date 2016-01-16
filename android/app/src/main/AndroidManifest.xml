@@ -32,6 +32,9 @@
             </intent-filter>
         </activity>
         <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
+        <service
+            android:name=".services.SignalRService"
+            android:exported="false" />
     </application>
 
 </manifest>

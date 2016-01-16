@@ -47,7 +47,7 @@ var CredentialStore = module.exports = Object.assign({}, EventEmitter.prototype,
             /**
             * Construct the request
             */
-            let promise = RequestManager.getToken({ username: '1', password: 'VowBroken@07'});
+            let promise = RequestManager.getToken(user);
             /**
             * Process the response
             */
@@ -109,7 +109,7 @@ var CredentialStore = module.exports = Object.assign({}, EventEmitter.prototype,
          * Request for user information
          */
         RequestManager
-            .get('userinfo', { username: json.username})
+            .get('userinfo', { username: json.userName})
             .then(user => {
                 // combine user data and auth data together into single object
                 Object.assign(json, user)

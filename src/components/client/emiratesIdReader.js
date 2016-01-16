@@ -8,7 +8,7 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
- import React, { View, StyleSheet, Text,  TouchableHighlight, ToastAndroid, Image, } from 'react-native';
+ import React, { View, StyleSheet, Text,  NativeModules, TouchableHighlight, ToastAndroid, Image, } from 'react-native';
  import Icon from 'react-native-vector-icons/FontAwesome';
  import DialogAndroid from 'react-native-dialogs';
  import ClientInfo from './clientInfo';
@@ -41,6 +41,35 @@
               }});
       }
 
+      /**
+       * Reads the emirates id data from the usb terminal
+       * @return {Void} undefined
+       */
+      readEmiratesIdData() {
+          // Show waiting dialog
+          //NativeModules.DialogAndroid.showProgressDialog();
+
+          /**
+           * Read the emirates id data
+           */
+          NativeModules.MediaHelper.eid(content => {
+              let client = JSON.parse(content);
+              ToastAndroid.show(content, ToastAndroid.LONG);
+              //Hide progress dialog
+            //  NativeModules.DialogAndroid.hideProgressDialog();
+
+              this.props.navigator.push({
+                  id: 'emiratesid',
+                  title: 'Scan Your Emirates Id ',
+                  component: ClientInfo,
+                  props: {
+                      isClientModule: true,
+                      client: client
+                  }});
+          });
+
+      }
+
 
       /**
        * Render a single button to the screen
@@ -49,7 +78,7 @@
        */
       renderButton(text) {
           return (
-              <TouchableHighlight onPress={this.moveToClientScreen.bind(this)}>
+              <TouchableHighlight onPress={this.readEmiratesIdData.bind(this)}>
                   <View style={styles.button}>
                       <Text style={styles.buttonText}>{text}</Text>
                   </View>

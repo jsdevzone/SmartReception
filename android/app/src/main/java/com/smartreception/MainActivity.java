@@ -1,18 +1,13 @@
 package com.smartreception;
 
 import android.content.Context;
-import android.app.Activity;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.KeyEvent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.support.v4.app.FragmentActivity;
 import android.view.Window;
 import android.view.WindowManager;
@@ -20,17 +15,15 @@ import android.view.WindowManager;
 import com.facebook.react.LifecycleState;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactRootView;
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.shell.MainReactPackage;
-import com.facebook.soloader.SoLoader;
 
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.github.xinthink.rnmk.ReactMaterialKitPackage;
 import com.aakashns.reactnativedialogs.ReactNativeDialogsPackage;
 import com.samsung.android.sdk.pen.Spen;
+import com.smartreception.services.SignalRService;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -72,6 +65,8 @@ public class MainActivity extends FragmentActivity implements DefaultHardwareBac
             spenPackage.isFeatureEnabled(Spen.DEVICE_PEN);
         } catch (Exception ex) {
         }
+
+       // startService(new Intent(this, SignalRService.class));
     }
 
     public void setNotificationBarColor() {
