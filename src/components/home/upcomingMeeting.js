@@ -3,8 +3,11 @@
  * Smart Reception System
  * @author Jasim
  * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
-
 import React, {StyleSheet, Text, View, Image, TouchableHighlight, ToastAndroid } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Moment from 'moment';

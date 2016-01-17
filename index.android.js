@@ -152,10 +152,6 @@ class SmartReception extends React.Component {
      */
     componentDidMount() {
         NativeModules.SmartReception.startNetworkMonitoring();
-        /**
-         * Configure SignalR
-         */
-        this.configureSignalR();
     }
 
     /**
@@ -163,6 +159,9 @@ class SmartReception extends React.Component {
      * @return {Void} undefined
      */
     configureSignalR() {
+
+        ToastAndroid.show(AppStore.user.UserName, ToastAndroid.LONG);
+
         /**
          * Configuring connection
          */
@@ -227,7 +226,7 @@ class SmartReception extends React.Component {
         else {
             // If a previous authentication found, then load the Dashboard screen
             newState.hasCurrentMeeting = _settings.currentMeeting != undefined;
-            route = { component: ClientSplashScreen, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
+            route = { component: Dashboard, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
         }
 
         // Currently navigator is showing loading screen. So replace it with route object assigned
@@ -237,6 +236,12 @@ class SmartReception extends React.Component {
 
         // Set the component state to change load the settings loaded from local storage
         this.setState(newState);
+
+        /**
+         * Configure SignalR.
+         * It should be always after loading the application settings. Becuase username must be set in to the appStore
+         */
+        this.configureSignalR();
     }
 
     /**
