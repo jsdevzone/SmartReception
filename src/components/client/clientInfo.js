@@ -8,13 +8,15 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
- import React, { View, StyleSheet, Text,  TouchableHighlight, ToastAndroid, Image, TextInput, NativeModules, } from 'react-native';
+ import React, { View, StyleSheet, Text,  TouchableHighlight,
+     TouchableWithoutFeedback, ToastAndroid, Image, TextInput, NativeModules, } from 'react-native';
  import Icon from 'react-native-vector-icons/FontAwesome';
  import DialogAndroid from 'react-native-dialogs';
  import Moment from 'moment';
 
  import ClientSplashScreen from './clientSplashScreen';
  import ClientStore from '../../stores/clientStore';
+ import AppStore from '../../stores/appStore';
 
  /**
   * Displays the client information.
@@ -34,7 +36,7 @@
           */
           this.state = {
               client: {
-                  FirstName: 'First',
+                  FirstName: '',
                   LastName: '',
                   Position: ''
               },
@@ -49,27 +51,32 @@
           if(this.props.client) {
               this.state.client.FirstName = this.props.client.fullName.replace(/,/gi,' ');
               this.state.client.Nationality = this.props.client.nationality;
-              this.state.client.Gender = this.props.client.sex == 'M' ? 'Male' : 'Female';
+              this.state.client.NationalityName = this.props.client.nationality;
+              this.state.client.Gender = this.props.client.sex;
+              this.state.client.GenderName = this.props.client.sex == 'M' ? 'Male' : 'Female';
               this.state.client.EmiratesIdNo = this.props.client.idnumber;
               this.state.client.ArabicName = this.props.client.arabicFullName.replace(/,/gi,' ');
               this.state.client.DateOfBirth = this.props.client.dateOfBirth;
             }
       }
-
+      /**
+       *
+       * @lifecycle
+       * @return {Void} undefined
+       */
       componentDidMount() {
          if(this.state.mode != 1 && this.props.client) {
              ClientStore.getByIdentity(this.state.client.EmiratesIdNo).then(json => {
-
-
-
                 if(json != null) {
                     let client = json;
                     client.CompanyName = json.Companies.Name;
                     client.FullName = json.FirstName + " " + json.LastName;
+                    client.FirstName = json.FirstName + " " + json.LastName;
+                    client.GenderName = json.Gender == 'M' ? 'Male': 'Female';
+                    client.NationalityName = json.CountryId;
                     this.setState({ client: client });
                 }
                 else{
-                    ToastAndroid.show("Here ", ToastAndroid.LONG);
                     this.setState({ mode: 1 });
                 }
 
@@ -81,6 +88,75 @@
 
              });
          }
+      }
+
+      /**
+       * Show the list of gender as a list dialog
+       * @return {Void} undefined
+       */
+      showGenderOptions() {
+          let options = {
+              title: 'Select',
+              positiveText: 'Select',
+              items: ['Male', 'Female'],
+          };
+
+          /**
+           * Callback for item select
+           */
+          options.itemsCallback = (index) => {
+              let client = this.state.client;
+              client.Gender = index == 0 ? 'M': 'F';
+              client.GenderName = options.items[index];
+              /**
+               * Change the display to the selected value
+               */
+              this.setState({ client: client });
+          };
+
+          let dialog = new DialogAndroid();
+          dialog.set(options);
+          dialog.show();
+      }
+
+      /**
+       * Show the list of gender as a list dialog
+       * @return {Void} undefined
+       */
+      showNationalityOptions() {
+          // Show waiting dialog
+          NativeModules.DialogAndroid.showProgressDialog();
+          // Get available countries from the server
+          AppStore.getAvailableCountries().then(countries => {
+              //Hide progress dialog
+              NativeModules.DialogAndroid.hideProgressDialog();
+
+              let arrCountries = new Array();
+              countries.map(country => arrCountries.push(country['Name']));
+
+              let options = {
+                  title: 'Select',
+                  positiveText: 'Select',
+                  items: arrCountries
+              };
+
+              /**
+               * Callback for item select
+               */
+              options.itemsCallback = (index) => {
+                  let client = this.state.client;
+                  client.Nationality = countries[index].CountryId;
+                  client.NationalityName = arrCountries[index];
+                  /**
+                   * Change the display to the selected value
+                   */
+                  this.setState({ client: client });
+              };
+
+              let dialog = new DialogAndroid();
+              dialog.set(options);
+              dialog.show();
+          });
       }
 
       /**
@@ -98,24 +174,29 @@
       }
 
       onProceedClick() {
+          /**
+           * Play the native tap sound, as it's not supported in default view component by react native
+           */
+          NativeModules.MediaHelper.playClickSound();
+
            if(this.state.mode == 1) {
                NativeModules.DialogAndroid.showProgressDialog();
                ClientStore.registerClientTemporary(this.state.client).then(() => {
                    NativeModules.DialogAndroid.hideProgressDialog();
                    var dialog = new DialogAndroid();
                    dialog.set({
-                            title: 'Thank you for using SME Service',
-                            content: 'Please move to the receptionist for further details.',
-                            positiveText: 'OK',
-                            onPositive : () => {
-                                this.props.navigator.push({
-                                   title:'Client Home' ,
-                                   component: ClientSplashScreen,
-                                   props: {
-                                       isClientModule: true
-                                   }
-                                });
-                            }
+                       title: 'Thank you for using SME Service',
+                       content: 'Please move to the receptionist for further details.',
+                       positiveText: 'OK',
+                       onPositive : () => {
+                           this.props.navigator.push({
+                              title:'Client Home' ,
+                              component: ClientSplashScreen,
+                              props: {
+                                  isClientModule: true
+                              }
+                           });
+                       }
                   });
                    dialog.show();
 
@@ -126,22 +207,14 @@
                NativeModules.DialogAndroid.showProgressDialog();
                ClientStore.loginClient(this.state.client.ClientId).then(json => {
                    NativeModules.DialogAndroid.hideProgressDialog();
-                   var dialog = new DialogAndroid();
-                   dialog.set({
-                            title: 'Thank you for using SME Service',
-                            content: 'The DA will come to you shortly, Please wait on the recption. Thank you',
-                            positiveText: 'OK',
-                            onPositive : () => {
-                                this.props.navigator.push({
-                                   title:'Client Home' ,
-                                   component: ClientSplashScreen,
-                                   props: {
-                                       isClientModule: true
-                                   }
-                                });
-                            }
-                        });
-                   dialog.show();
+                   this.props.navigator.push({
+                       id: 'client',
+                      title:'Client Home' ,
+                      component: ClientSplashScreen,
+                      props: {
+                          isClientModule: true
+                      }
+                   });
                });
            }
       }
@@ -153,11 +226,11 @@
        */
       renderButton(text) {
           return (
-              <TouchableHighlight onPress={this.onProceedClick.bind(this)}>
+              <TouchableWithoutFeedback onPress={this.onProceedClick.bind(this)}>
                   <View style={styles.button}>
                       <Text style={styles.buttonText}>{text}</Text>
                   </View>
-              </TouchableHighlight>
+              </TouchableWithoutFeedback>
           );
       }
       /**
@@ -173,7 +246,7 @@
                               <Icon name="user" color="#FFF" size={55} style={{ marginLeft: 20}} />
                           </View>
                           <Text style={{ marginTop: 10, fontSize: 20, color: '#000'}}>
-                              {this.state.client.FirstName + " " + this.state.client.LastName}
+                          {this.state.client.FirstName + " " + this.state.client.LastName}
                           </Text>
                           <Text>{this.state.client.Position}</Text>
                       </View>
@@ -183,8 +256,8 @@
                           </View>
                           <View style={styles.widgetBody}>
                               {(() => {
-                                  if(this.state.hasMeeting)
-                                    return (<ClientMeeting meeting={this.state.meeting} employee={this.state.employee} />)
+                              if(this.state.hasMeeting)
+                              return (<ClientMeeting meeting={this.state.meeting} employee={this.state.employee} />)
                               })()}
 
                               <View style={{ marginTop: 30}}>
@@ -204,31 +277,29 @@
                                   <Text style={{ color: '#000', fontSize: 20 }}>Personal Details</Text>
                               </View>
                               <View style={styles.formGroup}>
-                                  <View style={styles.formItem}>
-                                      <Text>FIRST NAME</Text>
+                                  <View style={{ flex: 1}}>
+                                      <Text>FULL NAME</Text>
                                       <TextInput value={this.state.client.FirstName}
                                           style={{ height: 40 }} underlineColorAndroid="#FFF"
-                                          onChangeText={(text) => this.onFieldEdit('FirstName', text)}/>
-                                  </View>
-                                  <View style={styles.formItem}>
-                                      <Text>LAST NAME</Text>
-                                      <TextInput value={this.state.client.LastName}
-                                          style={{ height: 40 }} underlineColorAndroid="#FFF"
-                                          onChangeText={(text) => this.onFieldEdit('LastName', text)}/>
+                                      onChangeText={(text) => this.onFieldEdit('FirstName', text)}/>
                                   </View>
                               </View>
                               <View style={styles.formGroup}>
-                                  <View style={styles.formItem}>
-                                      <Text>GENDER</Text>
-                                       <TextInput  value={this.state.client.Gender} style={{ height: 40 }} underlineColorAndroid="#FFF" />
-                                  </View>
-                                  <View style={{ flex: 1}}>
-                                      <Text>NATIONALITY</Text>
-                                      <TextInput  value={this.state.client.Nationality} style={{ height: 40 }} underlineColorAndroid="#FFF" />
-                                  </View>
+                                  <TouchableWithoutFeedback onPress={this.showGenderOptions.bind(this)}>
+                                      <View style={styles.formItem}>
+                                          <Text>GENDER</Text>
+                                          <Text style={{ height: 40,  paddingLeft: 10, color: '#000'  }}>{this.state.client.GenderName}</Text>
+                                      </View>
+                                  </TouchableWithoutFeedback>
+                                  <TouchableWithoutFeedback onPress={this.showNationalityOptions.bind(this)}>
+                                      <View style={{ flex: 1}}>
+                                          <Text>NATIONALITY</Text>
+                                          <Text style={{ height: 40, paddingLeft: 10, color: '#000' }}>{this.state.client.NationalityName}</Text>
+                                      </View>
+                                  </TouchableWithoutFeedback>
                               </View>
                               <View style={styles.formGroup}>
-                                  <View style={{ flex: 1}}>
+                                   <View style={styles.formItem}>
                                       <Text>EMAIL</Text>
                                       <TextInput value={this.state.client.Email}  style={{ height: 40 }} underlineColorAndroid="#FFF"
                                           onChangeText={(text) => this.onFieldEdit('Email', text)}/>
@@ -387,7 +458,8 @@
           marginBottom: 10,
           width: 100,
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          height: 60
       },
       buttonText: {
           color: '#FFF',

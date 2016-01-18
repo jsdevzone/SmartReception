@@ -8,7 +8,8 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
- import React, { View, StyleSheet, Text,  NativeModules, TouchableHighlight, ToastAndroid, Image, } from 'react-native';
+ import React, { View, StyleSheet, Text,  NativeModules,
+     TouchableWithoutFeedback, Image, } from 'react-native';
  import Icon from 'react-native-vector-icons/FontAwesome';
  import DialogAndroid from 'react-native-dialogs';
  import ClientInfo from './clientInfo';
@@ -31,14 +32,18 @@
           this.state = {};
       }
 
+      /**
+       * Moves the navigator to the client info edit screen.
+       * @return {Void} undefined
+       */
       moveToClientScreen() {
-          this.props.navigator.push({
+          let route = {
               id: 'emiratesid',
               title: 'Scan Your Emirates Id ',
               component: ClientInfo,
-              props: {
-                  isClientModule: true
-              }});
+              props: { isClientModule: true }
+          };
+          this.props.navigator.push(route);
       }
 
       /**
@@ -46,26 +51,27 @@
        * @return {Void} undefined
        */
       readEmiratesIdData() {
-          // Show waiting dialog
-          //NativeModules.DialogAndroid.showProgressDialog();
+          /**
+           * Play the native tap sound, as it's not supported in default view component by react native
+           */
+          NativeModules.MediaHelper.playClickSound();
 
           /**
            * Read the emirates id data
            */
           NativeModules.MediaHelper.eid(content => {
               let client = JSON.parse(content);
-              ToastAndroid.show(content, ToastAndroid.LONG);
-              //Hide progress dialog
-            //  NativeModules.DialogAndroid.hideProgressDialog();
-
-              this.props.navigator.push({
+              let route = {
                   id: 'emiratesid',
                   title: 'Scan Your Emirates Id ',
                   component: ClientInfo,
                   props: {
                       isClientModule: true,
-                      client: client
-                  }});
+                      client: client,
+                      navigator: this.props.navigator
+                  }
+              };
+              this.props.navigator.push(route);
           });
 
       }
@@ -78,11 +84,11 @@
        */
       renderButton(text) {
           return (
-              <TouchableHighlight onPress={this.readEmiratesIdData.bind(this)}>
+              <TouchableWithoutFeedback onPress={this.readEmiratesIdData.bind(this)}>
                   <View style={styles.button}>
                       <Text style={styles.buttonText}>{text}</Text>
                   </View>
-              </TouchableHighlight>
+              </TouchableWithoutFeedback>
           );
       }
 
@@ -159,7 +165,8 @@
           backgroundColor: '#BE3828',
           padding: 8,
           marginBottom: 10,
-          width: 100,
+          width: 150,
+          height: 60,
           alignItems: 'center',
           justifyContent: 'center'
       },

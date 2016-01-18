@@ -226,7 +226,7 @@ class SmartReception extends React.Component {
         else {
             // If a previous authentication found, then load the Dashboard screen
             newState.hasCurrentMeeting = _settings.currentMeeting != undefined;
-            route = { component: Dashboard, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
+            route = { component: ClientSplashScreen, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
         }
 
         // Currently navigator is showing loading screen. So replace it with route object assigned

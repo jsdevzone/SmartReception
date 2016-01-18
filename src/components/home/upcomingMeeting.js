@@ -77,16 +77,20 @@ export default class UpcomingMeeting extends React.Component {
      * @return {Void} undefined
      */
     onTilePress(name) {
-        let route = RouteStore.get(name)
-        if(route)
-            this.props.navigator.push({
-                id: 'meeting',
-                title: 'Meetings',
-                component: Meeting,
-                props: {
-                    meeting: this.state.meeting
-                }
-             });
+        if(this.state.meeting.BookedMeetingId) {
+            let route = RouteStore.get(name)
+            if(route) {
+                let routeConfig = {
+                    id: 'meeting',
+                    title: 'Meetings',
+                    component: Meeting,
+                    props: {
+                        meeting: this.state.meeting
+                    }
+                };
+                this.props.navigator.push(routeConfig);
+            }
+        }
     }
 
     /**

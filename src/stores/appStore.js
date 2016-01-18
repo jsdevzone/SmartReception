@@ -298,36 +298,57 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	},
 
 	/**
+	 * Finish ongoing meeting
+	 *
+	 * @url - http://[server]/[service]/api/meeting/finish
+	 *
 	 * @return {Void} undefined
 	 */
 	finishCurrentMeeting: function() {
 		const STORAGE_KEY = AppConstants.storageKey + ':currentMeeting';
-		if(this.currentMeeting && this.currentMeeting.ActualMeetings && this.currentMeeting.ActualMeetings.length > 0) {
-			RequestManager.post('meeting/finish', this.currentMeeting).then((json) => {
+		if(this.hasActualMeeting()) {
+			let promise = RequestManager.post('meeting/finish', this.currentMeeting);
+			promise.then(json => {
+				// On response remove the current meeting from local storage
 				AsyncStorage.setItem(STORAGE_KEY, "");
-				this.emit('meetingfinished', this.currentMeeting);
+				// Reset the current meeting in AppStore
 				this.currentMeeting = {};
+				//emit meeting finished event
+				this.emit('meetingfinished', this.currentMeeting);
 			});
 		}
 	},
 
 	/**
-	 * @return {Void} undefined
+	 * Post meeting after edit is finalized
+	 *
+	 * @url - http://[server]/[service]/api/meeting/post
+	 * @param {BookedMeeting} meeting
+	 * @return {Promise} promise
 	 */
 	postMeeting: function(meeting) {
-		RequestManager.post('meeting/confirm', meeting).then(json => {
-			this.emit('meetingposted', json);
-		});
+		let promise = RequestManager.post('meeting/confirm', meeting);
+		promise.then(json => this.emit('meetingposted', json));
+		return promise;
 	},
 
 	/**
-	 * @return {Void} undefined
+	 * Post user feedback to the server
+	 *
+	 * @url - http://[server]/[service]/api/meeting/feedback
+	 * @param {BookedMeeting} meeting
+	 * @param {Number} feedback - 1,2,3,4,etc.
+	 * @return {Promise} promise
 	 */
 	postUserFeedback: function(meeting, feedback) {
 		return RequestManager.post('meeting/feedback/' + feedback, meeting);
 	},
 
 	/**
+	 * alternative method for attaching the event listeners to the store
+	 *
+	 * @param {String} name -  the event name
+	 * @param {Function} callback
 	 * @return {Void} undefined
 	 */
   	addEventListener: function(name, callback) {
@@ -335,6 +356,7 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
   	},
 
 	/**
+	 * Logout the application
 	 * @return {Void} undefined
 	 */
   	logout: function (argument) {
@@ -342,21 +364,35 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
   	},
 
 	/**
-	 * @return {Void} undefined
+	 * Check whethere an ongoing meeting is there
+	 *
+	 * @return {Boolean} hasMeeting
 	 */
-  	hasActualMeeting: function() {
+	 hasActualMeeting: function() {
   		return (this.currentMeeting != null &&
   			this.currentMeeting.ActualMeetings != undefined &&
   			this.currentMeeting.ActualMeetings.length >  0);
   	},
 
 	/**
+	 * Get the meeting id of currently ongoing meeting. If no meeting returns zero
+	 *
 	 * @return {Void} undefined
 	 */
   	getCurrentMeetingId: function() {
-  		if(this.hasActualMeeting()) {
+  		if(this.hasActualMeeting())
   			return this.currentMeeting.BookedMeetingId;
-  		}
   		return 0;
-  	}
+  	},
+
+	/**
+	 * Get the available countries
+	 *
+	 * @url - http://[server]/[service]/api/meeting/feedback
+	 * @return {Promise} promise
+	 */
+	getAvailableCountries: function() {
+		let promise = RequestManager.get("countries");
+		return promise;
+	}
 });

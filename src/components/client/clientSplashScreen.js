@@ -9,9 +9,8 @@
  * Proprietary and confidential
  */
 
- import React, { View, StyleSheet, Text,
-      TouchableNativeFeedback, TouchableWithoutFeedback, TouchableHighlight,
-      Image, ToastAndroid, } from 'react-native';
+ import React, { View, StyleSheet, Text, NativeModules,
+     TouchableWithoutFeedback, Image, ToastAndroid, } from 'react-native';
  import Icon from 'react-native-vector-icons/FontAwesome';
  import DialogAndroid from 'react-native-dialogs';
  import Button from '../ux/button';
@@ -36,21 +35,46 @@
           this.state = {};
       }
 
+      /**
+       * Navigate to the emirates id reader screen
+       * @return {Void} undefined
+       */
       moveToEmiratesIdScreen() {
-          this.props.navigator.push({ id: 'emiratesid',
-              title: 'Scan Your Emirates Id ',
-              component: EmiratesIdReader, props: {
-                  isClientModule: true
-              }});
+          /**
+           * Play the native tap sound, as it's not supported in default view component by react native
+           */
+          NativeModules.MediaHelper.playClickSound();
+          /*
+           * Navigate to new route
+           */
+          let route = {
+              id: 'emiratesid',
+              title: 'Scan Your Emirates Id',
+              component: EmiratesIdReader,
+              props: { isClientModule: true }
+          };
+          this.props.navigator.push(route);
       }
 
+      /**
+       * * Navigate to the client registration screen
+       * @return {Void} undefined
+       */
       moveToRegisterScreen() {
-          this.props.navigator.push({ id: 'tes',
-              title: 'Scan Your Emirates Id ',
-              component: ClientInfo, props: {
-                  isClientModule: true,
-                  mode: 1
-              }});
+          /**
+           * Play the native tap sound, as it's not supported in default view component by react native
+           */
+          NativeModules.MediaHelper.playClickSound();
+          /*
+           * Navigate to new route
+           */
+           let route = {
+               id: 'emiratesid',
+               title: 'Scan Your Emirates Id',
+               component: ClientInfo,
+               props: { isClientModule: true }
+           };
+           this.props.navigator.push(route);
       }
 
       /**
@@ -60,11 +84,11 @@
        */
       renderButton(text, handler) {
           return (
-              <TouchableNativeFeedback onPress={handler} background={TouchableNativeFeedback.Ripple('#CCC', false)}>
+              <TouchableWithoutFeedback onPress={handler} background={TouchableNativeFeedback.Ripple('#CCC', false)}>
                   <View style={styles.button}>
                       <Text style={styles.buttonText}>{text}</Text>
                   </View>
-              </TouchableNativeFeedback>
+              </TouchableWithoutFeedback>
           );
       }
 
@@ -81,16 +105,16 @@
                          <Text style={styles.notification}>Welcome to Dubai SME! Please select one of the options below...</Text>
                      </View>
                      <View style={styles.buttonContainer}>
-                        <TouchableWithoutFeedback onPress={this.moveToEmiratesIdScreen.bind(this)}>
-                            <View style={styles.button}>
-                                <Text style={styles.buttonText}>I have Emirates ID</Text>
-                            </View>
-                        </TouchableWithoutFeedback>
-                        <TouchableHighlight onPress={this.moveToRegisterScreen.bind(this)}>
+                         <TouchableWithoutFeedback onPress={this.moveToEmiratesIdScreen.bind(this)}>
+                             <View style={styles.button}>
+                                 <Text style={styles.buttonText}>I have Emirates ID</Text>
+                             </View>
+                         </TouchableWithoutFeedback>
+                        <TouchableWithoutFeedback onPress={this.moveToRegisterScreen.bind(this)}>
                             <View style={styles.button}>
                                 <Text style={styles.buttonText}>I don't have Emirates ID</Text>
                             </View>
-                        </TouchableHighlight>
+                        </TouchableWithoutFeedback>
                      </View>
                  </View>
                  <Image source={require('../../../resources/images/dubaiskyline.png')} style={{ flex: 1, width: null}} />
@@ -111,18 +135,19 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        alignItems: 'center',
-        paddingTop: 30
+        paddingTop: 30,
+        alignItems: 'center'
     },
     notificationWrapper: {
-        marginTop: 60
+        marginTop: 20
     },
     notification: {
         fontSize: 24,
         color: '#000'
     },
     buttonContainer: {
-        marginTop: 30
+        marginTop: 30,
+        flexDirection: 'row'
     },
     button: {
         backgroundColor: '#BE3828',
@@ -130,7 +155,9 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         width: 250,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        margin: 5,
+        height: 80
     },
     buttonText: {
         color: '#FFF',
