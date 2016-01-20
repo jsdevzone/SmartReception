@@ -242,14 +242,16 @@ class ScheduleContentArea extends React.Component {
     }
 
     move() {
-        this.props.navigator.push({
-            id: 'meeting',
-            title: 'Meeting',
-            component: Meeting,
-            props: {
-                meeting: this.props.schedule
-            }
-        });
+        if(this.props.schedule) {
+            this.props.navigator.push({
+                id: 'meeting',
+                title: 'Meeting',
+                component: Meeting,
+                props: {
+                    meeting: this.props.schedule
+                }
+            });
+        }
     }
 
     /**

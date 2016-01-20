@@ -249,11 +249,14 @@
         if(this.props.participant.MeetingStartTime != null && this.props.participant.MeetingEndTime != null) {
             button = null;
         }
-
+        let profileSource = "";
+        //<Image  source={{uri:'http://192.168.4.77/SmartReception.Service/Assets/Profile/'+ this.props.participant.EmployeeId  +'.jpg'}} style={styles.attendeeImage} />
+        /*if(this.props.participant.EmployeeId)
+            profileSource = 'http://192.168.4.77/SmartReception.Service/Assets/Profile/'+ this.props.participant.EmployeeId.toString().replace(/\s/gi,'') +'.jpg';
+ToastAndroid.show(profileSource, ToastAndroid.LONG);*/
          return (
              <View style={styles.attendee} >
                  <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                     <Image  source={{uri:'https://s3.amazonaws.com/uifaces/faces/twitter/jsa/128.jpg'}} style={styles.attendeeImage} />
                      <Text style={styles.profileName}>{this.props.participant.User.FirstName + " " + this.props.participant.User.LastName }</Text>
                      <Text style={styles.position}>Advisor</Text>
                  </View>

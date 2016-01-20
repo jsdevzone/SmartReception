@@ -24,17 +24,17 @@ import MeetingStatus from '../../constants/meetingStatus';
 import DrawingSurface from '../drawing/drawingSurface';
 import Attendees from './attendees';
 import Button from '../meeting/button';
+import Feedback from '../feedback/feedback';
 
 import AppStore from '../../stores/appStore';
 import ClientStore from '../../stores/clientStore';
-
 /**
  * MeetingArea
  *
  * @class MeetingArea
  * @extends React.Component
  */
- export default class MeetingArea extends React.Component {
+export default class MeetingArea extends React.Component {
      /**
       * @constructor
       */
@@ -52,8 +52,33 @@ import ClientStore from '../../stores/clientStore';
              /**
               * Is recoding sound in background
               */
-             isRecording: false
+             isRecording: false,
+             /**
+              * Checks whether the meeting data can be edited or not
+              */
+              isEditable: false,
+              /**
+               * Checks whether the meeting can be transferred or not
+               */
+              isTransferrable: false
          };
+
+         /**
+          * Check the meeting id is same as ongoing meeting then only enable buttons
+          */
+          if(this.props.meeting &&
+              this.props.meeting.ActualMeetings &&
+              this.props.meeting.ActualMeetings.length > 0 ){
+                  if(this.props.meeting.Status >= MeetingStatus.STARTED &&
+                      this.props.meeting.Status < MeetingStatus.CONFIRMED) {
+                      this.state.isEditable = true;
+                  }
+                  if(AppStore.hasActualMeeting() &&
+                        AppStore.currentMeeting.BookedMeetingId == this.props.meeting.BookedMeetingId &&
+                        this.props.meeting.Status == MeetingStatus.STARTED) {
+                      this.state.isTransferrable = true;
+                  }
+              }
 
          /**
           * If any previous unclosed sound recording  found, resume it
@@ -139,9 +164,17 @@ import ClientStore from '../../stores/clientStore';
                  content: 'Are you sure want to finish current meeting?' ,
                  positiveText: 'Yes',
                  negativeText: 'No',
-                 "neutralText": "Yes With Transfer",
-                 onPositive: () => AppStore.finishCurrentMeeting(),
-                 "onNeutral": this.transferMeeting.bind(this)
+                 neutralText: "Yes With Transfer",
+                 onPositive: () => {
+                     // Show waiting dialog
+                     NativeModules.DialogAndroid.showProgressDialog();
+                     // Finish the meeting
+                     AppStore.finishCurrentMeeting().then(() => {
+                        //Hide the  dialog box
+                        NativeModules.DialogAndroid.hideProgressDialog();
+                     });
+                 },
+                 onNeutral: this.transferMeeting.bind(this)
              };
              dialog.set(options);
              dialog.show();
@@ -162,7 +195,7 @@ import ClientStore from '../../stores/clientStore';
 
          // Get all the departments
          ClientStore.getDepartments().then(json => {
-             // Show waiting dialog
+             // hide waiting dialog
              NativeModules.DialogAndroid.hideProgressDialog();
 
              // iterate over departments and build department array
@@ -380,30 +413,43 @@ import ClientStore from '../../stores/clientStore';
       * Render footer
       * @return {View} footer
       */
-     renderFooter() {
-         let style = { flex:1, borderRightWidth:0 };
-         let recordBtn = (<Button icon="microphone" text="Record Audio" onPress={this.recordAudio.bind(this)} />);
-         let finishBtn = (<Button icon="check" text="Finish Meeting" disabled={AppStore.getCurrentMeetingId() != this.props.meeting.BookedMeetingId}
-             style={style} onPress={this.onFinishPress.bind(this)} />);
-         /**
-          * If passed meeting status is finished hide the finish button and show the confirm btn
-          *****/
-         if(this.props.meeting.Status == MeetingStatus.FINISHED)
+    renderFooter() {
+        let style = { flex:1, borderRightWidth:0 };
+        let recordBtn = (<Button icon="microphone" disabled={!this.state.isEditable} text="Record Audio" onPress={this.recordAudio.bind(this)} />);
+        let finishBtn = (
+             <Button icon="check" text="Finish Meeting"
+                 disabled={AppStore.getCurrentMeetingId() != this.props.meeting.BookedMeetingId}
+                 style={style}
+                 onPress={this.onFinishPress.bind(this)} />
+        );
+        /**
+         * If passed meeting status is finished hide the finish button and show the confirm btn
+         */
+        if(this.props.meeting.Status == MeetingStatus.FINISHED)
             finishBtn = (<Button icon="check" text="Confirm & Update Meeting" style={style} onPress={this.postMeeting.bind(this)} />);
 
          /**
           * If it's being recorded, then show stop btn
-          ***/
+          */
          if(this.state.isRecording)
-            recordBtn = (<Button icon="stop" text="Stop Recording" onPress={this.stopRecording.bind(this)} />);
+            recordBtn = (<Button disabled={!this.state.isEditable} icon="stop" text="Stop Recording" onPress={this.stopRecording.bind(this)} />);
 
          return (
              <View style={styles.footer}>
-                 { recordBtn }
+             { recordBtn }
                  <Button icon="list-alt" text="Sketches" onPress={this.navigateToSketches.bind(this)} />
-                 <Button icon="comments-o" text="Feedback" />
-                 <Button icon="check-square-o" text="Survey" />
-                 <Button icon="exchange" text="Transfer"  onPress={this.onTransferPress.bind(this)} />
+                 <Button icon="comments-o" text="Feedback" onPress={() => {
+                     if(this.props.navigator) {
+                         this.props.navigator.push({
+                             id: 'feedback',
+                             component: Feedback,
+                             title: 'Feedback',
+                             props: { navigator: this.props.navigator, meeting: this.props.meeting }
+                         });
+                     }
+                    }}/>
+                 <Button icon="check-square-o" text="Survey"  />
+                 <Button disabled={!this.state.isTransferrable} icon="exchange" text="Transfer"  onPress={this.onTransferPress.bind(this)} />
                  { finishBtn }
              </View>
          );
@@ -430,23 +476,7 @@ import ClientStore from '../../stores/clientStore';
      }
  }
 
-/*class Button extends React.Component {
-    render() {
-        let color = "#424242";
-        if(this.props.disabled)
-            color = "#CCC";
-        return (
-            <TouchableWithoutFeedback onPress={this.props.onPress}>
-                <View style={[styles.button, this.props.style]}>
-                    <Icon name={this.props.icon} size={30} color={color} />
-                    <Text style={{color: color}}>{this.props.text}</Text>
-                </View>
-            </TouchableWithoutFeedback>
-        );
-    }
-}*/
-
-var styles = StyleSheet.create({
+const styles = StyleSheet.create({
     button: {
         padding: 10,
         alignItems: 'center',
@@ -496,5 +526,3 @@ var styles = StyleSheet.create({
         color: '#6477C1'
     }
 });
-
-module.exports = MeetingArea;

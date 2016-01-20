@@ -132,7 +132,7 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	 *
 	 * @param {Meeting} meeting
 	 * @param {Number} roomNo
-	 * @return {Void} undefined
+	 * @return {Promise} the request
 	 */
 	startMeeting: function (meeting, roomNo) {
 
@@ -146,10 +146,12 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 		this.currentMeeting.RoomId = roomNo;
 		this.currentMeeting.Status = MeetingStatus.STARTED;
 
+		let promise = RequestManager.post('meeting/start', meeting);
+
 		/**
 		 * Send request to server
 		 */
-		RequestManager.post('meeting/start', meeting).then((json) => {
+		promise.then(json => {
 			this.currentMeeting = json;
 			this.emit('meetingstarted', this.currentMeeting);
 
@@ -158,6 +160,8 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 			 */
 			AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(json));
 		});
+
+		return promise;
 	},
 
 	/**
@@ -316,6 +320,7 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 				//emit meeting finished event
 				this.emit('meetingfinished', this.currentMeeting);
 			});
+			return promise;
 		}
 	},
 
@@ -393,6 +398,18 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	 */
 	getAvailableCountries: function() {
 		let promise = RequestManager.get("countries");
+		return promise;
+	},
+
+	/**
+	 * Get the attachments for the meeting
+	 *
+	 * @url - http://[server]/[service]/api/meeting/attachments
+	 * @param {Number} meetingId
+	 * @return {Promise} promise
+	 */
+	getAttachments: function(meetingId) {
+		let promise = RequestManager.get("meeting/attachments", { meetingId: meetingId });
 		return promise;
 	}
 });

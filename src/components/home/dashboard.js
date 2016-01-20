@@ -26,6 +26,7 @@ import Notifications from './notifications';
 //Stores
 import UserStore from '../../stores/userStore';
 import RouteStore from '../../stores/routeStore';
+import AppStore from '../../stores/appStore';
 
 /**
  * Adds routes to the route store
@@ -78,7 +79,11 @@ export default class Dashboard extends React.Component{
                     <View style={[styles.horizontal, { marginTop: 25 }]}>
                         <View>
                             <View style={styles.horizontal}>
-                                <Tile onPress={() => this.onTilePress('meeting')} icon="calendar-check-o" text="Meeting" scale="small"  />
+                                <Tile onPress={() => {
+                                        if(AppStore.hasActualMeeting()) {
+                                            this.onTilePress('meeting')
+                                        }
+                                    }} icon="calendar-check-o" text="Meeting" scale="small"  />
                                 <Tile onPress={() => this.onTilePress('calendar')} icon="calendar" text="Calendar" />
                             </View>
                             <UpcomingMeeting navigator={this.props.navigator} />

@@ -107,7 +107,7 @@ export default class UserProfile extends React.Component {
            let component = (this.state.selectedTabIndex == 1) ?
                 (<ProfileDetails user={this.props.user} />) :
                 (<TimeLine user={this.props.user} />);
-                
+
            return (
                <View style={styles.container}>
                    <ProfileCard user={this.props.user} />
@@ -154,10 +154,6 @@ class ProfileCard extends React.Component {
                     <View style={styles.profileItemWrapper}>
                         <Icon name="phone" size={18} color="#B5C8E2" />
                         <Text style={styles.profileItem}>{this.props.user.Mobile}</Text>
-                    </View>
-                    <View style={styles.profileItemWrapper}>
-                        <Icon name="map-marker" size={18} color="#B5C8E2" />
-                        <Text style={styles.profileItem}>{this.props.user.Location}</Text>
                     </View>
                 </View>
             </View>

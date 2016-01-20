@@ -214,7 +214,8 @@ public class PenSurfaceModule extends ReactContextBaseJavaModule {
                     .build();
 
             Request request = new Request.Builder()
-                    .url("http://192.168.4.77/SmartReception.Service/api/meeting/attachments/upload")
+                    //.url("http://192.168.4.77/SmartReception.Service/api/meeting/attachments/upload")
+                    .url("http://smartreception.egovservice.com/Services/api/meeting/attachments/upload")
                     .post(requestBody)
                     .build();
 

@@ -184,11 +184,13 @@ class SmartReception extends React.Component {
         /**
          * Connect to the hub
          */
-        signalRConnection.start().done(() => {
-            proxy.invoke('connect', '1')
-            proxy.invoke('Connect', '1')
-            ToastAndroid.show("Now Connected " + signalRConnection.id, ToastAndroid.LONG)
-        });
+        try {
+            signalRConnection.start().done(() => {
+                proxy.invoke('connect', '1')
+                proxy.invoke('Connect', '1')
+                ToastAndroid.show("Now Connected " + signalRConnection.id, ToastAndroid.LONG)
+            });
+        } catch(e) {}
         //NativeModules.SignalRModule.connectToHub();
     }
 
@@ -226,7 +228,7 @@ class SmartReception extends React.Component {
         else {
             // If a previous authentication found, then load the Dashboard screen
             newState.hasCurrentMeeting = _settings.currentMeeting != undefined;
-            route = { component: ClientSplashScreen, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
+            route = { component: Dashboard, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
         }
 
         // Currently navigator is showing loading screen. So replace it with route object assigned

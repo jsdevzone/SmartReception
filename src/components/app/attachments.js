@@ -15,6 +15,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import DialogAndroid from 'react-native-dialogs';
 import Button from '../meeting/button';
+import AppStore from '../../stores/appStore';
+import MeetingStatus from '../../constants/meetingStatus';
 
 const EDIT_MODE = 2;
 const READ_MODE = 1;
@@ -47,15 +49,16 @@ class Attachments extends React.Component {
             isFilePlaying: false
         };
 
-
         /**
-         * If the meeting has attachments in it create data source
+         * Check the meeting id is same as ongoing meeting then only enable buttons
          */
-        if(this.hasAttachments()) {
-            //this.data = prepareData(this.props.meeting.Attachments);
-            //this.state.dataSource = this.dataSource.cloneWithRows(this.data);
-            this.state.attachments = this.props.meeting.Attachments;
-        }
+         if(this.props.meeting &&
+             this.props.meeting.ActualMeetings &&
+             this.props.meeting.ActualMeetings.length > 0 &&
+             this.props.meeting.Status >= MeetingStatus.STARTED &&
+             this.props.meeting.Status < MeetingStatus.CONFIRMED) {
+                 this.state.mode = EDIT_MODE;
+             }
 
         /**
          * Register event handler for image capture using camera
@@ -72,6 +75,19 @@ class Attachments extends React.Component {
          */
         DeviceEventEmitter.addListener('playbackfinished', this.onPlaybackFinished.bind(this))
 
+    }
+
+    /**
+     * @lifecycle
+     * @return {Void} undefined
+     */
+    componentDidMount() {
+        if(this.props.meeting.BookedMeetingId) {
+            //Load the attachement on each mount to get the updated list each time
+            AppStore.getAttachments(this.props.meeting.BookedMeetingId).then(json => {
+                this.setState({ attachments: json || [] });
+            });
+        }
     }
 
     /**
@@ -95,7 +111,7 @@ class Attachments extends React.Component {
       * @return {Void} undefined
       */
      playFromNetwork() {
-         let url  = "http://192.168.4.77/SmartReception.Service/Attachments/" +
+         let url  = "http://SmartReception.egovservice.con/services/Attachments/" +
           this.state.selected.BookedMeetingId + "/Others/" +
           this.state.selected.AttachmentId + ".3gp";
 
@@ -271,15 +287,15 @@ class Attachments extends React.Component {
             </View>
         );
 
-
+        let isDisabled = this.state.mode == READ_MODE;
 
 
         // Right side toolbar
         let toolbar = (
             <View style={styles.buttonBar}>
-                <Button icon="camera" onPress={this.onCamera.bind(this)} text="Take Picture" borderPosition="bottom" />
-                <Button icon="picture-o" text="Take From Gallery" borderPosition="bottom" onPress={this.onGallery.bind(this)} />
-                <Button icon="trash" text="Delete Selected" borderPosition="bottom" />
+                <Button disabled={isDisabled} icon="camera" onPress={this.onCamera.bind(this)} text="Take Picture" borderPosition="bottom" />
+                <Button disabled={isDisabled} icon="picture-o" text="Take From Gallery" borderPosition="bottom" onPress={this.onGallery.bind(this)} />
+                <Button disabled={isDisabled} icon="trash" text="Delete Selected" borderPosition="bottom" />
                 { this.renderActionButton() }
             </View>
         );

@@ -39,6 +39,10 @@ export default class MeetingIntro extends React.Component {
      * @return {Void} undefined
      */
     onStartButtonPress() {
+        /**
+         * Play the native tap sound, as it's not supported in default view component by react native
+         */
+        NativeModules.MediaHelper.playClickSound();
 
         // Show waiting dialog
         NativeModules.DialogAndroid.showProgressDialog();
@@ -73,7 +77,13 @@ export default class MeetingIntro extends React.Component {
                  * Callback for item select
                  */
                 options.itemsCallback = (index) => {
-                    AppStore.startMeeting(this.props.meeting, data[index].RoomId);
+                    // Show waiting dialog
+                    NativeModules.DialogAndroid.showProgressDialog();
+                    // start the meeting on server
+                    AppStore.startMeeting(this.props.meeting, data[index].RoomId).then(() => {
+                        // Hide progress dialog
+                        NativeModules.DialogAndroid.hideProgressDialog();
+                    });
                 };
 
                 /**

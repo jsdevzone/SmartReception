@@ -13,7 +13,7 @@ import React, { View, Text, StyleSheet,TextInput,
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DialogAndroid from 'react-native-dialogs';
 import Button from '../meeting/button';
-
+import MeetingStatus from '../../constants/meetingStatus';
 // Store
 import AppStore from '../../stores/appStore';
 
@@ -42,7 +42,8 @@ export default class Notes extends React.Component {
          */
         this.state = {
             notes: "",
-            mode: modes.READ
+            mode: modes.READ,
+            isEditable: false
         };
 
         /**
@@ -50,6 +51,17 @@ export default class Notes extends React.Component {
          */
         if(this.hasActualMeeting())
             this.state.notes = this.props.meeting.ActualMeetings[0].Notes;
+
+        /**
+         * Check the meeting id is same as ongoing meeting then only enable buttons
+         */
+         if(this.props.meeting &&
+             this.props.meeting.ActualMeetings &&
+             this.props.meeting.ActualMeetings.length > 0 &&
+             this.props.meeting.Status >= MeetingStatus.STARTED &&
+             this.props.meeting.Status < MeetingStatus.CONFIRMED) {
+                 this.state.isEditable = true;
+        }
 
         /**
          * Add handler for meeing updated event
@@ -192,9 +204,9 @@ export default class Notes extends React.Component {
                 </View>
                 <View style={styles.buttonBar}>
                     <View style={[styles.button, {flex:1} ]}></View>
-                    <Button icon="pencil" text="Edit" borderPosition="bottom" onPress={this.onEdit.bind(this)} />
-                    <Button icon="ban" text="Cancel" borderPosition="bottom" onPress={this.onCancel.bind(this)} />
-                    <Button icon="floppy-o" text="Save" borderPosition="none" onPress={this.onNoteSave.bind(this)} />
+                    <Button disabled={!this.state.isEditable} icon="pencil" text="Edit" borderPosition="bottom" onPress={this.onEdit.bind(this)} />
+                    <Button disabled={!this.state.isEditable} icon="ban" text="Cancel" borderPosition="bottom" onPress={this.onCancel.bind(this)} />
+                    <Button disabled={!this.state.isEditable} icon="floppy-o" text="Save" borderPosition="none" onPress={this.onNoteSave.bind(this)} />
                 </View>
             </View>
         );

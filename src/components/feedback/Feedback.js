@@ -60,7 +60,7 @@ export default class Feedback extends React.Component {
 		}
 		else
 		{
-			ToastAndroid.show("No actual meeting found. Start meeting and try again.");
+			ToastAndroid.show("No actual meeting found. Start meeting and try again.", ToastAndroid.LONG);
 		}
 	}
 
@@ -104,7 +104,7 @@ export default class Feedback extends React.Component {
 				</View>
 			</View>
 		);
-		
+
 		if(this.state.mode == 1) {
 			component = (
 				<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF'}}>

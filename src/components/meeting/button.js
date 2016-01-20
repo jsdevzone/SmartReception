@@ -37,15 +37,17 @@ import DialogAndroid from 'react-native-dialogs';
       * @return {Void} undefined
       */
      onPress() {
-         /**
-          * Play the native tap sound, as it's not supported in default view component by react native
-          */
-         NativeModules.MediaHelper.playClickSound();
-         /**
-          * execute on press event passed through the props
-          */
-         if(this.props.onPress)
-             this.props.onPress();
+         if(!this.props.disabled) {
+            /**
+             * Play the native tap sound, as it's not supported in default view component by react native
+             */
+            NativeModules.MediaHelper.playClickSound();
+            /**
+             * execute on press event passed through the props
+             */
+            if(this.props.onPress)
+                this.props.onPress();
+        }
      }
 
      /**
