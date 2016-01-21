@@ -56,7 +56,8 @@
        * @return {Void} undefined
        */
       loadAttendees() {
-          AppStore.getAttendees(this.props.meeting).then(json => this.setState({ attendees: json, isLoading: false }));
+          AppStore.getAttendees(this.props.meeting)
+            .then(json => this.setState({ attendees: json, isLoading: false }));
       }
 
       /**
@@ -115,6 +116,23 @@
       }
 
       /**
+       * Event handler for participant delete
+       *
+       * @eventhandler
+       * @param {Participant} participant
+       * @return {Void}  undefined
+       */
+      onParticipantDelete(participant) {
+          let attendees = this.state.attendees;
+          attendees.forEach((item, index) => {
+              if(item.ParticipantId == participant.ParticipantId) {
+                  attendees.splice(index, 1);
+              }
+          });
+          this.setState({ attendees: attendees });
+      }
+
+      /**
        * @render
        * @return {View} view
        */
@@ -132,7 +150,7 @@
                         </View>
                     </TouchableNativeFeedback>
                     <View style={styles.container}>
-                        { this.state.attendees.map(item =>{ return(<Attendee participant={item} />)}) }
+                        { this.state.attendees.map(item => { return(<Attendee onParticipantDelete={() => this.onParticipantDelete(item)} participant={item} />)}) }
                     </View>
                 </ScrollView>
             );
@@ -157,7 +175,8 @@
          * @state
          */
          this.state = {
-             isJoined: false
+             isJoined: false,
+             isStopped: false
          };
      }
 
@@ -198,11 +217,32 @@
          /**
           * Change the state
           */
-         this.setState({ isJoined: false });
+         this.setState({ isJoined: false, isStopped: true });
          /**
           * Update the server
           */
           AppStore.leaveAttendee(this.props.participant);
+     }
+
+     /**
+      * Delete Participant
+      * @eventhandler
+      * @return {Void} undefined
+      */
+     deleteParticipant() {
+         /**
+          * Play the native tap sound, as it's not supported in default view component by react native
+          */
+         NativeModules.MediaHelper.playClickSound();
+         /**
+          * Delete from server
+          */
+         AppStore.deleteParticipant(this.props.participant.ParticipantId);
+         /*
+          * delete from list
+          */
+          if(this.props.onParticipantDelete)
+            this.props.onParticipantDelete();
      }
 
      /**
@@ -221,16 +261,30 @@
              </TouchableNativeFeedback>
          );
 
+         let deleteButton = (
+             <TouchableNativeFeedback onPress={this.deleteParticipant.bind(this)}>
+                 <View style={[styles.btn, color]}>
+                     <Icon name="trash" size={19} style={{ color: '#FFF'}} />
+                 </View>
+             </TouchableNativeFeedback>
+         );
+
+         if(this.state.isJoined || this.state.isStopped) {
+             deleteButton = null;
+         }
+
          /**
           * Attendee is joined but not left the meeting yet
           */
-         if(this.props.participant.MeetingStartTime != null && this.props.participant.MeetingEndTime == null)
+         if(this.props.participant.MeetingStartTime != null &&
+             this.props.participant.MeetingEndTime == null)
          {
              this.state.isJoined = true;
+             deleteButton = null;
          }
 
-
          if(this.state.isJoined) {
+             deleteButton = null;
             icon = "stop"
             color = { backgroundColor: 'rgb(224, 47, 47)', paddingLeft: 5 };
             this.state.isJoined = true;
@@ -246,14 +300,24 @@
         /**
          * If the attendee already left the meeting then disable the buttons
          */
-        if(this.props.participant.MeetingStartTime != null && this.props.participant.MeetingEndTime != null) {
+        if(this.props.participant.MeetingStartTime != null &&
+        this.props.participant.MeetingEndTime != null) {
             button = null;
+            deleteButton = null;
         }
+
+        if(this.state.isStopped) {
+            button = null;
+            deleteButton = null;
+        }
+
         let profileSource = "";
+
         //<Image  source={{uri:'http://192.168.4.77/SmartReception.Service/Assets/Profile/'+ this.props.participant.EmployeeId  +'.jpg'}} style={styles.attendeeImage} />
         /*if(this.props.participant.EmployeeId)
             profileSource = 'http://192.168.4.77/SmartReception.Service/Assets/Profile/'+ this.props.participant.EmployeeId.toString().replace(/\s/gi,'') +'.jpg';
-ToastAndroid.show(profileSource, ToastAndroid.LONG);*/
+            ToastAndroid.show(profileSource, ToastAndroid.LONG);*/
+
          return (
              <View style={styles.attendee} >
                  <View style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -261,7 +325,8 @@ ToastAndroid.show(profileSource, ToastAndroid.LONG);*/
                      <Text style={styles.position}>Advisor</Text>
                  </View>
                  <View style={styles.buttons}>
-                    { button }
+                     { button }
+                     { deleteButton }
                  </View>
              </View>
          );

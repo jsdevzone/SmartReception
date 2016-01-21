@@ -111,9 +111,9 @@ class Attachments extends React.Component {
       * @return {Void} undefined
       */
      playFromNetwork() {
-         let url  = "http://SmartReception.egovservice.con/services/Attachments/" +
-          this.state.selected.BookedMeetingId + "/Others/" +
-          this.state.selected.AttachmentId + ".3gp";
+        let url  = "http://SmartReception.egovservice.com/services/Attachments/" +
+            this.state.selected.BookedMeetingId + "/Others/" +
+            this.state.selected.AttachmentId + ".3gp";
 
         NativeModules.MediaHelper.playFromNetwork(url);
         this.setState({ isFilePlaying: true });
@@ -238,6 +238,35 @@ class Attachments extends React.Component {
     }
 
     /**
+     * Delete the attachment
+     * @return {Void} undefined
+     */
+    onDelete() {
+        if(this.selected && this.selected.AttachmentId)
+        {
+            let dialog = new DialogAndroid();
+            let options = {
+                title: 'Confirm',
+                content: 'Are you sure want to delete Attachment?' ,
+                positiveText: 'Yes',
+                negativeText: 'No',
+                onPositive: () => {
+                    let attachments = this.state.attachments;
+                    attachments.forEach((item, index) => {
+                        if(item.AttachmentId == this.state.selected.AttachmentId) {
+                            attachments.splice(index, 1);
+                            this.setState({ attachment: attachments });
+                        }
+                    });
+                    //AppStore.deleteAttachments(this.selected.AttachmentId);
+                }
+            };
+            dialog.set(options);
+            dialog.show();
+        }
+    }
+
+    /**
      * @return {Void} undefined
      */
     viewSelectedImage() {}
@@ -295,7 +324,7 @@ class Attachments extends React.Component {
             <View style={styles.buttonBar}>
                 <Button disabled={isDisabled} icon="camera" onPress={this.onCamera.bind(this)} text="Take Picture" borderPosition="bottom" />
                 <Button disabled={isDisabled} icon="picture-o" text="Take From Gallery" borderPosition="bottom" onPress={this.onGallery.bind(this)} />
-                <Button disabled={isDisabled} icon="trash" text="Delete Selected" borderPosition="bottom" />
+                <Button disabled={isDisabled} icon="trash" text="Delete Selected" borderPosition="bottom" onPress={this.onDelete.bind(this)} />
                 { this.renderActionButton() }
             </View>
         );

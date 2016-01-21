@@ -411,5 +411,29 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	getAttachments: function(meetingId) {
 		let promise = RequestManager.get("meeting/attachments", { meetingId: meetingId });
 		return promise;
+	},
+
+	/**
+	 * Delete Selected Attachment
+	 *
+	 * @url - http://[server]/[service]/api/meeting/attachments/delete
+	 * @param {Number} attachmentId
+	 * @return {Promise} promise
+	 */
+	deleteAttachments: function(attachmentId) {
+		let promise = RequestManager.get("meeting/attachments/delete/" + attachmentId, { AttachmentId: attachmentId });
+		return promise;
+	},
+
+	/**
+	 * Delete the already added attendee
+	 *
+	 * @url - http://[server]/[service]/api/meeting/attendee/delete
+	 * @param {Number} participantId
+	 * @return {Promise} promise
+	 */
+	deleteParticipant: function(participantId) {
+		let promise = RequestManager.post("meeting/attendee/delete/" + participantId, { meetingId: participantId});
+		return promise;
 	}
 });
