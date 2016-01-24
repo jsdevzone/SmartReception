@@ -242,7 +242,7 @@ class Attachments extends React.Component {
      * @return {Void} undefined
      */
     onDelete() {
-        if(this.selected && this.selected.AttachmentId)
+        if(this.state.selected && this.state.selected.AttachmentId)
         {
             let dialog = new DialogAndroid();
             let options = {
@@ -258,7 +258,8 @@ class Attachments extends React.Component {
                             this.setState({ attachment: attachments });
                         }
                     });
-                    //AppStore.deleteAttachments(this.selected.AttachmentId);
+                    // Delete attachment from the server
+                    AppStore.deleteAttachments(this.state.selected.AttachmentId);
                 }
             };
             dialog.set(options);

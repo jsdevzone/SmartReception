@@ -12,7 +12,7 @@
      TouchableNativeFeedback, ToastAndroid, Image, ScrollView, NativeModules, } from 'react-native';
  import Icon from 'react-native-vector-icons/FontAwesome';
  import DialogAndroid from 'react-native-dialogs';
-
+ import Moment from 'moment';
  import LoadMask from '../app/loadMask';
  import AppStore from '../../stores/appStore';
  import ClientStore from '../../stores/clientStore';
@@ -312,17 +312,22 @@
         }
 
         let profileSource = "";
+        let startTime = null;
+        let endTime =  null;
 
-        //<Image  source={{uri:'http://192.168.4.77/SmartReception.Service/Assets/Profile/'+ this.props.participant.EmployeeId  +'.jpg'}} style={styles.attendeeImage} />
-        /*if(this.props.participant.EmployeeId)
-            profileSource = 'http://192.168.4.77/SmartReception.Service/Assets/Profile/'+ this.props.participant.EmployeeId.toString().replace(/\s/gi,'') +'.jpg';
-            ToastAndroid.show(profileSource, ToastAndroid.LONG);*/
+        if(this.props.participant.MeetingStartTime)
+            startTime = (<Text style={styles.startTime}> FROM - {Moment.utc(this.props.participant.MeetingStartTime).format('h:mm:ss a')}</Text>);
 
-         return (
+        if(this.props.participant.MeetingEndTime)
+            endTime = (<Text style={styles.endTime}>To - {Moment.utc(this.props.participant.MeetingEndTime).format('h:mm:ss a')}</Text>);
+
+        return (
              <View style={styles.attendee} >
                  <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                      <Text style={styles.profileName}>{this.props.participant.User.FirstName + " " + this.props.participant.User.LastName }</Text>
                      <Text style={styles.position}>Advisor</Text>
+                     { startTime }
+                     { endTime }
                  </View>
                  <View style={styles.buttons}>
                      { button }
@@ -393,5 +398,9 @@
          alignItems: 'center',
          justifyContent: 'center',
          paddingLeft: 5
+     },
+     startTime: {
+         marginTop: 10,
+         marginBottom: 5
      }
  });

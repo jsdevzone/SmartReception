@@ -3,11 +3,16 @@
  * Smart Reception System
  * @author Jasim
  * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
 
-import React, { StyleSheet, Text, View, Image,TouchableWithoutFeedback, NativeModules,} from 'react-native';
+import React, { StyleSheet, Text, View, Image,TouchableWithoutFeedback, NativeModules, ToastAndroid} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DialogAndroid from 'react-native-dialogs';
+import Moment from 'moment';
 
 // Store
 import AppStore from '../../stores/appStore';
@@ -31,6 +36,26 @@ export default class MeetingIntro extends React.Component {
          * @state
          */
         this.state = {};
+
+    }
+
+    /**
+     * Checks the meeting is delayed or not
+     * @param {BookedMeeting} meeting
+     * @return {Boolean} isDelayed
+     */
+    isDelayed(meeting) {
+        let hasActualMeeting = meeting.ActualMeetings && meeting.ActualMeetings.length > 0;
+        if(!hasActualMeeting)
+        {
+            let startTime = new Date(meeting.DateOfMeeting);
+            startTime.setHours(startTime.getHours() - 4);
+            startTime = Moment(startTime);
+            let now = Moment(new Date());
+            let difference = now.diff(startTime, 'minutes');
+            return difference > 30;
+        }
+        return false;
     }
 
     /**
@@ -116,6 +141,20 @@ export default class MeetingIntro extends React.Component {
      * @return {View} component
      */
     render() {
+        let startBtn = (
+            <TouchableWithoutFeedback onPress={this.onStartButtonPress.bind(this)}>
+                <View style={[styles.button, {marginTop: 35}]}>
+                    <View style={styles.buttonIcon}>
+                        <Icon name="check" size={24} color="#FFF" style={{marginLeft: 10}} />
+                    </View>
+                    <View style={styles.buttonTextWrapper}>
+                        <Text style={styles.buttonText}>Start Your Meeting</Text>
+                    </View>
+                </View>
+            </TouchableWithoutFeedback>
+        );
+        if(this.isDelayed(this.props.meeting))
+            startBtn = null;
         return (
             <View style={styles.container}>
                 <View style={styles.titleWrapper}>
@@ -130,16 +169,7 @@ export default class MeetingIntro extends React.Component {
                     </View>
 
                     <View style={styles.buttonWrapper}>
-                        <TouchableWithoutFeedback onPress={this.onStartButtonPress.bind(this)}>
-                            <View style={[styles.button, {marginTop: 35}]}>
-                                <View style={styles.buttonIcon}>
-                                    <Icon name="check" size={24} color="#FFF" style={{marginLeft: 10}} />
-                                </View>
-                                <View style={styles.buttonTextWrapper}>
-                                    <Text style={styles.buttonText}>Start Your Meeting</Text>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
+                        { startBtn }
                     </View>
                 </View>
             </View>
@@ -150,7 +180,7 @@ export default class MeetingIntro extends React.Component {
 /**
  * @style
  */
-const styles = StyleSheet.create({
+ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',

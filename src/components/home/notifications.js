@@ -240,6 +240,10 @@ export default class Notifications extends React.Component {
  * @props text
  */
 class NotificationCount extends React.Component {
+    /**
+     * @render
+     * @return {Component} undefined
+     */
     render() {
         let _icon = this.props.icon || 'calendar';
         return (

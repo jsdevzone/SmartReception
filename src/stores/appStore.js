@@ -421,7 +421,7 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	 * @return {Promise} promise
 	 */
 	deleteAttachments: function(attachmentId) {
-		let promise = RequestManager.get("meeting/attachments/delete/" + attachmentId, { AttachmentId: attachmentId });
+		let promise = RequestManager.post("meeting/attachments/delete/" + attachmentId, { AttachmentId: attachmentId });
 		return promise;
 	},
 
