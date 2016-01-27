@@ -160,8 +160,8 @@ import AppStore from '../../stores/appStore';
 				 <View style={styles.profileWrapper}>
 					 <Icon name="list" size={65} color="#FFF" style={styles.icon}  />
 					 <View style={{flexDirection: 'column'}}>
-						 <Text style={styles.user}>{this.props.user.name}</Text>
-				   		<Text style={styles.designation}>{this.props.user.profession}</Text>
+						 <Text style={styles.user}>{AppStore.user.FirstName + " " + AppStore.user.LastName}</Text>
+					 <Text style={styles.designation}>{AppStore.user.Profession}</Text>
 				 	</View>
 				 </View>
 			 </TouchableWithoutFeedback>

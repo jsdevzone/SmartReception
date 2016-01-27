@@ -3,8 +3,11 @@
  * Smart Reception System
  * @author Jasim
  * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
-
 import { AsyncStorage } from 'react-native';
 import { EventEmitter } from 'events';
 
@@ -112,7 +115,7 @@ var CredentialStore = module.exports = Object.assign({}, EventEmitter.prototype,
             .get('userinfo', { username: json.userName})
             .then(user => {
                 // combine user data and auth data together into single object
-                Object.assign(json, user)
+                Object.assign(json, user, { success: true })
 
                 let data = JSON.stringify(json);
                 /**

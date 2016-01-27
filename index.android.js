@@ -1,10 +1,15 @@
 'use strict';
-
+'use strict';
 /**
  * Smart Reception System
- * @Author Jasim
- * @Company E-Gov LLC
+ * @author Jasim
+ * @company E-Gov LLC
  *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ *
+ * -----------------------------------------------------------------------------------------------
  * This application uses the Facebook's react native framework to build its User interface.
  * This file is the entry point of this application. If anyone want to edit this application,
  * You need to be master following technologies:
@@ -16,7 +21,9 @@
  *      6. Node JS
  *      7. Little bit about Gradle
  *      8. Flux Architecture - See [https://facebook.github.io/flux/docs/overview.html]
- * These are the technologies i have used in this application.
+ * These are the technologies that i have used in this application.
+ *------------------------------------------------------------------------------------------------
+ *
  */
 import React, { AppRegistry, StyleSheet, Text, View, Image, Navigator,
   BackAndroid, AsyncStorage, DeviceEventEmitter, NativeModules, ToastAndroid, } from 'react-native';
@@ -30,8 +37,8 @@ import BreadCrumb from './src/components/app/breadCrumb';
 import SplashScreen from './src/components/app/splashScreen';
 import ConnectionError from './src/components/app/connectionError';
 import ClientSplashScreen from './src/components/client/clientSplashScreen';
+import Settings from './src/components/settings/settings';
 import AppStore from './src/stores/appStore';
-
 
 import RequestManager from './src/core/requestManager';
 
@@ -86,7 +93,7 @@ class SmartReception extends React.Component {
         // Initial route variable -  first screen should be the SplashScreen class  as there will be some delay on rendering complex dashboard screen
         // we should provide a loading screen to user to make them feel that  the application is highly responsive.
         _initialRoute = {
-            id: 'splashscreen', title: 'SplashScreen', component: SplashScreen
+            id: 'splashscreen', title: 'SplashScreen', component: SplashScreen, props: { isClientModule: true }
         };
 
         // React Js State for this SmartReception components
@@ -99,7 +106,7 @@ class SmartReception extends React.Component {
             // current user[advisor] logged in to this application
             user: {},
             // for testing purpose only
-            data: 'sdfklgjios klfksdfj gkl',
+            data: '',
             // status for currently any meeting is going on
             hasCurrentMeeting: false
         };
@@ -222,13 +229,23 @@ class SmartReception extends React.Component {
             data:isAuthnticated,
             isLoading: true
         };
-        // If no previous authentication found, change the screen to UserLogin screen
-        if(!isAuthnticated)
-            route = { component: UserLogin, id: 'login', title: 'Login' };
+        if(AppStore.serviceEndPoint == null || AppStore.serviceEndPoint == '') {
+            route = { component: Settings, id: 'settings', title: 'Settings' };
+        }
         else {
-            // If a previous authentication found, then load the Dashboard screen
-            newState.hasCurrentMeeting = _settings.currentMeeting != undefined;
-            route = { component: Dashboard, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
+            // If no previous authentication found, change the screen to UserLogin screen
+            if(!isAuthnticated)
+                route = { component: UserLogin, id: 'login', title: 'Login' };
+            else {
+                // If a previous authentication found, then load the Dashboard screen
+                newState.hasCurrentMeeting = _settings.currentMeeting != undefined;
+                if(AppStore.applicationMode != null && AppStore.applicationMode.toString().toLowerCase() == "reception") {
+                    route = { component: ClientSplashScreen, id: 'reception', title: 'Reception Screen', props: { isClientModule: true } };
+                }
+                else{
+                    route = { component: Dashboard, id: 'dashboard', title: 'Dashboard', props: { isClientModule: false } };
+                }
+            }
         }
 
         // Currently navigator is showing loading screen. So replace it with route object assigned

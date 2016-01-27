@@ -47,7 +47,7 @@ public class PCSCReader {
     public PCSCReader(Context parent) throws  Exception
     {
         this.mParent = parent;
-        mService = CardService.getInstance(this.mParent);
+        mService = CustomCardService.getInstance(this.mParent);
 
     }
 
@@ -108,6 +108,14 @@ public class PCSCReader {
     byte[] mProperty1;
     byte[] mProperty2;
 
+    /*WHILE (LEN>0)
+    {
+        ...
+        ..
+        READ
+        LEN=RESPNOPNSE.GETSW2()
+    }*/
+
     private byte[] getProperty1 () throws Exception
     {
         //-------------------------------------------------------------------------------
@@ -161,6 +169,7 @@ public class PCSCReader {
 
         getProperty1(); //For future analysis
         eid.setIDNumber(this.getIdNumber());
+        setPublicData(eid);
         setPublicData(eid);
         return eid;
     }
@@ -264,9 +273,13 @@ public class PCSCReader {
             typeId = typeId + 1;
         }
 
+        //Read real data
+        response = channel.transmit(new CommandAPDU(new byte[]{0x00, (byte) 0xB0, 0x00, 0x00, (byte) 0xE6}));
+        if (response.getSW() != 0x9000)
+            throw new Exception("Failed to read public data v1");
 
-
-
+     data = response.getData(); //Reference to data
+byte a = data[0];
 
         /*int index = 0;
 String transformed = new String(data, UTF8_CHARSET);*/

@@ -35,7 +35,9 @@ export default class MeetingIntro extends React.Component {
         /**
          * @state
          */
-        this.state = {};
+        this.state = {
+            buttonText: 'Start Your Meeting'
+        };
 
     }
 
@@ -69,9 +71,6 @@ export default class MeetingIntro extends React.Component {
          */
         NativeModules.MediaHelper.playClickSound();
 
-        // Show waiting dialog
-        NativeModules.DialogAndroid.showProgressDialog();
-
         let dialog = new DialogAndroid();
         let options = {};
 
@@ -79,43 +78,59 @@ export default class MeetingIntro extends React.Component {
         // meeting inside we shows the room selection screen
 
         if(!AppStore.hasActualMeeting()) {
-            // Get the availaable rooms
-            AppStore.getAvailableMeetingRooms().then(data => {
-
-                // Hide progress dialog
-                NativeModules.DialogAndroid.hideProgressDialog();
-
-                /**
-                 * Dialog only accepts string array
-                 * So transforms server data into string array and save the same locally in this class
-                 */
-                var rooms = new Array();
-                data.map(item  => rooms.push(item.Name));
-
-                options = {
-                    title: 'Select A Meeting Area',
-                    positiveText: 'Select',
-                    items: rooms
-                };
-
-                /**
-                 * Callback for item select
-                 */
-                options.itemsCallback = (index) => {
+            /**
+             * Read the emirates id data
+             */
+            this.setState({ buttonText: 'Validating Emirates Id....'})
+            NativeModules.MediaHelper.readEmiratesId(content => {
+                let client = JSON.parse(content);
+                if(client.idnumber==this.props.meeting.Clients.EmiratesIdNo) {
                     // Show waiting dialog
                     NativeModules.DialogAndroid.showProgressDialog();
-                    // start the meeting on server
-                    AppStore.startMeeting(this.props.meeting, data[index].RoomId).then(() => {
+
+                    // Get the availaable rooms
+                    AppStore.getAvailableMeetingRooms().then(data => {
+
                         // Hide progress dialog
                         NativeModules.DialogAndroid.hideProgressDialog();
-                    });
-                };
 
-                /**
-                 * Shows the dialog
-                 */
-                dialog.set(options);
-                dialog.show();
+                        /**
+                         * Dialog only accepts string array
+                         * So transforms server data into string array and save the same locally in this class
+                         */
+                        var rooms = new Array();
+                        data.map(item  => rooms.push(item.Name));
+
+                        options = {
+                            title: 'Select A Meeting Area',
+                            positiveText: 'Select',
+                            items: rooms
+                        };
+
+                        /**
+                         * Callback for item select
+                         */
+                        options.itemsCallback = (index) => {
+                            // Show waiting dialog
+                            NativeModules.DialogAndroid.showProgressDialog();
+                            // start the meeting on server
+                            AppStore.startMeeting(this.props.meeting, data[index].RoomId).then(() => {
+                                // Hide progress dialog
+                                NativeModules.DialogAndroid.hideProgressDialog();
+                            });
+                        };
+
+                        /**
+                         * Shows the dialog
+                         */
+                        dialog.set(options);
+                        dialog.show();
+                    });
+                }
+                else {
+                    this.setState({ buttonText: 'Start Your Meeting'})
+                    ToastAndroid.show('Invalid client - Can not match the client identity', ToastAndroid.LONG);
+                }
             });
         }
         /**
@@ -148,7 +163,7 @@ export default class MeetingIntro extends React.Component {
                         <Icon name="check" size={24} color="#FFF" style={{marginLeft: 10}} />
                     </View>
                     <View style={styles.buttonTextWrapper}>
-                        <Text style={styles.buttonText}>Start Your Meeting</Text>
+                        <Text style={styles.buttonText}>{this.state.buttonText}</Text>
                     </View>
                 </View>
             </TouchableWithoutFeedback>

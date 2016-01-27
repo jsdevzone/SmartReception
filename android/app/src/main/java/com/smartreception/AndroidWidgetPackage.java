@@ -37,7 +37,8 @@ public class AndroidWidgetPackage implements ReactPackage {
     public List<ViewManager> createViewManagers(ReactApplicationContext reactApplicationContext) {
         return Arrays.<ViewManager>asList(
                 new ReactCalendarManager(),
-                mPenSurfaceManager
+                mPenSurfaceManager,
+                new PieChartManager()
         );
     }
 

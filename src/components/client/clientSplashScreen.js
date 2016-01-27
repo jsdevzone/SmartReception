@@ -72,7 +72,7 @@
                id: 'emiratesid',
                title: 'Scan Your Emirates Id',
                component: ClientInfo,
-               props: { isClientModule: true }
+               props: { isClientModule: true, mode: 1 }
            };
            this.props.navigator.push(route);
       }

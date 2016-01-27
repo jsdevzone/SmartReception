@@ -8,16 +8,15 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
- 
 var { requireNativeComponent, PropTypes } = require('react-native');
 
 var iface = {
-  name: 'PenSurface',
+  name: 'PieChart',
   propTypes: {
   },
 };
 
-module.exports = requireNativeComponent('PenSurface', iface, { nativeOnly: {
+module.exports = requireNativeComponent('PieChart', iface, { nativeOnly: {
   'scaleX': true,
   'scaleY': true,
   'testID': true,

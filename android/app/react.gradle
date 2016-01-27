@@ -1,3 +1,4 @@
+import org.apache.tools.ant.taskdefs.condition.Os
 def config = project.hasProperty("react") ? project.react : [];
 
 def bundleAssetName = config.bundleAssetName ?: "index.android.bundle"
@@ -56,8 +57,13 @@ task bundleReleaseJsAndAssets(type: Exec) {
 
     // set up the call to the react-native cli
     workingDir reactRoot
-    commandLine "react-native", "bundle", "--platform", "android", "--dev", "false", "--entry-file",
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        commandLine "cmd","/c", "react-native", "bundle", "--platform", "android", "--dev", "false", "--entry-file",
             entryFile, "--bundle-output", jsBundleFileRelease, "--assets-dest", resourcesDirRelease
+    } else {
+        commandLine "react-native", "bundle", "--platform", "android", "--dev", "false", "--entry-file",
+            entryFile, "--bundle-output", jsBundleFileRelease, "--assets-dest", resourcesDirRelease
+    }
 
     enabled config.bundleInRelease ?: true
 }

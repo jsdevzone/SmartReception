@@ -1,13 +1,16 @@
 'use strict';
-
 /**
  * Smart Reception System
  * @author Jasim
  * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
 
 import React, { StyleSheet, Text, View, Image, TouchableWithoutFeedback,
-    TouchableNativeFeedback, ListView, TouchableHighlight, NativeModules, } from 'react-native';
+    TouchableNativeFeedback, ListView, TouchableHighlight, NativeModules, Modal } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Moment from 'moment';
@@ -55,7 +58,39 @@ export default class Notifications extends React.Component {
             }
         };
 
-        // Load today's schedule
+        /**
+         * Add event listener to meetingstarted event. This list should be
+         * reloaded with updated data whenever the user starts the meeting.
+         */
+        AppStore.addEventListener('meetingstarted', this.reloadMeetingList.bind(this));
+
+        /**
+         * Add event listener to meetingfinished event. This list should be
+         * reloaded with updated data whenever the user finish the meeting.
+         */
+        AppStore.addEventListener('meetingfinished', this.reloadMeetingList.bind(this));
+        /**
+         * Add event listener to actualMeetingupdated event. This list should be
+         * reloaded with updated data whenever the user updates the current meeting data.
+         */
+        AppStore.addEventListener('actualMeetingupdated', this.reloadMeetingList.bind(this));
+        /**
+         * Add event listener to actualMeetingupdated event. This list should be
+         * reloaded with updated data whenever the user post the meeting with final changes
+         */
+        AppStore.addEventListener('meetingposted', this.reloadMeetingList.bind(this));
+
+        /*
+         * Load todays schedule
+         */
+         this.reloadMeetingList();
+    }
+
+    /**
+     * Reloads todays meeting list
+     * @return {Void} undefined
+     */
+    reloadMeetingList() {
         this.getSchedules(new Date());
     }
 

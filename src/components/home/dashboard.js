@@ -3,9 +3,12 @@
  * Smart Reception System
  * @author Jasim
  * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
 
-// Importing React Native
 import React, { StyleSheet, Text, View, Image,
     TouchableHighlight, TextInput, NativeModules } from 'react-native';
 
@@ -22,6 +25,8 @@ import ClientHome from '../client/ClientHome';
 import ClientSearch from '../client/clientSearch';
 import Feedback from '../feedback/feedback';
 import Notifications from './notifications';
+import FeedbackSummary from './feedbackSummary';
+import Settings from '../settings/settings';
 
 //Stores
 import UserStore from '../../stores/userStore';
@@ -37,7 +42,7 @@ RouteStore.add('splash', { title: 'Splash Screen', component: SplashScreen });
 RouteStore.add('client', { title: 'Client', component: ClientHome, props: { isClientModule: true }});
 RouteStore.add('client search', { title: 'Clients', component: ClientSearch });
 RouteStore.add('feedback', { title: 'Feedback', component: Feedback });
-
+RouteStore.add('settings', { title: 'Settings', component: Settings });
 /**
  * @class Dashboard
  * @extend React.Component
@@ -80,32 +85,25 @@ export default class Dashboard extends React.Component{
                         <View>
                             <View style={styles.horizontal}>
                                 <Tile onPress={() => {
-                                        if(AppStore.hasActualMeeting()) {
-                                            this.onTilePress('meeting')
-                                        }
-                                    }} icon="calendar-check-o" text="Meeting" scale="small"  />
+                                    if(AppStore.hasActualMeeting()) {
+                                    this.onTilePress('meeting')
+                                    }
+                                }} icon="calendar-check-o" text="Meeting" scale="small"  />
                                 <Tile onPress={() => this.onTilePress('calendar')} icon="calendar" text="Calendar" />
+                                <UpcomingMeeting navigator={this.props.navigator} />
                             </View>
-                            <UpcomingMeeting navigator={this.props.navigator} />
                             <View style={styles.horizontal}>
-                                <Tile onPress={() => this.onTilePress('splash')} icon="cog" text="Settings" />
-                                <Tile onPress={() => this.onTilePress('client search')} icon="user" text="Clients" />
+                                <FeedbackSummary />
+                                <View>
+                                    <Tile onPress={() => this.onTilePress('settings')} icon="cog" text="Settings" />
+                                    <Tile onPress={() => this.onTilePress('client search')} icon="user" text="Clients" />
+                                </View>
                             </View>
                             <View style={styles.horizontal}>
                                 <Tile icon="comments-o" text="Feedback" onPress={() => this.onTilePress('feedback')} />
+                                { this.renderSearchTile() }
                                 <Tile icon="check-square-o" text="Survey" />
                             </View>
-                        </View>
-                        <View>
-                            <Tile scale="extraLarge">
-                                <Image source={require('../../../resources/images/chart.png')} style={{ flex: 1, width: 240, height: 100 }}>
-                                </Image>
-                            </Tile>
-                            <View style={styles.horizontal}>
-                                <Tile icon="list-alt" text="Questionaire" />
-                                { this.renderDateTile() }
-                            </View>
-                            { this.renderSearchTile() }
                         </View>
                         { this.renderScheduleTile() }
                     </View>

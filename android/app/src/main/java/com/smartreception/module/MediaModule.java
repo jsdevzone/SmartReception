@@ -230,78 +230,55 @@ public class MediaModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void eid(Callback callback) {
-        try {
-
-            /*
-            ResponseAPDU response;
-            if (mFactory == null) {
-                mFactory = mService.getTerminalFactory();
-            }
-            List<CardTerminal> terminals = mFactory.terminals().list();
-            CardTerminal terminal_1 = terminals.get(0);
-            Boolean b =terminal_1.isCardPresent();
-            android.util.Log.v("Test",b.toString());
-            Card card = terminal_1.connect("T=0");
-            ATR x = card.getATR();
-            CardChannel channel = card.getBasicChannel();
-            */
-
-
-            if (mReader == null)
-                this.mReader = new PCSCReader(mReactContext);
-
-            if (mReader != null || !mReader.IsConnected())
-                mReader.Connect();
-
-            if (mReader.IsUAECard()) {
-                EidPublicData data = mReader.getPublicData();
-
-                ObjectMapper mapper = new ObjectMapper();
-                String jsonInString = mapper.writeValueAsString(data);
-
-                String str = "{" +
-                        "\"ArabicName\": " + "\"" + data.getArabicFullName() + "\"," +
-                        "}";
-                callback.invoke(jsonInString);
-            }
-
-            mReader.Disconnect();
-            /*
-
-
-            //Select first file
-            //response = selectFile(channel, new byte[]{0x00, 0x02, 0x43, 0x00, 0x13, 0x00, 0x00, 0x00, 0x01, 0x01});
-            response = channel.transmit( new CommandAPDU(new byte[]{
-                    0x00,(byte)0xA4 ,0x04 ,0x00 ,0x0C ,(byte)0xA0 ,0x00 ,0x00 ,0x02 ,0x43 ,0x00 ,0x13 ,0x00 ,0x00 ,0x00 ,0x01 ,0x01
-            }));
-            if (response.getSW1()!=0x61)
-                throw new Exception("Response error");
-            //read from first file
-            response = getResponseStd(channel, response.getSW2()); ;//Not used data for now
-
-            response = channel.transmit(new CommandAPDU(new byte[]{(byte)0x80,(byte)0xC0, 0x02, (byte)0xA1, 0x08}));
-            if (response.getSW() != 0x9000)
-                throw new Exception("Failed to get Card serial no");
-
-
-            card.disconnect(true);
-
-            //if (response.getSW() != 0x9000)
-            //    throw new Exception("Response error");
-
-            */
-
-
-        } catch (CardException ex) {
-            //..
-            android.util.Log.v("Error", ex.getMessage());
-        } catch (Exception ex) {
-            android.util.Log.v("Error", ex.getMessage());
-        }
+    public void readEmiratesId(Callback callback) {
+        EmiratesIdReadTask task = new EmiratesIdReadTask();
+        task.setCallback(callback);;
+        task.execute();
     }
 
     private ProgressDialog progressDialog;
+
+    private class EmiratesIdReadTask extends AsyncTask<Void, Void, Void> {
+
+        private Callback callback;
+
+        public Callback getCallback() {
+            return callback;
+        }
+
+        public void setCallback(Callback callback) {
+            this.callback = callback;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+
+                if (mReader == null)
+                    mReader = new PCSCReader(mReactContext);
+
+                if (mReader != null || !mReader.IsConnected())
+                    mReader.Connect();
+
+                if (mReader.IsUAECard()) {
+                    EidPublicData data = mReader.getPublicData();
+
+                    ObjectMapper mapper = new ObjectMapper();
+                    String jsonInString = mapper.writeValueAsString(data);
+                    if(callback != null)
+                        callback.invoke(jsonInString);
+                }
+
+                mReader.Disconnect();
+
+            } catch (CardException ex) {
+                android.util.Log.v("Error", ex.getMessage());
+            } catch (Exception ex) {
+                android.util.Log.v("Error", ex.getMessage());
+            }
+            return null;
+        }
+    }
 
     private class UploadTask extends AsyncTask<Attachments, Void, Void> {
 

@@ -124,7 +124,14 @@ var RequestManager = module.exports = {
                 },
                 body: querystring
             })
-            .then(response => resolve(response.json()));
+            .then(response => {
+				resolve(response.json());
+			})
+			.catch((error) =>
+			{
+                if(reject)
+                    reject(error);
+            });
         });
 	}
 };

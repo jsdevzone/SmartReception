@@ -3,6 +3,10 @@
  * Smart Reception System
  * @author Jasim
  * @company E-Gov LLC
+ *
+ * Copyright (C) E-Gov LLC, Dubai, UAE - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
  */
 
  import React, { View, StyleSheet, Text, TextInput,
@@ -35,20 +39,35 @@ export default class UserLogin extends React.Component {
          * @state
          */
         this.state = {
+            /**
+             * User name
+             * @state {String} username
+             */
             username: '',
+            /**
+             * Password
+             * @state {String} password
+             */
             password: '',
+            /**
+             * Any error message
+             * @state {String} errorMessage
+             */
             errorMsg: errorMessage,
+            /**
+             * Whether app is authenticating or not
+             * @state {Boolean} isAuthenticating
+             */
             isAuthenticating: false,
+            /**
+             * @state {Boolean} hasAuthenticationError
+             */
             hasAuthenticationError:  false
         };
-    }
 
-    /**
-     * Component Life cycle method
-     * @lifecycle
-     * @return {Void} undefined
-     */
-    componentDidMount () {
+        /**
+         * Add event handler form authenticated event
+         */
         CredentialStore.addEventListener('authenticated', this.onAuthenticated.bind(this));
     }
 
@@ -58,9 +77,12 @@ export default class UserLogin extends React.Component {
      * @return {Void} undefined
      */
     onAuthenticated (data) {
-        this.setState({ isAuthenticating: false, hasAuthenticationError: true, errorMsg: JSON.stringify(data) });
-        this.props.navigator.replaceAtIndex({ component: Dashboard, id: 'dashboard', title: 'Dashboard' }, 0);
-        this.props.navigator.popToTop();
+        if(data.success) {
+            this.props.navigator.replaceAtIndex({ component: Dashboard, id: 'dashboard', title: 'Dashboard' }, 0);
+            this.props.navigator.popToTop();
+        }
+        else
+            this.setState({ password: '', isAuthenticating: false, hasAuthenticationError: true, errorMsg: "Invalid Username And/Or Password!" });
     }
 
     /**
@@ -116,7 +138,7 @@ export default class UserLogin extends React.Component {
                     <Image
                         source={{uri: 'https://d13yacurqjgara.cloudfront.net/users/12755/screenshots/1037374/hex-loader2.gif'}}
                         style={{width:200,height: 200, marginLeft: 100}}/>
-                    <Text style={{marginLeft: 100}}>Authenticating, Please wait...</Text>
+                        <Text style={{marginLeft: 100}}>Authenticating, Please wait...</Text>
                 </View>
             );
         }

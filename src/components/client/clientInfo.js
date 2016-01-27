@@ -17,7 +17,7 @@
  import ClientSplashScreen from './clientSplashScreen';
  import ClientStore from '../../stores/clientStore';
  import AppStore from '../../stores/appStore';
-
+ import RadioButton from '../ux/radioButton';
  /**
   * Displays the client information.
   *
@@ -38,12 +38,15 @@
               client: {
                   FirstName: '',
                   LastName: '',
-                  Position: ''
+                  Position: '',
+                  EmiratesIdNo: '0',
+                  PassportNo: '0'
               },
               meeting: {},
               employee: {},
               hasMeeting: false,
-              mode: 2
+              mode: 2,
+              selectedPurposeIndex: 0
           };
 
           this.state.mode = this.props.mode || 2;
@@ -145,7 +148,7 @@
                */
               options.itemsCallback = (index) => {
                   let client = this.state.client;
-                  client.Nationality = countries[index].CountryId;
+                  client.CountryId = countries[index].CountryId;
                   client.NationalityName = arrCountries[index];
                   /**
                    * Change the display to the selected value
@@ -233,6 +236,11 @@
               </TouchableWithoutFeedback>
           );
       }
+
+      onRadioPress(index) {
+          this.setState({ selectedPurposeIndex: index });
+      }
+
       /**
        * @render
        * @return {View} view
@@ -248,7 +256,7 @@
                           <Text style={{ marginTop: 10, fontSize: 20, color: '#000'}}>
                           {this.state.client.FirstName + " " + this.state.client.LastName}
                           </Text>
-                          <Text>{this.state.client.Position}</Text>
+                          <Text>{this.state.client.Position + " " + this.state.mode}</Text>
                       </View>
                       <View style={[styles.widget, {flex: 1}]}>
                           <View style={styles.widgetHeader}>
@@ -299,18 +307,27 @@
                                   </TouchableWithoutFeedback>
                               </View>
                               <View style={styles.formGroup}>
-                                   <View style={styles.formItem}>
+                                  <View style={styles.formItem}>
                                       <Text>EMAIL</Text>
                                       <TextInput value={this.state.client.Email}  style={{ height: 40 }} underlineColorAndroid="#FFF"
-                                          onChangeText={(text) => this.onFieldEdit('Email', text)}/>
+                                      onChangeText={(text) => this.onFieldEdit('Email', text)}/>
                                   </View>
                                   <View style={{ flex :1 }}>
                                       <Text>MOBILE NO.</Text>
                                       <TextInput keyboardType="numeric" value={this.state.client.Mobile}  style={{ height: 40 }} underlineColorAndroid="#FFF"
-                                          onChangeText={(text) => this.onFieldEdit('Mobile', text)}/>
+                                      onChangeText={(text) => this.onFieldEdit('Mobile', text)}/>
                                   </View>
                               </View>
-
+                              <View style={styles.formGroup}>
+                                  <View style={{ flex: 1}}>
+                                        <Text>PURPOSE OF THE VISIT</Text>
+                                        <View style={{flexDirection: 'row', paddingTop: 10, paddingBottom: 10}}>
+                                            <RadioButton label="Business Village" onPress={()=>this.onRadioPress(0)} selected={this.state.selectedPurposeIndex == 0}/>
+                                        <RadioButton label="Service Provider" onPress={()=>this.onRadioPress(1)} style={{marginRight: 10, marginLeft: 10}} selected={this.state.selectedPurposeIndex == 1}/>
+                                    <RadioButton label="Entrepreneur" onPress={()=>this.onRadioPress(2)} selected={this.state.selectedPurposeIndex == 2}/>
+                                      </View>
+                                  </View>
+                              </View>
                               <View style={{ alignItems: 'flex-end', paddingTop: 25}}>
                                     {this.renderButton('Proceed...')}
                               </View>

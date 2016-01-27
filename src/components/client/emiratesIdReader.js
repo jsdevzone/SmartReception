@@ -59,7 +59,7 @@
           /**
            * Read the emirates id data
            */
-          NativeModules.MediaHelper.eid(content => {
+          NativeModules.MediaHelper.readEmiratesIdData(content => {
               let client = JSON.parse(content);
               let route = {
                   id: 'emiratesid',

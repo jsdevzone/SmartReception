@@ -12,8 +12,8 @@
 import React, { StyleSheet, Text, View, Image, TouchableWithoutFeedback,
     ScrollView, ListView, NativeModules, DeviceEventEmitter,TextInput, ToastAndroid, } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
 import DialogAndroid from 'react-native-dialogs';
+
 import Button from '../meeting/button';
 import AppStore from '../../stores/appStore';
 import MeetingStatus from '../../constants/meetingStatus';
@@ -35,17 +35,34 @@ class Attachments extends React.Component {
     constructor(args) {
         super(args);
 
-        //List data source
-        this.dataSource = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
         /**
          * @state
          */
         this.state = {
-            dataSource: this.dataSource.cloneWithRows([]),
+            /**
+             * Selected attachment
+             * @state {Attachments} attachment
+             */
             selected: {},
+            /**
+             * Current Mode - EDIT or READ
+             * @state {Number} mode
+             */
             mode: READ_MODE,
+            /**
+             * Currently selected attachment file name
+             * @state {String} filename
+             */
             currentFile: null,
+            /**
+             * List of attachments
+             * @state {Array<Attachments>} attachments
+             */
             attachments: [],
+            /**
+             * If any sound file is playing currently
+             * @state {Boolean} isFilePlaying
+             */
             isFilePlaying: false
         };
 
@@ -375,8 +392,6 @@ class Attachments extends React.Component {
        );
     }
 }
-
-
 /**
  * @class FileIcon
  * @extends React.Component
@@ -447,7 +462,10 @@ class FileIcon extends React.Component {
         );
     }
 }
-var iconStyles = StyleSheet.create({
+/**
+ * @style
+ */
+const iconStyles = StyleSheet.create({
     container: {
         width: 100,
         padding: 10,
@@ -470,7 +488,10 @@ var iconStyles = StyleSheet.create({
     }
 });
 
-var styles = StyleSheet.create({
+/**
+ * @style
+ */
+const styles = StyleSheet.create({
     attachmentContainer: {
         flex: 1,
         flexDirection: 'row',

@@ -29,7 +29,28 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	 * loaded from the local storage. If it's value is empty then should redirect into login screen.
 	 * @proprty {Object} user
 	 */
-	user: {},
+	user: {
+		/*
+		 * First name of the logged in user
+		 * @property {String} FirstName
+		 */
+		FirstName: '',
+		/*
+		 * Last name of the logged in user
+		 * @property {String} LastName
+		 */
+		LastName: '',
+		/*
+		 * Profession of the logged in user
+		 * @property {String} Profession
+		 */
+		Profession: '',
+		/*
+		 * Username of the logged in user
+		 * @property {String} UserName
+		 */
+		UserName: ''
+	},
 
 	/**
 	 * When the advisor starts a meeting, the meeting details should be saved locally in the application.
@@ -59,6 +80,18 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	copyOptions: [ "Append To Exisiting", "Replace Exisiting", "Prepend To Exisiting"],
 
 	/**
+	 * The web service Endpoint address
+	 * @proprty {String} serviceEndPoint
+	 */
+	serviceEndPoint: null,
+
+	/**
+	 * Application mode - whethere reception tablet or advisor tabler
+	 * @proprty {String} applicationMode
+	 */
+	applicationMode: null,
+
+	/**
 	 * Loads the application state from the local storage. Each time when user leaves the application we are saving the application
 	 * state into the local storage. Local state include the current user, identity infos, current meeting details, app settings , etc.
 	 *
@@ -69,6 +102,8 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 		const keysToRetrieve = [
 			STORAGE_KEY + ':currentMeeting',
 			STORAGE_KEY + ':user',
+			STORAGE_KEY + ':serviceEndPoint',
+			STORAGE_KEY + ':applicationMode'
 		];
 
 		AsyncStorage.multiGet(keysToRetrieve).then((data) => {
@@ -105,6 +140,23 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 						_settings.currentMeeting = this.currentMeeting;
 					}
 				}
+				/*
+				 * serviceEndPoint
+				 */
+				 if(item[0]==STORAGE_KEY + ":serviceEndPoint") {
+					 if(item[1] != null && item[1] != "") {
+ 						this.serviceEndPoint = item[1];
+						//RequestManager.endpointBase = item[1];
+ 					}
+				 }
+				 /*
+ 				 * applicationMode
+ 				 */
+ 				 if(item[0]==STORAGE_KEY + ":applicationMode") {
+					 if(item[1] != null && item[1] != "") {
+ 						this.applicationMode = item[1]
+ 					}
+ 				 }
 			});
 
 			this.emit('appsettingsloaded', _settings);
@@ -434,6 +486,29 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	 */
 	deleteParticipant: function(participantId) {
 		let promise = RequestManager.post("meeting/attendee/delete/" + participantId, { meetingId: participantId});
+		return promise;
+	},
+
+	/**
+	 * Change the logged in user status
+	 *
+	 * @url - http://[server]/[service]/api/user/status/change
+	 * @param {Number} status
+	 * @return {Promise} promise
+	 */
+	changeUserStatus: function(status) {
+		let promise = RequestManager.post("user/status/change/", { user: '', status: '' });
+		return promise;
+	},
+
+	/**
+	 * Get the average feedbacks for the logged in user
+	 *
+	 * @url - http://[server]/[service]/api/userfeedback
+	 * @return {Promise} promise
+	 */
+	getUserAverageFeedback: function(status) {
+		let promise = RequestManager.get("userfeedback", { userName:  this.user.UserName });
 		return promise;
 	}
 });

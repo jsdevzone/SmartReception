@@ -194,7 +194,6 @@ const styles = StyleSheet.create({
 		textAlign: 'center'
 	},
 	label: {
-
 		fontSize: 18
 	}
 });

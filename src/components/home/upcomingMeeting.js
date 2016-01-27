@@ -217,9 +217,11 @@ const styles = StyleSheet.create({
     profileItemWrapper: {
         flexDirection: 'row',
         paddingTop: 2,
+        flexWrap: 'nowrap'
     },
     profileItem: {
-        color: '#5B7EB8'
+        color: '#5B7EB8',
+        flexWrap: 'nowrap'
     },
     userProfileWrapperLeft: {
         flexDirection: 'column',

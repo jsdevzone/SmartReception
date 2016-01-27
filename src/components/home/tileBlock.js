@@ -129,6 +129,11 @@ const styles = StyleSheet.create({
         width: (config.width * 2) + config.margin,
         height: (config.height * 2) + config.margin
     },
+    extraLargex2: {
+        backgroundColor: '#FFF',
+        width: (config.width * 2) + (config.width + config.margin) + config.margin,
+        height: (config.height * 2) + config.margin
+    },
     fullColumn: {
         backgroundColor: '#FFF',
         flex: 1,
