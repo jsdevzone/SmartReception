@@ -8,7 +8,7 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
-import React, { View, StyleSheet, Text,  TouchableWithoutFeedback, } from 'react-native';
+import React, { View, StyleSheet, Text,  TouchableWithoutFeedback, NativeModules } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DialogAndroid from 'react-native-dialogs';
 
@@ -32,6 +32,22 @@ export default class RadioButton extends React.Component {
     }
 
     /**
+     * On Press Handler
+     * @return {Void} undefined
+     */
+    onPress() {
+        /**
+         * Play the native tap sound, as it's not supported in default view component by react native
+         */
+        NativeModules.MediaHelper.playClickSound();
+        /**
+         * Execute the handler from props
+         */
+        if(this.props.onPress)
+            this.props.onPress();
+    }
+
+    /**
      * @render
      * @return {View} view
      */
@@ -44,7 +60,7 @@ export default class RadioButton extends React.Component {
         }
 
         return (
-            <TouchableWithoutFeedback onPress={this.props.onPress}>
+            <TouchableWithoutFeedback onPress={this.onPress.bind(this)}>
                 <View style={[styles.container, this.props.style]}>
                     <View style={[styles.radioOuter, selected]}>
                         <View style={[styles.radioInner, selectedInner]}>

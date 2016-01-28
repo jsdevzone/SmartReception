@@ -53,9 +53,14 @@ export default class MeetingIntro extends React.Component {
             let startTime = new Date(meeting.DateOfMeeting);
             startTime.setHours(startTime.getHours() - 4);
             startTime = Moment(startTime);
+            let endTime = Moment(startTime._d);
+            endTime = endTime.add(meeting.Duration.split(':')[0], 'hour');
+            endTime = endTime.add(meeting.Duration.split(':')[1], 'minutes');
+            endTime = endTime.add(meeting.Duration.split(':')[2], 'second');
             let now = Moment(new Date());
             let difference = now.diff(startTime, 'minutes');
-            return difference > 30;
+            let totalDiff = endTime.diff(startTime, 'minutes')
+            return difference > (totalDiff/2);
         }
         return false;
     }
@@ -126,6 +131,8 @@ export default class MeetingIntro extends React.Component {
                         dialog.set(options);
                         dialog.show();
                     });
+
+                    this.setState({ buttonText: 'Start Your Meeting'})
                 }
                 else {
                     this.setState({ buttonText: 'Start Your Meeting'})

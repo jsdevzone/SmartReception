@@ -433,12 +433,22 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 
 	/**
 	 * Get the meeting id of currently ongoing meeting. If no meeting returns zero
-	 *
-	 * @return {Void} undefined
+	 * @return {Number} BookedMeetingId
 	 */
   	getCurrentMeetingId: function() {
   		if(this.hasActualMeeting())
   			return this.currentMeeting.BookedMeetingId;
+  		return 0;
+  	},
+
+
+	/**
+	 * Get actual meeting id of ongoing meeting
+	 * @return {Number} ActualMeetingId
+	 */
+  	getActualMeetingId: function() {
+  		if(this.hasActualMeeting())
+  			return this.currentMeeting.ActualMeetings[0].ActualMeetingId;
   		return 0;
   	},
 
@@ -510,5 +520,29 @@ var AppStore = module.exports = Object.assign({}, EventEmitter.prototype, {
 	getUserAverageFeedback: function(status) {
 		let promise = RequestManager.get("userfeedback", { userName:  this.user.UserName });
 		return promise;
+	},
+
+	/**
+	 * Get the active survey
+	 *
+	 * @url - http://[server]/[service]/api/survey
+	 * @return {Promise} promise
+	 */
+	getActiveSurvey: function() {
+		let promise = RequestManager.get("surveys");
+		return promise;
+	},
+
+	/**
+	 * Post survey answers to the server
+	 *
+	 * @url - http://[server]/[service]/api/survey/post
+	 * @param {Array<ClientSurveys>} survey
+	 * @return {Promise} promise
+	 */
+	postUserSurvey: function(survey) {
+		let promise = RequestManager.post("survey/post", survey);
+		return promise;
 	}
+
 });

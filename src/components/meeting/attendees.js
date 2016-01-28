@@ -90,7 +90,7 @@
                   // Get selected departmentId
                   let departmentId = json[selectedOption].DepartmentId;
                   // Get the employees on the selected department
-                  ClientStore.getDepartmentEmployees(departmentId).then(response => {
+                  ClientStore.getAvailableDepartmentEmployees(departmentId).then(response => {
                       // Show waiting dialog
                       NativeModules.DialogAndroid.hideProgressDialog();
                       // Transform the employees

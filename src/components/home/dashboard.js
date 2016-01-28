@@ -27,7 +27,7 @@ import Feedback from '../feedback/feedback';
 import Notifications from './notifications';
 import FeedbackSummary from './feedbackSummary';
 import Settings from '../settings/settings';
-
+import Survey from '../feedback/survey';
 //Stores
 import UserStore from '../../stores/userStore';
 import RouteStore from '../../stores/routeStore';
@@ -43,6 +43,7 @@ RouteStore.add('client', { title: 'Client', component: ClientHome, props: { isCl
 RouteStore.add('client search', { title: 'Clients', component: ClientSearch });
 RouteStore.add('feedback', { title: 'Feedback', component: Feedback });
 RouteStore.add('settings', { title: 'Settings', component: Settings });
+RouteStore.add('survey', { title: 'Survey', component: Survey });
 /**
  * @class Dashboard
  * @extend React.Component
@@ -102,7 +103,7 @@ export default class Dashboard extends React.Component{
                             <View style={styles.horizontal}>
                                 <Tile icon="comments-o" text="Feedback" onPress={() => this.onTilePress('feedback')} />
                                 { this.renderSearchTile() }
-                                <Tile icon="check-square-o" text="Survey" />
+                                <Tile icon="check-square-o" text="Survey" onPress={() => this.onTilePress('survey')} />
                             </View>
                         </View>
                         { this.renderScheduleTile() }

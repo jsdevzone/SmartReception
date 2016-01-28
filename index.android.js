@@ -166,9 +166,6 @@ class SmartReception extends React.Component {
      * @return {Void} undefined
      */
     configureSignalR() {
-
-        ToastAndroid.show(AppStore.user.UserName, ToastAndroid.LONG);
-
         /**
          * Configuring connection
          */
@@ -192,11 +189,7 @@ class SmartReception extends React.Component {
          * Connect to the hub
          */
         try {
-            signalRConnection.start().done(() => {
-                proxy.invoke('connect', '1')
-                proxy.invoke('Connect', '1')
-                ToastAndroid.show("Now Connected " + signalRConnection.id, ToastAndroid.LONG)
-            });
+            signalRConnection.start();
         } catch(e) {}
         //NativeModules.SignalRModule.connectToHub();
     }
